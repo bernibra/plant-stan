@@ -41,3 +41,6 @@ vignettes/*.pdf
 # Data that I don't want to make public
 data/raw
 data/properties
+
+# Remove mac shit
+.DS_Store
