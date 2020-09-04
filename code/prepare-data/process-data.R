@@ -52,24 +52,20 @@ prepare.data <- function(){
 }
 
 prepare.data.sdm <- function(){
+  dat <- prepare.data()
   
-  # ## loop over speces to generate presence and absence dat
-  # for(i in 1:length(sp.weighted)){
-  #   idx <- dat.weighted[,i]>0
-  #   presence <- cbind(dat$Easting[idx], dat$Northing[idx])
-  #   
-  #   if(length(presence)>0){
-  #     write.table(presence, file = paste("../../data/processed/presence_eano/",as.character(i), ".csv", sep=""), quote = F, row.names = F, col.names = F, sep = ",")
-  #   }
-  # }
+  ## loop over speces to generate presence and absence dat
+  for(i in 1:nrow(dat$sp)){
+    idx <- dat$dat[,i]>0
+    presence <- cbind(dat$coord$Easting[idx], dat$coord$Northing[idx], dat$dat[idx, i])
 
+    if(length(presence)>0){
+      write.table(presence, file = paste("../../data/processed/sdm/",as.character(i), ".csv", sep=""), quote = F, row.names = F, col.names = c("easting", "northing", "abundance"), sep = ",")
+    }
+  }
 }
 
 prepare.data.jsdm <- function(){
-  
-}
-
-prepare.climatic <- function(){
   
 }
 
