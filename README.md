@@ -1,2 +1,2 @@
 # plant-stan
-Distribution models with stan
+I don't like software such as maxent or HMSC. They might be every statistitian's nightmare---black boxes that help you forget about basic aspects of statistical inference. What are my priors? Why did I choose a likelihood or prior distribution over another? Why is this model better than any other? These, among others, are basic questions that any scientist should be able to confidently answer. I ~~might be have been indoctrinated in~~ __share__ Richard Mcelreath's ~~cult~~ views. 
