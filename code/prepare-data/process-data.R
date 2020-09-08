@@ -51,12 +51,12 @@ prepare.data <- function(){
   return(list(dat = dat.weighted, coord = dat_SP, places = places.codes, sp = sp.codes))
 }
 
-prepare.data.sdm <- function(){
+prepare.data.sdm <- function(absences=T){
   dat <- prepare.data()
   
   ## loop over speces to generate presence and absence dat
   for(i in 1:nrow(dat$sp)){
-    idx <- dat$dat[,i]>0
+    idx <- dat$dat[,i]>0 | rep(absences, nrow(dat$dat))
     presence <- cbind(dat$coord$Easting[idx], dat$coord$Northing[idx], dat$dat[idx, i])
 
     if(length(presence)>0){
