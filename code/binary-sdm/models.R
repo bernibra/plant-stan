@@ -31,6 +31,7 @@ model{
 }
 "
 
+# Model 1.01 is exactly the same as Model 1.0, I was just trying to write things in matrix form.
 model1.01 <- "
 data{
   int N;
@@ -99,3 +100,38 @@ generated quantities{
     }
 }
 "
+
+# Model 2.1 is a simple logistic regression where I do not generate log-odds values so I can't calculate WAIC directly
+model2.1 <- "
+data{
+  int N;
+  int K;
+  int obs[N];
+  real bio[N,K];
+  real bio2[N,K];
+}
+parameters{
+  real alpha;
+  vector[K] beta;
+  vector[K] beta2;
+}
+model{
+  vector[N] p;
+
+  //priors
+  alpha ~ normal(0,1);
+  beta ~ normal(0,1);
+  beta2 ~ normal(0,1);
+  
+  for (i in 1:N) {
+     p[i] = alpha;
+     for (j in 1:K){
+          p[i] = p[i] + beta[j] * bio[i, j] + beta2[j] * bio2[i, j];
+     }
+     p[i] = inv_logit(p[i]);
+  }
+  
+  obs ~ binomial(1, p);
+}
+"
+

@@ -91,7 +91,7 @@ species_distribution.maxent <- function(idx=1, view_plots=T, variables=c("bio5_"
         # Generate absence test dataset
         if(pseudoA){
                 absence.train <- randomPoints(mask = dat$bioclim.data[[1]],     # Provides resolution of sampling points
-                                              n = nrow(presence.train))
+                                              n = 10000)
                 absence.test <- randomPoints(mask = dat$bioclim.data[[1]],     # Provides resolution of sampling points
                                              n = nrow(presence.test))
                 colnames(absence.test) <- colnames(presence.test)
@@ -102,7 +102,7 @@ species_distribution.maxent <- function(idx=1, view_plots=T, variables=c("bio5_"
         }
 
         # Run maxent
-        bc.model <- dismo::maxent(dat$bioclim.data, presence.train, removeDuplicates=TRUE) # Maxent uses all the environment and presense data, regularisation from the line above. removeDuplicates is just a precaution, it is not neccessary.
+        bc.model <- dismo::maxent(dat$bioclim.data, p = presence.train, a = absence.train, removeDuplicates=TRUE) # Maxent uses all the environment and presense data, regularisation from the line above. removeDuplicates is just a precaution, it is not neccessary.
 
         # Predict presence from model
         predict.presence <- dismo::predict(object = bc.model, x = dat$bioclim.data)
@@ -130,8 +130,8 @@ species_distribution.maxent <- function(idx=1, view_plots=T, variables=c("bio5_"
         if(pseudoA){
                 train.presence <- data.frame(obs=1, train=1, bc.model@presence)
                 train.absence <- data.frame(obs=0, train=1, bc.model@absence)
-                train.presence <- data.frame(obs=1, train=1, raster::extract(dat$bioclim.data, presence.train))
-                train.absence <- data.frame(obs=0, train=1, raster::extract(dat$bioclim.data, absence.train))
+                test.presence <- data.frame(obs=1, train=0, raster::extract(dat$bioclim.data, presence.test))
+                test.absence <- data.frame(obs=0, train=0,raster::extract(dat$bioclim.data, absence.test))
         }else{
                 train.presence <- data.frame(obs=1, train=1, raster::extract(dat$bioclim.data, presence.train))
                 train.absence <- data.frame(obs=0, train=1, raster::extract(dat$bioclim.data, absence.train))
@@ -139,9 +139,15 @@ species_distribution.maxent <- function(idx=1, view_plots=T, variables=c("bio5_"
                 test.absence <- data.frame(obs=0, train=0,raster::extract(dat$bioclim.data, absence.test))
         }
         
+        # Prepare data for stan model
         dataset = rbind(train.presence, train.absence, test.presence, test.absence)
+        # Standarize environmental variables
         for(i in c(1:ncol(dataset))[-c(1,2)]){dataset[,i] <- scale(dataset[,i])}
         
-        return(list(dataset = dataset, model.maxent = bc.model))
+        # Calculate AUC and ROC for maxent model
+        auc_maxent <- dismo::evaluate(p = as.matrix(presence.test), a = as.matrix(absence.test), model = bc.model, x = dat$bioclim.data)
+        roc_maxent <- roc(c(rep(1,nrow(presence.test)), rep(0,nrow(absence.test))), c(auc_maxent@presence, auc_maxent@absence))
+
+        return(list(dataset = dataset, model.maxent = bc.model, roc_maxent = roc_maxent))
 }
 
