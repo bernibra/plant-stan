@@ -104,6 +104,11 @@ species_distribution.maxent <- function(idx=1, view_plots=T, variables=c("bio5_"
         # Run maxent
         bc.model <- dismo::maxent(dat$bioclim.data, p = presence.train, a = absence.train, removeDuplicates=TRUE) # Maxent uses all the environment and presense data, regularisation from the line above. removeDuplicates is just a precaution, it is not neccessary.
 
+        # Also run maxent with pseudo-absences for comparison purposes
+        if(!(pseudoA)){
+           bc.model_ <- dismo::maxent(dat$bioclim.data, p = presence.train, removeDuplicates=TRUE) # Maxent uses all the environment and presense data, regularisation from the line above. removeDuplicates is just a precaution, it is not neccessary.                
+        }
+
         # Predict presence from model
         predict.presence <- dismo::predict(object = bc.model, x = dat$bioclim.data)
         
@@ -147,7 +152,17 @@ species_distribution.maxent <- function(idx=1, view_plots=T, variables=c("bio5_"
         # Calculate AUC and ROC for maxent model
         auc_maxent <- dismo::evaluate(p = as.matrix(presence.test), a = as.matrix(absence.test), model = bc.model, x = dat$bioclim.data)
         roc_maxent <- roc(c(rep(1,nrow(presence.test)), rep(0,nrow(absence.test))), c(auc_maxent@presence, auc_maxent@absence))
+        
+        # In addition, I will calculate AUC and ROC for the maxent model using pseudo-absences for comparision purposes
+        if(!(pseudoA)){
+            auc_maxent_ <- dismo::evaluate(p = as.matrix(presence.test), a = as.matrix(absence.test), model = bc.model_, x = dat$bioclim.data)
+            roc_maxent_ <- roc(c(rep(1,nrow(presence.test)), rep(0,nrow(absence.test))), c(auc_maxent_@presence, auc_maxent_@absence))
+        }else{
+            auc_maxent_ <- NULL
+            roc_maxent_ <- NULL
+        }
 
-        return(list(dataset = dataset, model.maxent = bc.model, roc_maxent = roc_maxent))
+        return(list(dataset = dataset, model.maxent = bc.model, roc_maxent = roc_maxent,
+                    auc_pseudoAmaxent=auc_maxent_, roc_pseudoAmaxent=roc_maxent_))
 }
 
