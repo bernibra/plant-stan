@@ -322,6 +322,15 @@ binomial.stan.zeroinflated <- function(d = NULL,idx=128, variables=c("bio5_", "b
         text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
         title("maxent model")
         
+        # Compare maxent with pseudo-absences and stan model
+        par(mfrow=c(2,1))
+        plot(roc_obj, xlim = c(1, 0), asp=NA)
+        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+        title("zero-inflated logistic regression")
+        plot(d$roc_pseudoAmaxent, xlim = c(1, 0), asp=NA)
+        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_pseudoAmaxent))), cex = .8)
+        title("maxent model with pseudo-absences")
+        
         return(list(mfit = mfit_3.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
 }
 
