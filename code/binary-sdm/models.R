@@ -205,9 +205,9 @@ model{
   vector[N] p2;
 
   //priors
-  alpha1 ~ normal(0,1);
-  alpha2 ~ normal(0,1);
-  beta ~ normal(0,1);
+  alpha1 ~ normal(0,1.3);
+  alpha2 ~ normal(-1,0.3);
+  beta ~ normal(0,0.5);
   
   for (i in 1:N) {
      p1[i] = alpha1;
