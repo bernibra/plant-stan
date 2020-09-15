@@ -1,9 +1,11 @@
-source("./sdm-maxent.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
 library(gtools)
 library(pROC)
+library(raster)
+library(shinystan)
+library(dismo)
 
 ####
 ## Run poisson models for number of species per site
@@ -13,9 +15,10 @@ library(pROC)
 projection <- "+proj=somerc +init=world:CH1903"
 
 # Prepare all the data for the poission regressions
-prepare.data <- function(variables=c("bio5_", "bio6_","bio12_")){
+prepare.data <- function(variables=c("bio5_", "bio6_","bio12_"), test=F){
         # Load site data
-        d <- read.csv("../../data/properties/codes/places_codes.csv", header = T)
+        d <- read.csv("../../results/poisson/data/places_traits.csv", header = T)
+        d <- d[d$richness>2,]
         
         # Load environmental data
         files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
@@ -29,13 +32,32 @@ prepare.data <- function(variables=c("bio5_", "bio6_","bio12_")){
         
         # standarize variables
         for(i in 1:ncol(bio)){bio[,i] <- scale(bio[,i])}
-        return(list(dat=d, bio=bio))
+        
+        if(test){
+                testing.group <- 1
+                g <- kfold(1:length(d$richness), k=4)
+                
+                d.test <- d[g==1,]
+                d.train <- d[g!=1,]
+                bio.test <- bio[g==1,]
+                bio.train <- bio[g!=1,]
+        }else{
+                d.test <- d
+                d.train <- d
+                bio.test <- bio
+                bio.train <- bio
+        }
+        
+        return(list(dat=d.train, bio=bio.train, dat.test=d.test, bio.test=bio.test))
 }
 
 # This first one is just a poisson regression, where all "variables" are used as predictors in a linear form.
-poisson.stan.neutral <- function(variables=c("bio5_", "bio6_","bio12_")){
-        
-        d <- prepare.data(variables = variables)
+poisson.stan.neutral <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"),  test=T){
+
+        # Load the data
+        if(is.null(d)){
+            d <- prepare.data(variables = variables, test=test)
+        }
         
         # create dataset for the model
         dat_1.0 <- list(N=length(d$dat$richness),
@@ -61,74 +83,47 @@ poisson.stan.neutral <- function(variables=c("bio5_", "bio6_","bio12_")){
                            init=init_1.0 , control = list(adapt_delta = 0.95))
         
         # Make sure that priors produce sensible expectations. For example, higher sigmas will produce overrepresenation of ones and zeros.
-        priors <- function(bio, mean=0, sigma=1){
-                N <- dim(bio)[1]
-                K <- 100
-                p <- matrix(0,K,N)
-                for(j in 1:K){
-                        for(i in 1:N){
-                                p[j, i] <- inv.logit(rnorm(n = 1, mean = mean, sd = sigma) + sum(bio[i,] * rnorm(n = 3, mean = mean, sd = sigma)))
-                        }
-                }
-                
-                # # The same can be done much more efficiently
-                # K <- 1000
-                # L <- dim(bio)[2]
-                # p <- as.matrix(bio) %*% matrix(rnorm(n = L*K, mean = mean, sd = sigma), nrow = L, ncol = K)
-                # p <- inv.logit(t(p + rnorm(n=K, mean = mean, sd = sigma)[col(p)]))
-                
-                dens(as.vector(p))
-        }
+        dens(exp(rnorm(n = 1e5, mean = 3,sd = 0.5)))
+        
+        # Extract posterior samples
+        post <- extract.samples(mfit_1.0)
+        bio <- d$bio.test
         
         # Build link function to make predictions        
-        link_1.1 <- function(dat, post){
-                N <- dim(post$alpha)[1]
-                M <- nrow(dat)
-                K <- ncol(dat)
-                beta <- t(post$beta)
-                
-                p <- as.matrix(dat) %*% beta
-                p <- inv.logit(t(p + as.matrix(post$alpha)[col(p)]))
+        my_link <- function(bio, post){
+                p <- as.matrix(bio) %*% matrix(0,ncol(bio),length(post$alpha))
+                p <- exp(t(p + as.matrix(post$alpha)[col(p)]))
                 return(p)
         }
         
-        # Extract test data from the dataset
-        obs <- d$dataset$obs[!(training.data)]
-        dat <- d$dataset[!(training.data),3:ncol(d$dataset)]
-        
-        # Sample from the posterior
-        post <- extract.samples(mfit_1.1)
-        
-        # Make predictions with test data
-        p_post <- link_1.1(post = post, dat=dat)
+        # Predict new points
+        p_post <- my_link(post = post, bio=bio)
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the estimates
-        plot(precis(mfit_1.1,depth=2))
-        
-        # Calculate AUC and stuff
-        roc_obj <- roc(obs, p_mu)
-        auc_obj <- auc(roc_obj)
-        
-        # Compare maxent and stan model
+        # Visualize predictions
         par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("regular logistic regression")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
+        plot(p_mu, d$dat.test$richness, type="p", ylab="real", xlab="prediction",
+             ylim=c(0, max(d$dat.test$richness)), xlim=c(0, max(d$dat.test$richness)))
+        for(i in 1:length(p_mu)){
+                lines(c(p_ci[1,i], p_ci[2,i]), c(d$dat.test$richness[i], d$dat.test$richness[i]),col=rangi2)
+        }
+        lines(c(0, max(d$dat.test$richness)), c(0, max(d$dat.test$richness)), lty=2)
         
-        return(list(mfit = mfit_1.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        plot(precis(mfit_1.0, pars = "beta", depth = 2))
+
+        return(list(mfit = mfit_1.0,d=d))
 }
 
 
 
 # This first one is just a poisson regression, where all "variables" are used as predictors in a linear form.
-poisson.stan.environment <- function(variables=c("bio5_", "bio6_","bio12_"), loglik=F){
+poisson.stan.environment <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"), test=T){
         
-        d <- prepare.data(variables = variables)
+        # Load the data
+        if(is.null(d)){
+                d <- prepare.data(variables = variables, test=test)
+        }
         
         # create dataset for the model
         dat_1.1 <- list(N=length(d$dat$richness),
@@ -155,65 +150,101 @@ poisson.stan.environment <- function(variables=c("bio5_", "bio6_","bio12_"), log
                            warmup=1000, iter=4000,
                            init=init_1.1 , control = list(adapt_delta = 0.95))
 
-        # Make sure that priors produce sensible expectations. For example, higher sigmas will produce overrepresenation of ones and zeros.
-        priors <- function(bio, mean=0, sigma=1){
-                N <- dim(bio)[1]
-                K <- 100
-                p <- matrix(0,K,N)
-                for(j in 1:K){
-                        for(i in 1:N){
-                                p[j, i] <- inv.logit(rnorm(n = 1, mean = mean, sd = sigma) + sum(bio[i,] * rnorm(n = 3, mean = mean, sd = sigma)))
-                        }
-                }
-                
-                # # The same can be done much more efficiently
-                # K <- 1000
-                # L <- dim(bio)[2]
-                # p <- as.matrix(bio) %*% matrix(rnorm(n = L*K, mean = mean, sd = sigma), nrow = L, ncol = K)
-                # p <- inv.logit(t(p + rnorm(n=K, mean = mean, sd = sigma)[col(p)]))
-                
-                dens(as.vector(p))
-        }
-
+        # Extract posterior samples
+        post <- extract.samples(mfit_1.1)
+        bio <- d$bio.test
+        
         # Build link function to make predictions        
-        link_1.1 <- function(dat, post){
-                N <- dim(post$alpha)[1]
-                M <- nrow(dat)
-                K <- ncol(dat)
+        my_link <- function(bio, post){
                 beta <- t(post$beta)
-                
-                p <- as.matrix(dat) %*% beta
-                p <- inv.logit(t(p + as.matrix(post$alpha)[col(p)]))
+                p <- as.matrix(bio) %*% beta
+                p <- exp(t(p + as.matrix(post$alpha)[col(p)]))
+                # outputMatrix <- rpois(length(p), p)
+                # dim(outputMatrix) <- dim(p)
                 return(p)
         }
         
-        # Extract test data from the dataset
-        obs <- d$dataset$obs[!(training.data)]
-        dat <- d$dataset[!(training.data),3:ncol(d$dataset)]
-        
-        # Sample from the posterior
-        post <- extract.samples(mfit_1.1)
-        
-        # Make predictions with test data
-        p_post <- link_1.1(post = post, dat=dat)
+        # Predict new points
+        p_post <- my_link(post = post, bio=bio)
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the estimates
-        plot(precis(mfit_1.1,depth=2))
-        
-        # Calculate AUC and stuff
-        roc_obj <- roc(obs, p_mu)
-        auc_obj <- auc(roc_obj)
-        
-        # Compare maxent and stan model
+        # Visualize predictions
         par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("regular logistic regression")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
+        plot(p_mu, d$dat.test$richness, type="p", ylab="real", xlab="prediction",
+             ylim=c(0, max(d$dat.test$richness)), xlim=c(0, max(d$dat.test$richness)))
+        for(i in 1:length(p_mu)){
+             lines(c(p_ci[1,i], p_ci[2,i]), c(d$dat.test$richness[i], d$dat.test$richness[i]),col=rangi2)
+        }
+        lines(c(0, max(d$dat.test$richness)), c(0, max(d$dat.test$richness)), lty=2)
         
-        return(list(mfit = mfit_1.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        plot(precis(mfit_1.1, pars = "beta", depth = 2))
+        
+        return(list(mfit = mfit_1.1, d))
+}
+
+# This first one is just a poisson regression, where all "variables" are used as predictors in a linear form.
+poisson.stan.EandD <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"), test=T){
+        
+        # Load the data
+        if(is.null(d)){
+                d <- prepare.data(variables = variables, test=test)
+        }
+        
+        # create dataset for the model
+        dat_1.1 <- list(N=length(d$dat$richness),
+                        K=length(variables),
+                        sp=as.numeric(d$dat$richness),
+                        bio=d$bio)
+        
+        # Set starting values for the parameters
+        start_1.1 <- list(
+                alpha = 3,
+                beta = rep(0,length(variables))
+        )
+        
+        # Initialize data structure
+        n_chains_1.1 <- 3
+        init_1.1 <- list()
+        for ( i in 1:n_chains_1.1 ) init_1.1[[i]] <- start_1.1
+        
+        # Run stan model
+        mfit_1.1 <- stan ( model_code=model1.1 ,
+                           data=dat_1.1 ,
+                           chains=n_chains_1.1 ,
+                           cores= n_chains_1.1 ,
+                           warmup=1000, iter=4000,
+                           init=init_1.1 , control = list(adapt_delta = 0.95))
+        
+        # Extract posterior samples
+        post <- extract.samples(mfit_1.1)
+        bio <- d$bio.test
+        
+        # Build link function to make predictions        
+        my_link <- function(bio, post){
+                beta <- t(post$beta)
+                p <- as.matrix(bio) %*% beta
+                p <- exp(t(p + as.matrix(post$alpha)[col(p)]))
+                # outputMatrix <- rpois(length(p), p)
+                # dim(outputMatrix) <- dim(p)
+                return(p)
+        }
+        
+        # Predict new points
+        p_post <- my_link(post = post, bio=bio)
+        p_mu <- apply( p_post , 2 , mean )
+        p_ci <- apply( p_post , 2 , PI )
+        
+        # Visualize predictions
+        par(mfrow=c(2,1))
+        plot(p_mu, d$dat.test$richness, type="p", ylab="real", xlab="prediction",
+             ylim=c(0, max(d$dat.test$richness)), xlim=c(0, max(d$dat.test$richness)))
+        for(i in 1:length(p_mu)){
+                lines(c(p_ci[1,i], p_ci[2,i]), c(d$dat.test$richness[i], d$dat.test$richness[i]),col=rangi2)
+        }
+        lines(c(0, max(d$dat.test$richness)), c(0, max(d$dat.test$richness)), lty=2)
+        
+        plot(precis(mfit_1.1, pars = "beta", depth = 2))
+        
+        return(list(mfit = mfit_1.1, d))
 }

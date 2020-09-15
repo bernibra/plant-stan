@@ -26,13 +26,12 @@ model{
 }
 generated quantities{
     vector[N] log_lik;
-    vector[N] y_test;
+    vector[N] p;
 
     for ( i in 1:N ) {
-         y_test[i] = alpha;
-         y_test[i] = exp(y_test[i]);
-         log_lik[i] = poisson_lpmf(sp[i] | y_test[i]);
-         y_test[i] = poisson_rng(y_test[i]);
+         p[i] = alpha;
+         p[i] = exp(p[i]);
+         log_lik[i] = poisson_lpmf(sp[i] | p[i]);
     }
 }
 "
@@ -55,7 +54,7 @@ model{
 
   //priors
   alpha ~ normal(3,0.5);
-  beta ~ normal(0,1);
+  beta ~ normal(0,0.5);
   
   for (i in 1:N) {
      p[i] = alpha;
