@@ -80,7 +80,7 @@ binomial.stan <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_
                 
                 dens(as.vector(p))
         }
-
+        
         # Build link function to make predictions        
         link_1.1 <- function(dat, post){
                 N <- dim(post$alpha)[1]
