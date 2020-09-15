@@ -31,7 +31,7 @@ prepare.data <- function(idx=1, variables = c("bio5_", "bio6_","bio12_")){
         files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
         files <- files[grepl(paste(variables,collapse="|"), files)]
         bioclim.data <- stack(files)
-        crs(bioclim.data)<-"+proj=somerc +init=world:CH1903"
+        crs(bioclim.data)<-projection
         
         # # Crop bioclim data to geographic extent of saguaro
         # bioclim.data <- crop(x = bioclim.data, y = geographic.extent)
