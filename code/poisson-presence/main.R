@@ -15,13 +15,13 @@ library(dismo)
 projection <- "+proj=somerc +init=world:CH1903"
 
 # Prepare all the data for the poission regressions
-prepare.data <- function(variables=c("bio5_", "bio6_","bio12_"), test=F){
+prepare.data <- function(variables=c("bio5_", "bio6_","bio12_"), type="traits", test=F){
         # Load site data
-        d <- read.csv("../../results/poisson/data/places_traits.csv", header = T)
+        d <- read.csv(paste("../../results/poisson/data/places_", type,".csv", sep=""), header = T)
         d <- d[d$richness>2,]
         
         # Load environmental data
-        files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
+        files <- list.files(path="../../../plant-stan/data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
         files <- files[grepl(paste(variables,collapse="|"), files)]
         bioclim.data <- stack(files)
         crs(bioclim.data)<-projection
@@ -180,50 +180,54 @@ poisson.stan.environment <- function(d=NULL, variables=c("bio5_", "bio6_","bio12
         
         plot(precis(mfit_1.1, pars = "beta", depth = 2))
         
-        return(list(mfit = mfit_1.1, d))
+        return(list(d=d, mfit = mfit_1.1, d))
 }
 
 # This first one is just a poisson regression, where all "variables" are used as predictors in a linear form.
-poisson.stan.EandD <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"), test=T){
+poisson.stan.EandD <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"), test=T, type="traits"){
         
         # Load the data
         if(is.null(d)){
-                d <- prepare.data(variables = variables, test=test)
+                d <- prepare.data(variables = variables, test=test, type = type)
         }
         
+        allmu <- c(d$dat$mu, d$dat.test$mu)
         # create dataset for the model
-        dat_1.1 <- list(N=length(d$dat$richness),
+        dat_1.2 <- list(N=length(d$dat$richness),
                         K=length(variables),
                         sp=as.numeric(d$dat$richness),
+                        mu=(d$dat$mu-mean(allmu))/sd(allmu),
                         bio=d$bio)
         
         # Set starting values for the parameters
-        start_1.1 <- list(
+        start_1.2 <- list(
                 alpha = 3,
                 beta = rep(0,length(variables))
         )
         
         # Initialize data structure
-        n_chains_1.1 <- 3
-        init_1.1 <- list()
-        for ( i in 1:n_chains_1.1 ) init_1.1[[i]] <- start_1.1
+        n_chains_1.2 <- 3
+        init_1.2 <- list()
+        for ( i in 1:n_chains_1.2 ) init_1.2[[i]] <- start_1.2
         
         # Run stan model
-        mfit_1.1 <- stan ( model_code=model1.1 ,
-                           data=dat_1.1 ,
-                           chains=n_chains_1.1 ,
-                           cores= n_chains_1.1 ,
+        mfit_1.2 <- stan ( model_code=model1.2 ,
+                           data=dat_1.2 ,
+                           chains=n_chains_1.2 ,
+                           cores= n_chains_1.2 ,
                            warmup=1000, iter=4000,
-                           init=init_1.1 , control = list(adapt_delta = 0.95))
+                           init=init_1.2 , control = list(adapt_delta = 0.95))
         
         # Extract posterior samples
-        post <- extract.samples(mfit_1.1)
+        post <- extract.samples(mfit_1.2)
         bio <- d$bio.test
+        mu <- (d$dat.test$mu-mean(allmu))/sd(allmu)
         
         # Build link function to make predictions        
-        my_link <- function(bio, post){
-                beta <- t(post$beta)
-                p <- as.matrix(bio) %*% beta
+        my_link <- function(bio, post, mu){
+                beta <- t(cbind(post$beta, post$gamma))
+
+                p <- cbind(as.matrix(bio), as.matrix(mu)) %*% beta
                 p <- exp(t(p + as.matrix(post$alpha)[col(p)]))
                 # outputMatrix <- rpois(length(p), p)
                 # dim(outputMatrix) <- dim(p)
@@ -231,7 +235,7 @@ poisson.stan.EandD <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"), t
         }
         
         # Predict new points
-        p_post <- my_link(post = post, bio=bio)
+        p_post <- my_link(post = post, bio=bio, mu = mu)
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
@@ -244,7 +248,7 @@ poisson.stan.EandD <- function(d=NULL, variables=c("bio5_", "bio6_","bio12_"), t
         }
         lines(c(0, max(d$dat.test$richness)), c(0, max(d$dat.test$richness)), lty=2)
         
-        plot(precis(mfit_1.1, pars = "beta", depth = 2))
+        plot(precis(mfit_1.2, pars = c("beta", "gamma"), depth = 2))
         
-        return(list(mfit = mfit_1.1, d))
+        return(list(d = d, mfit = mfit_1.2, d))
 }
