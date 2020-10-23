@@ -449,3 +449,116 @@ binomial.stan.zeroinflated.quadratic <- function(d = NULL,idx=128, variables=c("
         
         return(list(mfit = mfit_4.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
 }
+
+
+# This third one is also just a logistic regression, but in this case we add something that is much better than a
+# quadratic term. Instead, we add a spline so that we find an optimal environment value and standard deviation from that mean value
+# NOTE: while I like this option, it does not do very well. I am not sure why... but I like it for incorporating information about traits.
+binomial.stan.gaussian <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F){
+        if(pseudoA){
+                warning("This will take quite some time to run.\n Unless you are running this on the cluster, I would think twice before wasting time on a model with stupid quadratic terms.")
+        }
+        
+        # Load the data. This function will run maxent, but also process all the data for our stan model
+        # The idea is that we can then compare the estimates from maxent and the estimates from our linear model
+        # pseudoA defines whether or not we use pseudo absences or actual abasences.
+        if(is.null(d)){
+                d <- species_distribution.maxent(idx = idx, view_plots = F, variables=variables, pseudoA = pseudoA)                
+        }
+        
+        # Prepare training data for stan model
+        training.data <- d$dataset$train==1
+        obs <- d$dataset$obs[training.data]
+        bio <- d$dataset[training.data,3:ncol(d$dataset)]
+
+        # Estimate posterior distributions using rstan
+        # Define variables of the model
+        dat_5.0 <- list(N=length(obs),
+                        K=length(variables),
+                        obs=obs,
+                        bio=bio)
+        
+        # Set starting values for the parameters
+        start_5.0 <- list(
+                alpha = 0,
+                mu_bar = rep(0,length(variables)),
+                beta = rep(0,length(variables)),
+                epsilon = rep(1,length(variables))
+        )
+        
+        # Initialize data structure
+        n_chains_5.0 <- 3
+        init_5.0 <- list()
+        for ( i in 1:n_chains_5.0 ) init_5.0[[i]] <- start_5.0
+        
+        # Should I calculate the likelihood?
+        if(loglik){
+                model_code=model5.0
+        }else{
+                model_code=model5.0     
+        }
+        
+        # Run stan model
+        mfit_5.0 <- stan ( model_code=model_code ,
+                           data=dat_5.0 ,
+                           chains=n_chains_5.0 ,
+                           cores= n_chains_5.0 ,
+                           warmup=1000, iter=4000,
+                           init=init_5.0 , control = list(adapt_delta = 0.95))
+        
+        priors <- function(bio, sigma1=1, sigma2=0.5){
+                N <- dim(bio)[1]
+                K <- 1000
+                L <- dim(bio)[2]
+                
+                p <- as.matrix(bio) %*% matrix(rnorm(n = L*K, mean = mean, sd = sigma1), nrow = L, ncol = K)
+                p <- p + as.matrix(bio**2) %*% matrix(rnorm(n = L*K, mean = mean, sd = sigma2), nrow = L, ncol = K)
+                p <- inv.logit(t(p + rnorm(n=K, mean = mean, sd = sigma1)[col(p)]))
+                
+                dens(as.vector(p))
+        }
+        
+        # Build link function to make predictions        
+        link_5.0 <- function(dat, post){
+                p <- 0
+                for(k in 1:dim(dat)[2]){
+                   a <- as.matrix(dat[,k])
+                   b <- t(post$mu_bar[,k])
+                   c <- t(post$epsilon[,k])
+                   d <- t(post$beta[,k])
+                   p <- p + d[col(a)] * exp(-0.5*((a[,row(b)] - b[col(a), ])/c[col(a), ])**2)
+                }
+                p <- inv.logit(t(p + as.matrix(post$alpha)[col(p)]))
+                
+                return(p)
+        }
+        
+        # Extract test data from the dataset
+        obs <- d$dataset$obs[!(training.data)]
+        dat <- d$dataset[!(training.data),3:ncol(d$dataset)]
+        
+        # Sample from the posterior
+        post <- extract.samples(mfit_5.0)
+        
+        # Make predictions with test data
+        p_post <- link_5.0(post = post, dat=dat)
+        p_mu <- apply( p_post , 2 , mean )
+        p_ci <- apply( p_post , 2 , PI )
+        
+        # Have a look at the different posteriors
+        plot(precis(mfit_5.0,depth=2))
+        
+        # Calculate AUC and stuff
+        roc_obj <- roc(obs, p_mu)
+        auc(roc_obj)
+        
+        # Compare maxent and stan model
+        par(mfrow=c(2,1))
+        plot(roc_obj, xlim = c(1, 0), asp=NA)
+        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+        title("logistic regression with gaussian RBF")
+        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
+        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
+        title("maxent model")
+        return(list(mfit = mfit_5.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+}

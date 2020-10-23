@@ -274,3 +274,62 @@ model{
 }
 "
 
+# Model 5.0 is a logistic regression with a non-linear form (radial spline) for the different predictors
+# where I do generate log-odds values so I can calculate WAIC directly
+model5.0 <- "
+functions{
+  real radial(real x, real mu, real epsilon, real beta) {
+    real K;
+    K = x - mu;
+    K = K/epsilon;
+    K = pow(K, 2);
+    K = exp(-0.5*K);
+    K = beta * K;
+    return K;
+  }
+}
+data{
+  int N;
+  int K;
+  int obs[N];
+  real bio[N,K];
+}
+parameters{
+  real alpha;
+  vector[K] mu_bar;
+  vector[K] beta;
+  real<lower=0> epsilon[K];
+}
+model{
+  vector[N] p;
+
+  //priors
+  alpha ~ normal(0,1);
+  mu_bar ~ normal(0,1);
+  beta ~ normal(0,1);
+  epsilon ~ exponential( 1 );
+  
+  for (i in 1:N) {
+     p[i] = alpha;
+     for (j in 1:K){
+          p[i] = p[i] + radial(bio[i, j], mu_bar[j], epsilon[j], beta[j]);
+     }
+     p[i] = inv_logit(p[i]);
+  }
+  
+  obs ~ binomial(1, p);
+}
+generated quantities{
+    vector[N] log_lik;
+    vector[N] p;
+    
+    for (i in 1:N) {
+      p[i] = alpha;
+      for (j in 1:K){
+          p[i] = p[i] + radial(bio[i, j], mu_bar[j], epsilon[j], beta[j]);
+      }
+      p[i] = inv_logit(p[i]);
+      log_lik[i] = binomial_lpmf(obs[i] | 1, p[i]);
+    }
+}
+"
