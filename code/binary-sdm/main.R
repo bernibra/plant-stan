@@ -11,10 +11,11 @@ library(pROC)
 # - Binomial regression with quadratic terms.
 # - Zero-inflated binomial regression.
 # - Zero-inflated binomial regression with quadratic terms.
+# - Binomial regression with gaussian RBFs.
 ####
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F){
+binomial.stan <- function(d = NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F, show.plot=T, ofolder="../../results/models/"){
         
         # Load the data. This function will run maxent, but also process all the data for our stan model
         # The idea is that we can then compare the estimates from maxent and the estimates from our linear model
@@ -72,12 +73,6 @@ binomial.stan <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_
                         }
                 }
                 
-                # # The same can be done much more efficiently
-                # K <- 1000
-                # L <- dim(bio)[2]
-                # p <- as.matrix(bio) %*% matrix(rnorm(n = L*K, mean = mean, sd = sigma), nrow = L, ncol = K)
-                # p <- inv.logit(t(p + rnorm(n=K, mean = mean, sd = sigma)[col(p)]))
-                
                 dens(as.vector(p))
         }
         
@@ -105,27 +100,31 @@ binomial.stan <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the estimates
-        plot(precis(mfit_1.1,depth=2))
-        
         # Calculate AUC and stuff
         roc_obj <- roc(obs, p_mu)
         auc_obj <- auc(roc_obj)
         
-        # Compare maxent and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("regular logistic regression")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
+        if (show.plot){
+                # Have a look at the estimates
+                plot(precis(mfit_1.1,depth=2))
+                
+                # Compare maxent and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("regular logistic regression")
+                plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
+                title("maxent model")
+        }
         
-        return(list(mfit = mfit_1.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        out.object <- list(mfit = mfit_1.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d)
+        saveRDS(out.object, file = paste(ofolder, "sdm-binomial.rds", sep=""))
+        return(out.object)
 }
 
 # This second one is also just a logistic regression, but in this case we add fucking quadratic terms to the regression.
-binomial.stan.quadratic <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F){
+binomial.stan.quadratic <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F, show.plot=T, ofolder="../../results/models/"){
         if(pseudoA){
                 warning("This will take quite some time to run.\n Unless you are running this on the cluster, I would think twice before wasting time on a model with stupid quadratic terms.")
         }
@@ -213,22 +212,27 @@ binomial.stan.quadratic <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the different posteriors
-        plot(precis(mfit_2.1,depth=2))
-        
         # Calculate AUC and stuff
         roc_obj <- roc(obs, p_mu)
         auc(roc_obj)
         
-        # Compare maxent and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("logistic regression with quadratic terms")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
-        return(list(mfit = mfit_2.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        if(show.plot){
+                # Have a look at the different posteriors
+                plot(precis(mfit_2.1,depth=2))
+                
+                # Compare maxent and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("logistic regression with quadratic terms")
+                plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
+                title("maxent model")
+        }
+
+        out.object <- list(mfit = mfit_2.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d)
+        saveRDS(out.object, file = paste(ofolder, "sdm-binomial-quadratic.rds", sep=""))
+        return(out.object)
 }
 
 # This model is a bit more interesting. This is a zero-inflated binommial distribution.
@@ -237,7 +241,7 @@ binomial.stan.quadratic <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_
 # The aim of a zero-inflated model here is to avoid having to use pseudo-absences. When adding quadratic terms, it seems
 # to do the trick (see below). That said, some posterior distributions swing around quite a lot, which could mean that there is a fair bit of overfitting as well as
 # correlations across predictor variables.
-binomial.stan.zeroinflated <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F){
+binomial.stan.zeroinflated <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F, show.plot=T, ofolder="../../results/models/"){
         
         # Load the data. This function will run maxent, but also process all the data for our stan model
         # The idea is that we can then compare the estimates from maxent and the estimates from our linear model
@@ -310,32 +314,36 @@ binomial.stan.zeroinflated <- function(d = NULL,idx=128, variables=c("bio5_", "b
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the estimates
-        plot(precis(mfit_3.0,depth=2))
-        
         # Calculate AUC and stuff
         roc_obj <- roc(obs, p_mu)
         auc_obj <- auc(roc_obj)
         
-        # Compare maxent and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("zero-inflated logistic regression")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
+        if(show.plot){
+                # Have a look at the estimates
+                plot(precis(mfit_3.0,depth=2))
+                
+                # Compare maxent and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("zero-inflated logistic regression")
+                plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
+                title("maxent model")
+                
+                # Compare maxent with pseudo-absences and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("zero-inflated logistic regression")
+                plot(d$roc_pseudoAmaxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_pseudoAmaxent))), cex = .8)
+                title("maxent model with pseudo-absences")
+        }
         
-        # Compare maxent with pseudo-absences and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("zero-inflated logistic regression")
-        plot(d$roc_pseudoAmaxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_pseudoAmaxent))), cex = .8)
-        title("maxent model with pseudo-absences")
-        
-        return(list(mfit = mfit_3.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        out.object <- list(mfit = mfit_3.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d)
+        saveRDS(out.object, file = paste(ofolder, "sdm-binomial-zeroinflated.rds", sep=""))
+        return(out.object)
 }
 
 # This model is a bit more interesting. This is a zero-inflated binommial distribution with quadratic terms.
@@ -344,7 +352,7 @@ binomial.stan.zeroinflated <- function(d = NULL,idx=128, variables=c("bio5_", "b
 # The aim of a zero-inflated model here is to avoid having to use pseudo-absences. When adding quadratic terms, it seems
 # to do the trick. That said, some posterior distributions swing around quite a lot, which could mean that there is a fair bit of overfitting as well as
 # correlations across predictor variables.
-binomial.stan.zeroinflated.quadratic <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F){
+binomial.stan.zeroinflated.quadratic <- function(d = NULL,idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F, show.plot=T, ofolder="../../results/models/"){
         if(pseudoA){
                 warning("This will take quite some time to run.\n Unless you are running this on the cluster, I would think twice before wasting time on a model with stupid quadratic terms.")
         }
@@ -422,39 +430,43 @@ binomial.stan.zeroinflated.quadratic <- function(d = NULL,idx=128, variables=c("
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the estimates
-        plot(precis(mfit_4.0,depth=2))
-        
         # Calculate AUC and stuff
         roc_obj <- roc(obs, p_mu)
         auc_obj <- auc(roc_obj)
         
-        # Compare maxent and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("zero-inflated logistic regression")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
-        
-        # Compare maxent with pseudo-absences and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("zero-inflated logistic regression")
-        plot(d$roc_pseudoAmaxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_pseudoAmaxent))), cex = .8)
-        title("maxent model with pseudo-absences")
-        
-        return(list(mfit = mfit_4.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        if(show.plot){
+                # Have a look at the estimates
+                plot(precis(mfit_4.0,depth=2))
+                
+                # Compare maxent and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("zero-inflated logistic regression")
+                plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
+                title("maxent model")
+                
+                # Compare maxent with pseudo-absences and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("zero-inflated logistic regression")
+                plot(d$roc_pseudoAmaxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_pseudoAmaxent))), cex = .8)
+                title("maxent model with pseudo-absences")
+        }
+                
+        out.object <- list(mfit = mfit_4.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d)
+        saveRDS(out.object, file = paste(ofolder, "sdm-binomial-zeroinflated-quadratic.rds", sep=""))
+        return(out.object)
 }
 
 
 # This third one is also just a logistic regression, but in this case we add something that is much better than a
 # quadratic term. Instead, we add a spline so that we find an optimal environment value and standard deviation from that mean value
 # NOTE: while I like this option, it does not do very well. I am not sure why... but I like it for incorporating information about traits.
-binomial.stan.gaussian <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F){
+binomial.stan.gaussian <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F, show.plot=T, ofolder="../../results/models/"){
         if(pseudoA){
                 warning("This will take quite some time to run.\n Unless you are running this on the cluster, I would think twice before wasting time on a model with stupid quadratic terms.")
         }
@@ -545,20 +557,25 @@ binomial.stan.gaussian <- function(d=NULL, idx=128, variables=c("bio5_", "bio6_"
         p_mu <- apply( p_post , 2 , mean )
         p_ci <- apply( p_post , 2 , PI )
         
-        # Have a look at the different posteriors
-        plot(precis(mfit_5.0,depth=2))
-        
         # Calculate AUC and stuff
         roc_obj <- roc(obs, p_mu)
         auc(roc_obj)
         
-        # Compare maxent and stan model
-        par(mfrow=c(2,1))
-        plot(roc_obj, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-        title("logistic regression with gaussian RBF")
-        plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-        text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-        title("maxent model")
-        return(list(mfit = mfit_5.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d))
+        if(show.plot){
+                # Have a look at the different posteriors
+                plot(precis(mfit_5.0,depth=2))
+                
+                # Compare maxent and stan model
+                par(mfrow=c(2,1))
+                plot(roc_obj, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
+                title("logistic regression with gaussian RBF")
+                plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
+                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
+                title("maxent model")
+        }
+
+        out.object <- list(mfit = mfit_5.0, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d)
+        saveRDS(out.object, file = paste(ofolder, "sdm-binomial-gaussian.rds", sep=""))
+        return(out.object)
 }
