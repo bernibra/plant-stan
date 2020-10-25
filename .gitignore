@@ -44,3 +44,7 @@ data/properties
 
 # Remove mac shit
 .DS_Store
+
+# Heavy results
+results/models
+
