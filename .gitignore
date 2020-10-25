@@ -46,5 +46,5 @@ data/properties
 .DS_Store
 
 # Heavy results
-results/models
+results/models/*.rds
 
