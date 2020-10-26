@@ -1,9 +1,7 @@
-source("./sdm-maxent.R")
-source("./models.R")
+source("./prepare-data.R")
+# source("./models.R")
 library(rethinking)
 library(rstan)
-library(gtools)
-
 
 ####
 ## Run species distribution model for all species. I wrote the following models:
@@ -11,7 +9,7 @@ library(gtools)
 ####
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan <- function(d = NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, ofolder="../../results/models/"){
+binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, ofolder="../../results/models/"){
         
         # Load the data
         if(is.null(d)){
