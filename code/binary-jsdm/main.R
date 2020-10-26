@@ -43,3 +43,6 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
         saveRDS(m1, file = paste(ofolder, "model1.rds", sep=""))
         return(m1)
 }
+
+binomial.stan(recompile = T, ofolder="/cluster/scratch/plant-stan/")
+
