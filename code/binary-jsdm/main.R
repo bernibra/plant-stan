@@ -3,7 +3,7 @@ source("./models.R")
 library(rethinking)
 library(rstan)
 library(gtools)
-library(pROC)
+
 
 ####
 ## Run species distribution model for all species. I wrote the following models:
@@ -11,110 +11,37 @@ library(pROC)
 ####
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan <- function(d = NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), pseudoA=F, loglik=F, show.plot=T, ofolder="../../results/models/"){
+binomial.stan <- function(d = NULL, idx=128, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, ofolder="../../results/models/"){
         
-        # Load the data. This function will run maxent, but also process all the data for our stan model
-        # The idea is that we can then compare the estimates from maxent and the estimates from our linear model
-        # pseudoA defines whether or not we use pseudo absences or actual abasences.
+        # Load the data
         if(is.null(d)){
-                d <- species_distribution.maxent(idx = idx, view_plots = F, variables=variables, pseudoA = pseudoA)                
+                if(recompile){
+                       d <- species_distribution.data(variables=variables)
+                       saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                }else{
+                       d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                }
         }
 
         # Prepare training data for stan model
-        training.data <- d$dataset$train==1
-        obs <- d$dataset$obs[training.data]
-        bio <- d$dataset[training.data,3:ncol(d$dataset)]
+        obs <- d$obs
+        id <- d$id
+        bio <- d[,6:ncol(d)]
         
-        # Estimate posterior distributions using rstan
-        # Define variables of the model
-        dat_1.1 <- list(N=length(obs),
-                        K=length(variables),
-                        obs=obs,
-                        bio=bio)
+        dat <- list(obs=obs, id=id, bio1=bio$bio12_p_8110, bio2=bio$bio5_tmaxw_8110, K=length(unique(id)))
         
-        # Set starting values for the parameters
-        start_1.1 <- list(
-                alpha = 0,
-                beta = rep(0,length(variables))
-        )
+        # Use rethinking package to fit stan model
+        m1 <- ulam(
+                alist(
+                        obs ~ dbinom( 1 , p ),
+                        logit(p) <- alpha[id, 1] + alpha[id, 2] * bio1 + alpha[id, 3] * bio2,
+                        transpars> matrix[K,3]:alpha <- compose_noncentered( rep_vector(sigma_alpha,3) , L_Rho_alpha , z_alpha ),
+                        matrix[3,K]:z_alpha ~ dnorm( 0 , 1),
+                        cholesky_factor_corr[3]:L_Rho_alpha ~ lkj_corr_cholesky( 2 ),
+                        sigma_alpha ~ exponential(1),
+                        gq> matrix[3,3]:Rho_alpha <<- Chol_to_Corr( L_Rho_alpha )
+                ) , data=dat , chains=3,  iter = 3000,  log_lik = T)
         
-        # Initialize data structure
-        n_chains_1.1 <- 3
-        init_1.1 <- list()
-        for ( i in 1:n_chains_1.1 ) init_1.1[[i]] <- start_1.1
-        
-        # Should I calculate the likelihood?
-        if(loglik){
-           model_code=model1.1
-        }else{
-           model_code=model1.0     
-        }
-        
-        # Run stan model
-        mfit_1.1 <- stan ( model_code=model_code ,
-                           data=dat_1.1 ,
-                           chains=n_chains_1.1 ,
-                           cores= n_chains_1.1 ,
-                           warmup=1000, iter=4000,
-                           init=init_1.1 , control = list(adapt_delta = 0.95))
-
-        # Make sure that priors produce sensible expectations. For example, higher sigmas will produce overrepresenation of ones and zeros.
-        priors <- function(bio, mean=0, sigma=1){
-                N <- dim(bio)[1]
-                K <- 100
-                p <- matrix(0,K,N)
-                for(j in 1:K){
-                        for(i in 1:N){
-                                p[j, i] <- inv.logit(rnorm(n = 1, mean = mean, sd = sigma) + sum(bio[i,] * rnorm(n = 3, mean = mean, sd = sigma)))
-                        }
-                }
-                
-                dens(as.vector(p))
-        }
-        
-        # Build link function to make predictions        
-        link_1.1 <- function(dat, post){
-                N <- dim(post$alpha)[1]
-                M <- nrow(dat)
-                K <- ncol(dat)
-                beta <- t(post$beta)
-                
-                p <- as.matrix(dat) %*% beta
-                p <- inv.logit(t(p + as.matrix(post$alpha)[col(p)]))
-                return(p)
-        }
-        
-        # Extract test data from the dataset
-        obs <- d$dataset$obs[!(training.data)]
-        dat <- d$dataset[!(training.data),3:ncol(d$dataset)]
-        
-        # Sample from the posterior
-        post <- extract.samples(mfit_1.1)
-        
-        # Make predictions with test data
-        p_post <- link_1.1(post = post, dat=dat)
-        p_mu <- apply( p_post , 2 , mean )
-        p_ci <- apply( p_post , 2 , PI )
-        
-        # Calculate AUC and stuff
-        roc_obj <- roc(obs, p_mu)
-        auc_obj <- auc(roc_obj)
-        
-        if (show.plot){
-                # Have a look at the estimates
-                plot(precis(mfit_1.1,depth=2))
-                
-                # Compare maxent and stan model
-                par(mfrow=c(2,1))
-                plot(roc_obj, xlim = c(1, 0), asp=NA)
-                text(0.2, 0.2, paste("AUC =", as.character(auc(roc_obj))), cex = .8)
-                title("regular logistic regression")
-                plot(d$roc_maxent, xlim = c(1, 0), asp=NA)
-                text(0.2, 0.2, paste("AUC =", as.character(auc(d$roc_maxent))), cex = .8)
-                title("maxent model")
-        }
-        
-        out.object <- list(mfit = mfit_1.1, roc_obj = roc_obj, roc_maxent = d$roc_maxent, d=d)
-        saveRDS(out.object, file = paste(ofolder, "sdm-binomial.rds", sep=""))
-        return(out.object)
+        saveRDS(m1, file = paste(ofolder, "model1.rds", sep=""))
+        return(m1)
 }
