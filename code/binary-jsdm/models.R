@@ -99,3 +99,50 @@ generated quantities{
 }
 "
 
+# Model 1.1 is a simple logistic regression where I do generate log-odds values so I can calculate WAIC directly, and I am
+# using non-centered priors
+model1.2 <- "
+data{
+  int obs[9120];
+  vector[9120] bio2;
+  vector[9120] bio1;
+  int id[9120];
+}
+parameters{
+  matrix[2,10] z_id;
+  vector[10] alpha;
+  real alpha_bar;
+  real<lower=0> sigma_alpha;
+  cholesky_factor_corr[2] L_Rho_id;
+  vector<lower=0>[2] sigma_id;
+}
+transformed parameters{
+  matrix[10,2] beta;
+  beta = (diag_pre_multiply(sigma_id, L_Rho_id) * z_id)';
+}
+model{
+    vector[9120] p;
+    sigma_id ~ exponential( 1 );
+    L_Rho_id ~ lkj_corr_cholesky( 2 );
+    sigma_alpha ~ exponential( 1 );
+    alpha_bar ~ normal( 0 , 1 );
+    alpha ~ normal( 0 , 1 );
+    to_vector( z_id ) ~ normal( 0 , 1 );
+    for ( i in 1:9120 ) {
+        p[i] = alpha[id[i]] * sigma_alpha + alpha_bar + beta[id[i], 1] * bio1[i] + beta[id[i], 2] * bio2[i];
+        p[i] = inv_logit(p[i]);
+    }
+    obs ~ binomial( 1 , p );
+}
+generated quantities{
+    vector[9120] log_lik;
+    vector[9120] p;
+    matrix[2,2] Rho_id;
+    Rho_id = multiply_lower_tri_self_transpose(L_Rho_id);
+    for ( i in 1:9120 ) {
+        p[i] = alpha[id[i]] * sigma_alpha + alpha_bar + beta[id[i], 1] * bio1[i] + beta[id[i], 2] * bio2[i];
+        p[i] = inv_logit(p[i]);
+    }
+    for ( i in 1:9120 ) log_lik[i] = binomial_lpmf( obs[i] | 1 , p[i] );
+}
+"

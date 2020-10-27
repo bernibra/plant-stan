@@ -9,7 +9,7 @@ library(rstan)
 ####
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=F, ndim=3, ofolder="../../results/models/"){
+binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=F, ndim=2, ofolder="../../results/models/"){
                 
         # Load the data
         if(is.null(d)){
@@ -74,19 +74,22 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
                            warmup=1000, iter=4000,
                            init=init_1.1 , control = list(adapt_delta = 0.95))
         
-        # 
-        # dat <- list(obs=obs, id=id, bio1=bio$bio12_p_8110, bio2=bio$bio5_tmaxw_8110)
+
+        # dat <- list(obs=obs, id=id, bio1=bio$PC1, bio2=bio$PC2)
         # 
         # # Use rethinking package to fit stan model
         # m1 <- ulam(
         #         alist(
         #                 obs ~ dbinom( 1 , p ),
-        #                 logit(p) <- alpha[id, 1] + alpha[id, 2] * bio1 + alpha[id, 3] * bio2,
-        #                 transpars> matrix[id,3]:alpha <- compose_noncentered( sigma_id , L_Rho_id , z_id ),
-        #                 matrix[3,id]:z_id ~ dnorm( 0 , 1),
-        #                 cholesky_factor_corr[3]:L_Rho_id ~ lkj_corr_cholesky( 2 ),
-        #                 vector[3]:sigma_id ~ dexp(1),
-        #                 gq> matrix[3,3]:Rho_id <<- multiply_lower_tri_self_transpose(L_Rho_id)
+        #                 logit(p) <- alpha[id] * sigma_alpha + alpha_bar + beta[id, 1] * bio1 + beta[id, 2] * bio2,
+        #                 transpars> matrix[id,2]:beta <- compose_noncentered( sigma_id , L_Rho_id , z_id ),
+        #                 matrix[2,id]:z_id ~ dnorm( 0 , 1),
+        #                 alpha[id] ~ dnorm(0,1),
+        #                 alpha_bar ~ dnorm(0,1),
+        #                 sigma_alpha ~ dexp(1),
+        #                 cholesky_factor_corr[2]:L_Rho_id ~ lkj_corr_cholesky( 2 ),
+        #                 vector[2]:sigma_id ~ dexp(1),
+        #                 gq> matrix[2,2]:Rho_id <<- multiply_lower_tri_self_transpose(L_Rho_id)
         #         ) , data=dat , chains=3,  iter = 3000,  log_lik = T, cores = 3)
         # 
         # # Use rethinking package to fit stan model
@@ -106,5 +109,5 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
         return(mfit_1.1)
 }
 
-binomial.stan(recompile = F, pca = T, ndim = 3, ofolder="/cluster/scratch/plant-stan/")
+# binomial.stan(recompile = F, pca = T, ndim = 3, ofolder="/cluster/scratch/plant-stan/")
 
