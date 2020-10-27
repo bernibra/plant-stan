@@ -36,6 +36,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
              obs.data_$id <- idx
              obs.data <- rbind(obs.data, obs.data_)
         }
+        
+        obs.data$obs <- 1*(obs.data$abundance>0)
 
         # Load environmental data
         files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
@@ -49,20 +51,30 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
 ####
 # Run species distribution model for a given species
 ####
-species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_")){
+species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_"), pca=F, ndim=2){
+        
+        if(pca){
+                variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")  
+        }
         
         # Load all data
         dat <- prepare.data(variables = variables)
-        dat$obs.data$obs <- 1*(dat$obs.data$abundance>0)
         
         # extract environmental data
         clim <- as.data.frame(raster::extract(dat$bioclim.data,data.frame(easting = dat$obs.data$easting, northing = dat$obs.data$northing)))
-
-        # Prepare full dataset
-        dataset = cbind(dat$obs.data, clim)
+        
+        # Find main axes
+        if(pca){
+                pca.clim <- prcomp(clim, center = TRUE, scale = TRUE) 
+                # Prepare full dataset
+                dataset = cbind(dat$obs.data, pca.clim$x[,c(1:ndim)])
+        }else{
+                # Prepare full dataset
+                dataset = cbind(dat$obs.data, clim)
+        }
         
         # Standarize environmental variables
-        for(i in c(1:ncol(dataset))[-c(1,2,3, 4,5)]){dataset[,i] <- scale(dataset[,i])}
+        for(i in c(1:ncol(dataset))[-c(1,2,3,4,5)]){dataset[,i] <- scale(dataset[,i])}
         
         return(dataset)
 }

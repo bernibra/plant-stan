@@ -9,17 +9,26 @@ library(rstan)
 ####
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, ofolder="../../results/models/"){
-        
+binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=F, ndim=3, ofolder="../../results/models/"){
+                
         # Load the data
         if(is.null(d)){
                 if(recompile){
-                       d <- species_distribution.data(variables=variables)
+                       d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim)
+                       # rename variables
+                       if(pca){
+                               variables <- paste("PC", 1:ndim, sep="")
+                       }
                        saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
                 }else{
+                       # rename variables
+                       if(pca){
+                               variables <- paste("PC", 1:ndim, sep="")
+                       }
                        d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
                 }
         }
+
 
         # Prepare training data for stan model
         obs <- d$obs
@@ -93,9 +102,9 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
         #                 Rho_id ~ lkj_corr(2)
         #         ) , data=dat , chains=3,  iter = 3000,  log_lik = T, cores = 3)
         # 
-        # saveRDS(m2, file = paste(ofolder, "model1.rds", sep=""))
+        saveRDS(mfit_1.1, file = paste(ofolder, "binomial-jsdm.rds", sep=""))
         return(mfit_1.1)
 }
 
-binomial.stan(recompile = T, ofolder="/cluster/scratch/plant-stan/")
+binomial.stan(recompile = F, pca = T, ndim = 3, ofolder="/cluster/scratch/plant-stan/")
 
