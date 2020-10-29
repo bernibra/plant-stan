@@ -11,8 +11,8 @@ data{
     int id[N];
 }
 parameters{
-    vector[L] alpha;
-    real zalpha;
+    vector[L] zalpha;
+    real alpha;
     real<lower=0> sigma_a;
     vector[K] beta[L];
     vector[K] zbeta;
@@ -23,8 +23,8 @@ model{
     vector[N] p;
 
     //priors
-    zalpha ~ normal(0,1.3);
-    alpha ~ normal(0,1);
+    alpha ~ normal(0,1.3);
+    zalpha ~ normal(0,1);
     sigma_a ~ exponential( 1 );
     Rho ~ lkj_corr( 2 );
     sigma_b ~ exponential( 1 );
@@ -32,7 +32,7 @@ model{
     beta ~ multi_normal( zbeta , quad_form_diag(Rho , sigma_b) );
     
     for (i in 1:N) {
-       p[i] = alpha[id[i]] * sigma_a + zalpha;
+       p[i] = zalpha[id[i]] * sigma_a + alpha;
        for (j in 1:K){
           p[i] = p[i] + beta[id[i], j] * bio[i, j];
        }
@@ -54,8 +54,8 @@ data{
     int id[N];
 }
 parameters{
-    vector[L] alpha;
-    real zalpha;
+    vector[L] zalpha;
+    real alpha;
     real<lower=0> sigma_a;
     vector[K] beta[L];
     vector[K] zbeta;
@@ -66,8 +66,8 @@ model{
     vector[N] p;
 
     //priors
-    zalpha ~ normal(0,1.3);
-    alpha ~ normal(0,1);
+    alpha ~ normal(0,1.3);
+    zalpha ~ normal(0,1);
     sigma_a ~ exponential( 1 );
     Rho ~ lkj_corr( 2 );
     sigma_b ~ exponential( 1 );
@@ -75,7 +75,7 @@ model{
     beta ~ multi_normal( zbeta , quad_form_diag(Rho , sigma_b) );
     
     for (i in 1:N) {
-       p[i] = alpha[id[i]] * sigma_a + zalpha;
+       p[i] = zalpha[id[i]] * sigma_a + alpha;
        for (j in 1:K){
           p[i] = p[i] + beta[id[i], j] * bio[i, j];
        }
@@ -89,7 +89,7 @@ generated quantities{
     vector[N] p;
     
     for (i in 1:N) {
-       p[i] = alpha[id[i]] * sigma_a + zalpha;
+       p[i] = zalpha[id[i]] * sigma_a + alpha;
        for (j in 1:K){
           p[i] = p[i] + beta[id[i], j] * bio[i, j];
        }
@@ -102,6 +102,48 @@ generated quantities{
 # Model 1.1 is a simple logistic regression where I do generate log-odds values so I can calculate WAIC directly, and I am
 # using non-centered priors
 model1.2 <- "
+data{
+    int N;
+    int K;
+    int L;
+    int obs[N];
+    real bio[N,K];
+    int id[N];
+}
+parameters{
+    vector[L] zalpha;
+    real alpha;
+    real<lower=0> sigma_a;
+    matrix[2,10] zbeta;
+    vector<lower=0>[K] sigma_b;
+    cholesky_factor_corr[K] L_Rho_b;
+}
+transformed parameters{
+    matrix[L,K] beta;
+    beta = (diag_pre_multiply(sigma_b, L_Rho_b) * zbeta)';
+}
+model{
+    vector[N] p;
+    sigma_b ~ exponential( 1 );
+    L_Rho_b ~ lkj_corr_cholesky( 2 );
+    sigma_a ~ exponential( 1 );
+    zalpha ~ normal( 0 , 1 );
+    alpha ~ normal( 0 , 1.3 );
+    to_vector( z_id ) ~ normal( 0 , 1 );
+    for ( i in 1:9120 ) {
+        p[i] = zalpha[id[i]] * sigma_a + alpha + beta[id[i], 1] * bio1[i] + beta[id[i], 2] * bio2[i];
+        p[i] = inv_logit(p[i]);
+    }
+    obs ~ binomial( 1 , p );
+}
+generated quantities{
+    matrix[2,2] Rho_id;
+    Rho_id = multiply_lower_tri_self_transpose(L_Rho_id);
+}
+"
+
+
+bla <- "
 data{
   int obs[9120];
   vector[9120] bio2;
@@ -145,4 +187,5 @@ generated quantities{
     }
     for ( i in 1:9120 ) log_lik[i] = binomial_lpmf( obs[i] | 1 , p[i] );
 }
+
 "

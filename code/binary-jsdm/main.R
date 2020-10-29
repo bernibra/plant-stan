@@ -1,5 +1,5 @@
-source("./prepare-data.R")
-# source("./models.R")
+# source("./prepare-data.R")
+source("./models.R")
 library(rethinking)
 library(rstan)
 
@@ -9,23 +9,31 @@ library(rstan)
 ####
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=F, ndim=2, ofolder="../../results/models/"){
+binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=T, show.plot=T, pca=F, ndim=2, simulated=F, ofolder="../../results/models/"){
                 
         # Load the data
         if(is.null(d)){
                 if(recompile){
-                       d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim)
+                       d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="linear")
                        # rename variables
-                       if(pca){
-                               variables <- paste("PC", 1:ndim, sep="")
+                       if(simulated){
+                               variables <- c("S1", "S2")
+                       }else{
+                               if(pca){
+                                       variables <- paste("PC", 1:ndim, sep="")
+                               }
                        }
                        saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
                 }else{
                        # rename variables
-                       if(pca){
-                               variables <- paste("PC", 1:ndim, sep="")
-                       }
-                       d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                        if(simulated){
+                                variables <- c("S1", "S2")
+                        }else{
+                                if(pca){
+                                        variables <- paste("PC", 1:ndim, sep="")
+                                }
+                        }
+                        d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
                 }
         }
 
@@ -33,7 +41,7 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
         # Prepare training data for stan model
         obs <- d$obs
         id <- d$id
-        bio <- d[,6:ncol(d)]
+        bio <- d[,(ncol(d)-length(variables)+1):ncol(d)]
         
         # Estimate posterior distributions using rstan
         # Define variables of the model
@@ -109,5 +117,5 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
         return(mfit_1.1)
 }
 
-# binomial.stan(recompile = F, pca = T, ndim = 3, ofolder="/cluster/scratch/plant-stan/")
+binomial.stan(recompile = F, pca = T, ndim = 3, ofolder="/cluster/scratch/bemora/plant-stan/")
 
