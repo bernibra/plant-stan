@@ -53,7 +53,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
 simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
-        N <- 40
+        N <- 20
         sites <- 200
         
         # Environmental predictors for each site

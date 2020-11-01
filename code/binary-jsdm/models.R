@@ -195,30 +195,37 @@ parameters{
     vector[L] zalpha;
     real alpha_bar;
     real<lower=0> sigma_a;
-    vector[L] beta1;
-    vector[L] beta2;
+    matrix[K,L] zbeta;
     vector[K] beta_bar;
     vector<lower=0>[K] sigma_b;
     vector<lower=0>[K] etasq;
     vector<lower=0>[K] rhosq;
 }
+transformed parameters{
+    matrix[K,L] beta;
+    vector[L] alpha;
+    matrix[L, L] L_SIGMA[K];
+    for(i in 1:K){
+        L_SIGMA[i] = cholesky_decompose(cov_GPL2(Dmat, etasq[i], rhosq[i], sigma_b[i]));
+        beta[i] = zbeta[i]*(L_SIGMA[i]') + beta_bar[i];
+    }
+    alpha = zalpha * sigma_a + alpha_bar;
+}
 model{
     vector[N] p;
-    matrix[L,L] SIGMA1;
-    matrix[L,L] SIGMA2;
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     rhosq ~ exponential( 0.5 );
     etasq ~ exponential( 1 );
-    beta_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ normal( 0 , 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
-    SIGMA1 = cov_GPL2(Dmat, etasq[1], rhosq[1], sigma_b[1]);
-    SIGMA2 = cov_GPL2(Dmat, etasq[2], rhosq[2], sigma_b[2]);
-    beta1 ~ multi_normal( rep_vector(0,L) , SIGMA1 );
-    beta2 ~ multi_normal( rep_vector(0,L) , SIGMA2 );
+    to_vector( zbeta ) ~ normal( 0 , 1 );
     for ( i in 1:N ) {
-        p[i] = zalpha[id[i]] * sigma_a + alpha_bar + (beta1[id[i]] + beta_bar[1]) * bio[i,1] + (beta2[id[i]] + beta_bar[2]) * bio[i,2];
+        p[i] = alpha[id[i]];
+        for (j in 1:K){
+          p[i] = p[i] + beta[j, id[i]] * bio[i, j];
+       }
         p[i] = inv_logit(p[i]);
     }
     obs ~ binomial( 1 , p );
