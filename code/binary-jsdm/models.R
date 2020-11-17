@@ -247,6 +247,12 @@ functions{
         K[N, N] = sq_alpha + delta;
         return K;
     }
+    real radial(real x, real mu) {
+        real K;
+        K = x - mu;
+        K = pow(K, 2);
+        return K;
+    }
 }
 data{
     int N;
@@ -262,6 +268,7 @@ parameters{
     real alpha_bar;
     real<lower=0> sigma_a;
     matrix[K,L] zbeta;
+    matrix<lower=0>[K,L] sigma_beta;
     vector[K] beta_bar;
     vector<lower=0>[K] sigma_b;
     vector<lower=0>[K] etasq;
@@ -284,13 +291,14 @@ model{
     rhosq ~ exponential( 0.5 );
     etasq ~ exponential( 1 );
     beta_bar ~ normal( 0 , 1 );
+    to_vector(sigma_beta) ~ normal( 0 , 0.2 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
     to_vector( zbeta ) ~ normal( 0 , 1 );
     for ( i in 1:N ) {
         p[i] = alpha[id[i]];
         for (j in 1:K){
-          p[i] = p[i] + beta[j, id[i]] * bio[i, j];
+          p[i] = p[i] - sigma_beta[j, id[i]] * radial(bio[i, j], beta[j, id[i]]);
        }
         p[i] = inv_logit(p[i]);
     }

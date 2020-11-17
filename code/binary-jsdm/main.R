@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -203,7 +203,7 @@ binomial.stan.gauss <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_")
 }
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=T, show.plot=T, pca=F, ndim=2, simulated=F, ofolder="../../results/models/"){
+binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=T, ndim=2, simulated=T, ofolder="../../results/models/"){
         
         # File name extension
         extension <- ""
@@ -242,10 +242,10 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
         
         # Prepare training data for stan model
         Dis <- d$corr
-        d <- d$dataset
-        obs <- d$obs
-        id <- d$id
-        bio <- d[,(ncol(d)-length(variables)+1):ncol(d)]
+        dat <- d$dataset
+        obs <- dat$obs
+        id <- dat$id
+        bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
         
         # Estimate posterior distributions using rstan
         # Define variables of the model
@@ -262,6 +262,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                 zalpha = rep(0, dat_3.1$L),
                 alpha_bar = 0,
                 sigma_a = 0.1,
+                sigma_beta = matrix(0.1, dat_3.1$K, dat_3.1$L),
                 zbeta = matrix(0, dat_3.1$K, dat_3.1$L),
                 beta_bar = rep(0, dat_3.1$K),
                 sigma_b = rep(0.1, dat_3.1$K),
@@ -281,14 +282,14 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                            data=dat_3.1 ,
                            chains=n_chains_3.1 ,
                            cores= n_chains_3.1 ,
-                           warmup=1000, iter=4000,
+                           warmup=1000, iter=2000,
                            init=init_3.1 , control = list(adapt_delta = 0.95))
         
         
-        saveRDS(mfit_3.1, file = paste(ofolder, "binomial-jsdm",extension,".rds", sep=""))
+        saveRDS(mfit_3.1, file = paste(ofolder, "binomial-stan-gauss-RBFs",extension,".rds", sep=""))
         return(mfit_3.1)
 }
 
 
-binomial.stan(recompile = F, pca = T, ndim = 3, ofolder="/cluster/scratch/bemora/plant-stan/")
+binomial.stan.gauss.RBFs(recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 

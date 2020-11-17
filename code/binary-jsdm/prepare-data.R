@@ -53,7 +53,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
 simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
-        N <- 20
+        N <- 50
         sites <- 200
         
         # Environmental predictors for each site
@@ -64,7 +64,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         alpha <- rnorm(N)
         sigma1 <- 0.3 # sd beta1
         mean1 <- -1 # mean beta1
-        sigma2 <- 0.1 # sd beta2
+        sigma2 <- 0.4 # sd beta2
         mean2 <- 1.5 # mean beta2
         rho <- 0.4 # correlation between betas
         
@@ -108,8 +108,8 @@ simulated.data <- function(simulated.type="linear.corr"){
                 # Generate correlations
                 beta1 <- z1
                 beta2 <- z2
-                sigma_beta1 <- rexp(N, rate = 2)
-                sigma_beta2 <- rexp(N, rate = 2)
+                sigma_beta1 <- abs(rnorm(N, 0,0.2))
+                sigma_beta2 <- abs(rnorm(N, 0,0.2))
         }
         
         # Simulate data
@@ -120,7 +120,9 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$beta2 <- beta2[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
         if (simulated.type=="gauss.gauss"){
-                dataset$p <- inv_logit(alpha[dataset$id] + exp(-(beta1[dataset$id] - dataset$S1)**2)  + beta2[dataset$id] * dataset$S2 )                
+                dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
+                dataset$sigma_beta2 <- sigma_beta2[dataset$id]
+                dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
         }else{
                 dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
         }
