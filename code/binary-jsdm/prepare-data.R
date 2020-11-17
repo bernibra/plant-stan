@@ -101,9 +101,9 @@ simulated.data <- function(simulated.type="linear.corr"){
         }else{
                 # coefficients for each species
                 Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
+                z1 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
                 Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
+                z2 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
                 
                 # Generate correlations
                 beta1 <- z1
