@@ -64,7 +64,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         alpha <- rnorm(N)
         sigma1 <- 0.3 # sd beta1
         mean1 <- -1 # mean beta1
-        sigma2 <- 1.3 # sd beta2
+        sigma2 <- 0.1 # sd beta2
         mean2 <- 1.5 # mean beta2
         rho <- 0.4 # correlation between betas
         
@@ -81,19 +81,7 @@ simulated.data <- function(simulated.type="linear.corr"){
                 beta1 <- z1 * sigma1 + mean1
                 beta2 <- (rho*z1 + sqrt(1-rho^2)*z2)*sigma2 + mean2
                 
-        }else if (simulated.type=="linear.gauss"){
-                
-                # coefficients for each species
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
-                
-                # Generate correlations
-                beta1 <- z1
-                beta2 <- z2
-                
-        }else{
+        }else if (simulated.type=="linear.corr.gauss"){
                 
                 # coefficients for each species
                 Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
@@ -109,6 +97,19 @@ simulated.data <- function(simulated.type="linear.corr"){
                 # Generate correlations
                 beta1 <- z1 * sigma1 + mean1
                 beta2 <- (rho*z1 + sqrt(1-rho^2)*z2)*sigma2 + mean2
+                
+        }else{
+                # coefficients for each species
+                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
+                z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
+                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
+                z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
+                
+                # Generate correlations
+                beta1 <- z1
+                beta2 <- z2
+                sigma_beta1 <- rexp(N, rate = 2)
+                sigma_beta2 <- rexp(N, rate = 2)
         }
         
         # Simulate data
@@ -118,7 +119,11 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$beta1 <- beta1[dataset$id] 
         dataset$beta2 <- beta2[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
-        dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
+        if (simulated.type=="gauss.gauss"){
+                dataset$p <- inv_logit(alpha[dataset$id] + exp(-(beta1[dataset$id] - dataset$S1)**2)  + beta2[dataset$id] * dataset$S2 )                
+        }else{
+                dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
+        }
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
         dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, S1=dataset$S1, S2=dataset$S2)                
 
@@ -133,7 +138,7 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                                       simulated=F, simulated.type="linear.corr"){
         
         if(simulated){
-                if(!(simulated.type %in% c("linear.corr", "linear.gauss", "linear.corr.gauss", "gaussian"))){
+                if(!(simulated.type %in% c("linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
                         stop(paste("'", simulated.type, "' is not a valid 'simulated.type'", sep=""))
                 }
                 dataset <- simulated.data(simulated.type=simulated.type)
