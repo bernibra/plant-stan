@@ -364,7 +364,6 @@ model{
     sigma_b ~ exponential( 1 );
     rhosq ~ exponential( 0.5 );
     etasq ~ exponential( 1 );
-    beta_bar ~ normal( 0 , 1 );
     to_vector(sigma_beta) ~ lognormal( 0 , 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
