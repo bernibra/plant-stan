@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -270,7 +270,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                 rhosq = rep(0.1, dat_3.1$K)
         )
         
-        model_code=model3.0
+        model_code=model3.1
         
         # Initialize data structure
         n_chains_3.1 <- 3

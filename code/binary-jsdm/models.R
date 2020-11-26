@@ -305,3 +305,77 @@ model{
     obs ~ binomial( 1 , p );
 }
 "
+
+
+model3.1 <- "
+functions{
+    matrix cov_GPL2(matrix x, real sq_alpha, real sq_rho, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+        for (i in 1:(N-1)) {
+          K[i, i] = sq_alpha + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = sq_alpha * exp(-sq_rho * square(x[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = sq_alpha + delta;
+        return K;
+    }
+    real radial(real x, real mu) {
+        real K;
+        K = x - mu;
+        K = pow(K, 2);
+        return K;
+    }
+}
+data{
+    int N;
+    int K;
+    int L;
+    int obs[N];
+    real bio[N,K];
+    int id[N];
+    matrix[L,L] Dmat;
+}
+parameters{
+    vector[L] zalpha;
+    real alpha_bar;
+    real<lower=0> sigma_a;
+    matrix[K,L] zbeta;
+    matrix[K,L] sigma_beta;
+    vector<lower=0>[K] sigma_b;
+    vector<lower=0>[K] etasq;
+    vector<lower=0>[K] rhosq;
+}
+transformed parameters{
+    matrix[K,L] beta;
+    vector[L] alpha;
+    matrix[L, L] L_SIGMA[K];
+    for(i in 1:K){
+        L_SIGMA[i] = cholesky_decompose(cov_GPL2(Dmat, etasq[i], rhosq[i], sigma_b[i]));
+        beta[i] = zbeta[i]*(L_SIGMA[i]');
+    }
+    alpha = zalpha * sigma_a + alpha_bar;
+}
+model{
+    vector[N] p;
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    rhosq ~ exponential( 0.5 );
+    etasq ~ exponential( 1 );
+    beta_bar ~ normal( 0 , 1 );
+    to_vector(sigma_beta) ~ lognormal( 0 , 1 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    zalpha ~ normal( 0 , 1 );
+    to_vector( zbeta ) ~ normal( 0 , 1 );
+    for ( i in 1:N ) {
+        p[i] = alpha[id[i]];
+        for (j in 1:K){
+          p[i] = p[i] - sigma_beta[j, id[i]] * radial(bio[i, j], beta[j, id[i]]);
+       }
+        p[i] = inv_logit(p[i]);
+    }
+    obs ~ binomial( 1 , p );
+}
+"
