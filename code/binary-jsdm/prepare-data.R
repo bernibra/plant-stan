@@ -53,8 +53,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
 simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
-        N <- 50
-        sites <- 200
+        N <- 100
+        sites <- 300
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
@@ -123,11 +123,15 @@ simulated.data <- function(simulated.type="linear.corr"){
                 dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
                 dataset$sigma_beta2 <- sigma_beta2[dataset$id]
                 dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+                
+                dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
+                dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
         }else{
                 dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
+                
+                dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
+                dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, S1=dataset$S1, S2=dataset$S2)                
         }
-        dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, S1=dataset$S1, S2=dataset$S2)                
 
         return(list(dataset=dataset, corr=Dis))
 }

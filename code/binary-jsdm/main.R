@@ -1,5 +1,6 @@
 # source("./prepare-data.R")
 source("./models.R")
+# library("gridExtra")
 library(rethinking)
 library(rstan)
 
@@ -270,7 +271,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                 rhosq = rep(0.1, dat_3.1$K)
         )
         
-        model_code=model3.1
+        model_code=model3.0
         
         # Initialize data structure
         n_chains_3.1 <- 3
@@ -288,8 +289,33 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
         
         saveRDS(mfit_3.1, file = paste(ofolder, "binomial-stan-gauss-RBFs",extension,".rds", sep=""))
         return(mfit_3.1)
+        
+        
 }
 
+check_results_latest <- function(d, model){
+        alphas <- precis(model, pars = "alpha", depth=2)
+        betas <- precis(model, pars = "beta", depth=3)
+        # sigmas <- precis(model, pars = "sigma_beta", depth=3)
+        N <- length(unique(d$dataset$id))
+        alpha_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$alpha[1])
+        beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
+        beta2_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta2[1])
+        d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , sd=c(rep(0,length(alpha_r)),alphas$sd))
+        d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , sd=c(rep(0,length(beta1_r)),betas[1:N,]$sd))
+        d_beta2 <- data.frame(N=1:N, id= c(rep("real", length(beta2_r)), rep("estimated", length(betas[(N+1):(N+N),]$mean))),value=c(beta2_r,betas[(N+1):(N+N),]$mean) , sd=c(rep(0,length(beta2_r)),betas[(N+1):(N+N),]$sd))
+        
+
+        
+        p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + 
+                geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw()
+        p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id)) + 
+                geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw()
+        p3 <- ggplot(d_beta2, aes(x=N, y=value, group=id, color=id)) + 
+                geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw()
+        figure <- grid.arrange(p1, p2, p3,
+                            ncol = 1, nrow = 3)
+}
 
 binomial.stan.gauss.RBFs(recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
