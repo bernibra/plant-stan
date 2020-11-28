@@ -409,6 +409,8 @@ data{
     real bio[N,K];
     int id[N];
     matrix[L,L] Dmat;
+    matrix[L,L] Dmat_sigma;
+
 }
 parameters{
     vector[L] zalpha;
@@ -420,15 +422,26 @@ parameters{
     vector<lower=0>[K] sigma_b;
     vector<lower=0>[K] etasq;
     vector<lower=0>[K] rhosq;
+    vector[K] sigma_beta_bar;
+    vector<lower=0>[K] sigma_b_sigma;
+    vector<lower=0>[K] etasq_sigma;
+    vector<lower=0>[K] rhosq_sigma;
 }
 transformed parameters{
     matrix[K,L] beta;
+    matrix[K,L] sigma_beta;
     vector[L] alpha;
     matrix[L, L] L_SIGMA[K];
+    matrix[L, L] L_SIGMA_sigma[K];
     for(i in 1:K){
         L_SIGMA[i] = cholesky_decompose(cov_GPL2(Dmat, etasq[i], rhosq[i], sigma_b[i]));
         beta[i] = zbeta[i]*(L_SIGMA[i]') + beta_bar[i];
     }
+    for(i in 1:K){
+        L_SIGMA_sigma[i] = cholesky_decompose(cov_GPL2(Dmat_sigma, etasq_sigma[i], rhosq_sigma[i], sigma_b_sigma[i]));
+        sigma_beta[i] = exp(sigma_zbeta[i]*(L_SIGMA_sigma[i]')) + sigma_beta_bar[i];
+    }
+
     alpha = zalpha * sigma_a + alpha_bar;
 }
 model{
@@ -438,7 +451,11 @@ model{
     rhosq ~ exponential( 0.5 );
     etasq ~ exponential( 1 );
     beta_bar ~ normal( 0 , 1 );
-    to_vector(sigma_beta) ~ normal( 0 , 0.2 );
+    sigma_b_sigma ~ exponential( 1 );
+    rhosq_sigma ~ exponential( 0.5 );
+    etasq_sigma ~ exponential( 1 );
+    beta_bar_sigma ~ lognormal( -1 , 0.5 );
+    to_vector(sigma_zbeta) ~ normal( 0 , 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
     to_vector( zbeta ) ~ normal( 0 , 1 );
