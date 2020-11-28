@@ -179,7 +179,7 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
 
 playing.with.multivariate <- function(n, s, c, mu, N){
         Sigma <- n*exp(-(1/(s*s))*((as.matrix(dist(1:N))/N)^2)) + diag(N)*c
-        z1 <- mvrnorm(mu = rep(mu, times = N), Sigma = Sigma)
+        z1 <- exp(mvrnorm(mu = rep(mu, times = N), Sigma = Sigma))
         plot(1:N, z1)
         return(z1)
 }
