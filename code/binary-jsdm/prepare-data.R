@@ -112,8 +112,8 @@ simulated.data <- function(simulated.type="linear.corr"){
                 sigma_beta2 <- abs(rnorm(N, 0,0.2))
                 
                 vec <- c(1:round(N*0.5), 1:round(N*0.5))
-                Dis_sigma <- dist(vec)
-                Dis_sigma <- (as.matrix(Dis_sigma)/max(Dis_sigma))
+                Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+                Dis_sigma <- (Dis_sigma/max(Dis_sigma))
                 
                 Sigma <- 1*exp(-1/(0.3*0.3)*(Dis^2)) + diag(N)*0.2
                 sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
@@ -135,14 +135,14 @@ simulated.data <- function(simulated.type="linear.corr"){
                 
                 dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
                 dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
+                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma))
         }else{
                 dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
                 
                 dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
                 dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, S1=dataset$S1, S2=dataset$S2)                
+                return(list(dataset=dataset, corr=Dis))
         }
-
-        return(list(dataset=dataset, corr=Dis))
 }
 
 ####
