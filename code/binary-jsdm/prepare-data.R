@@ -101,15 +101,24 @@ simulated.data <- function(simulated.type="linear.corr"){
         }else{
                 # coefficients for each species
                 Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
+                z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
                 Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
+                z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
                 
                 # Generate correlations
                 beta1 <- z1
                 beta2 <- z2
                 sigma_beta1 <- abs(rnorm(N, 0,0.2))
                 sigma_beta2 <- abs(rnorm(N, 0,0.2))
+                
+                vec <- c(1:round(N*0.5), 1:round(N*0.5))
+                Dis_sigma <- dist(vec)
+                Dis_sigma <- (as.matrix(Dis_sigma)/max(Dis_sigma))
+                
+                Sigma <- 1*exp(-1/(0.3*0.3)*(Dis^2)) + diag(N)*0.2
+                sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
+                Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+                sigma_beta2 <- exp(mvrnorm(mu = rep(-2, times = N), Sigma = Sigma))
         }
         
         # Simulate data
@@ -178,7 +187,10 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
 }
 
 playing.with.multivariate <- function(n, s, c, mu, N){
-        Sigma <- n*exp(-(1/(s*s))*((as.matrix(dist(1:N))/N)^2)) + diag(N)*c
+        vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        # vec <- 1:N
+        Dis <- dist(vec)
+        Sigma <- n*exp(-(1/(s*s))*((as.matrix(Dis)/max(Dis))^2)) + diag(N)*c
         z1 <- exp(mvrnorm(mu = rep(mu, times = N), Sigma = Sigma))
         plot(1:N, z1)
         return(z1)
