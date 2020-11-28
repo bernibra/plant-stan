@@ -268,7 +268,7 @@ parameters{
     real alpha_bar;
     real<lower=0> sigma_a;
     matrix[K,L] zbeta;
-    matrix<lower=0>[K,L] sigma_beta;
+    matrix[K,L] sigma_beta;
     vector[K] beta_bar;
     vector<lower=0>[K] sigma_b;
     vector<lower=0>[K] etasq;
@@ -291,7 +291,7 @@ model{
     rhosq ~ exponential( 0.5 );
     etasq ~ exponential( 1 );
     beta_bar ~ normal( 0 , 1 );
-    to_vector(sigma_beta) ~ normal( 0 , 0.2 );
+    to_vector(sigma_beta) ~ lognormal( -1 , 0.5 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
     to_vector( zbeta ) ~ normal( 0 , 1 );
@@ -364,7 +364,7 @@ model{
     sigma_b ~ exponential( 1 );
     rhosq ~ exponential( 0.5 );
     etasq ~ exponential( 1 );
-    to_vector(sigma_beta) ~ lognormal( 0 , 1 );
+    to_vector(sigma_beta) ~ lognormal( -1 , 0.5 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
     to_vector( zbeta ) ~ normal( 0 , 1 );
@@ -415,7 +415,7 @@ parameters{
     real alpha_bar;
     real<lower=0> sigma_a;
     matrix[K,L] zbeta;
-    matrix<lower=0>[K,L] sigma_beta;
+    matrix[K,L] sigma_zbeta;
     vector[K] beta_bar;
     vector<lower=0>[K] sigma_b;
     vector<lower=0>[K] etasq;
