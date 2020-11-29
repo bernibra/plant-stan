@@ -283,7 +283,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                            data=dat_3.1 ,
                            chains=n_chains_3.1 ,
                            cores= n_chains_3.1 ,
-                           warmup=1000, iter=4000,
+                           warmup=1000, iter=1200,
                            init=init_3.1 , control = list(adapt_delta = 0.95))
         
         
@@ -379,7 +379,7 @@ binomial.stan.gauss.RBFs2 <- function(d = NULL, variables=c("bio5_", "bio6_","bi
                            data=dat_3.1 ,
                            chains=n_chains_3.1 ,
                            cores= n_chains_3.1 ,
-                           warmup=1000, iter=4000,
+                           warmup=1000, iter=1200,
                            init=init_3.1 , control = list(adapt_delta = 0.95))
         
         
@@ -424,5 +424,5 @@ check_results_latest <- function(d, model){
         # print(figure)
 }
 
-binomial.stan.gauss.RBFs2(recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+binomial.stan.gauss.RBFs(recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 

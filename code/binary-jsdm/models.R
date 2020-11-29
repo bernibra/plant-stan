@@ -454,7 +454,7 @@ model{
     sigma_b_sigma ~ exponential( 1 );
     rhosq_sigma ~ exponential( 0.5 );
     etasq_sigma ~ exponential( 1 );
-    beta_bar_sigma ~ lognormal( -1 , 0.5 );
+    sigma_beta_bar ~ lognormal( -1 , 0.5 );
     to_vector(sigma_zbeta) ~ normal( 0 , 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );
