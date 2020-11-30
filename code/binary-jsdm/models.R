@@ -439,7 +439,8 @@ transformed parameters{
     }
     for(i in 1:K){
         L_SIGMA_sigma[i] = cholesky_decompose(cov_GPL2(Dmat_sigma, etasq_sigma[i], rhosq_sigma[i], sigma_b_sigma[i]));
-        sigma_beta[i] = exp(sigma_zbeta[i]*(L_SIGMA_sigma[i]')) + sigma_beta_bar[i];
+        sigma_beta[i] = sigma_zbeta[i]*(L_SIGMA_sigma[i]') + sigma_beta_bar[i];
+        sigma_beta[i] = exp(sigma_beta[i]);
     }
 
     alpha = zalpha * sigma_a + alpha_bar;
@@ -454,7 +455,7 @@ model{
     sigma_b_sigma ~ exponential( 1 );
     rhosq_sigma ~ exponential( 0.5 );
     etasq_sigma ~ exponential( 1 );
-    sigma_beta_bar ~ lognormal( -1 , 0.5 );
+    sigma_beta_bar ~ normal( 0 , 1 );
     to_vector(sigma_zbeta) ~ normal( 0 , 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     zalpha ~ normal( 0 , 1 );

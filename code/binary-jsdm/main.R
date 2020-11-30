@@ -389,7 +389,7 @@ binomial.stan.gauss.RBFs2 <- function(d = NULL, variables=c("bio5_", "bio6_","bi
 
 check_results_latest <- function(d, model){
         alphas <- precis(model, pars = "alpha", depth=2)
-        betas <- precis(model, pars = "beta", depth=3)
+        betas <- precis(model, pars = "zbeta", depth=3)
         sigmas <- precis(model, pars = "sigma_beta", depth=3)
         
         # sigmas <- precis(model, pars = "sigma_beta", depth=3)
@@ -419,9 +419,9 @@ check_results_latest <- function(d, model){
         figure <- grid.arrange(p1, p2, p3,
                             ncol = 1, nrow = 3)
         print(figure)
-        # figure <- grid.arrange(p4, p5,
-        #                        ncol = 1, nrow = 2)
-        # print(figure)
+        figure <- grid.arrange(p4, p5,
+                               ncol = 1, nrow = 2)
+        print(figure)
 }
 
 binomial.stan.gauss.RBFs(recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")

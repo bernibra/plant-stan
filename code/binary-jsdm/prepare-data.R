@@ -115,9 +115,9 @@ simulated.data <- function(simulated.type="linear.corr"){
                 Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
                 Dis_sigma <- (Dis_sigma/max(Dis_sigma))
                 
-                Sigma <- 1*exp(-1/(0.3*0.3)*(Dis^2)) + diag(N)*0.2
+                Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.2
                 sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
-                Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+                Sigma <- 1*exp(-1/(0.2*0.2)*(Dis_sigma^2)) + diag(N)*0.1
                 sigma_beta2 <- exp(mvrnorm(mu = rep(-2, times = N), Sigma = Sigma))
         }
         
