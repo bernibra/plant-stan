@@ -54,7 +54,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
         N <- 100
-        sites <- 1000
+        sites <- 300
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
