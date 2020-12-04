@@ -22,6 +22,10 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
         
         # Load data for all species
         files <- as.numeric(gsub(".csv", "", list.files("../../data/processed/sdm/")))
+        sp_codes <- read.table("../../data/properties/codes/sp_codes.csv", sep=",", header = T)
+        dictionary <- read.table("../../data/properties/codes/dictionary.csv", sep=",", header = T)
+        correlation_matrix_ids <- read.table("../../data/properties/codes/correlation_matrix_ids.csv", sep="\t", header = F)
+        environment <- read.table("../../data/properties/distance-matrices/environment.csv", sep=",")
         
         # Check that there aren't unnexpected files
         if(!all(sort(files)==1:length(files))){
@@ -30,10 +34,16 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
         
         # Prepare main file
         obs.data <- data.frame()
+        name.idx <- c()
         
         # Read observations
         for(idx in 1:length(files)){
-             obs.data_ <- read.csv(file = paste("../../data/processed/sdm/", as.character(idx), ".csv", sep = ""), header = T)                
+             obs.data_ <- read.csv(file = paste("../../data/processed/sdm/", as.character(idx), ".csv", sep = ""), header = T)
+             ### Ok so I think the order for the correlation matrix is the same, but I do need to double-check
+             ### This is a very dumb way of doing just that. I didn't want to think.
+             new.name <- as.character(dictionary$new.names[as.character(dictionary$old.names)==as.character(sp_codes$sp[idx])])
+             name.idx <- c(name.idx,correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name])
+             ###
              obs.data_$id <- idx
              obs.data <- rbind(obs.data, obs.data_)
         }
@@ -181,8 +191,10 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                 
                 # Standarize environmental variables
                 for(i in c(1:ncol(dataset))[-c(1,2,3,4,5)]){dataset[,i] <- scale(dataset[,i])}
-                Sigma=NULL
-                return(list(dataset=dataset, corr=Sigma))
+                
+                environment=NULL
+                variation=NULL
+                return(list(dataset=dataset, corr=environment, corr2=variation))
         }
 }
 
