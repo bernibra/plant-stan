@@ -10,7 +10,7 @@ library(MASS)
 # Define projection as global variable
 projection <- "+proj=somerc +init=world:CH1903"
 
-prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
+prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrence=0){
         
         # Determine geographic extent of our data
         places <- read.csv(file = "../../data/properties/codes/places_codes.csv", header = T)
@@ -25,7 +25,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
         sp_codes <- read.table("../../data/properties/codes/sp_codes.csv", sep=",", header = T)
         dictionary <- read.table("../../data/properties/codes/dictionary.csv", sep=",", header = T)
         correlation_matrix_ids <- read.table("../../data/properties/codes/correlation_matrix_ids.csv", sep="\t", header = F)
-        environment <- read.table("../../data/properties/distance-matrices/environment.csv", sep=",")
+        denvironment <- as.matrix(read.table("../../data/properties/distance-matrices/environment.csv", sep=","))
+        dvariation <- as.matrix(read.table("../../data/properties/distance-matrices/variation.csv", sep=","))
         
         # Check that there aren't unnexpected files
         if(!all(sort(files)==1:length(files))){
@@ -35,18 +36,37 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
         # Prepare main file
         obs.data <- data.frame()
         name.idx <- c()
+        kdx <- 1
         
         # Read observations
         for(idx in 1:length(files)){
+             if(sp_codes$range[sp_codes$id==idx]<min.occurrence){
+                     next
+             }
              obs.data_ <- read.csv(file = paste("../../data/processed/sdm/", as.character(idx), ".csv", sep = ""), header = T)
              ### Ok so I think the order for the correlation matrix is the same, but I do need to double-check
              ### This is a very dumb way of doing just that. I didn't want to think.
              new.name <- as.character(dictionary$new.names[as.character(dictionary$old.names)==as.character(sp_codes$sp[idx])])
              name.idx <- c(name.idx,correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name])
              ###
-             obs.data_$id <- idx
+             obs.data_$id <- kdx
+             obs.data_$real.id <- idx
+             obs.data_$mmsbm.id <- correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name]
              obs.data <- rbind(obs.data, obs.data_)
+             kdx <- kdx+1
         }
+        
+        # reshape correlation matrices
+        denvironment <- denvironment[,name.idx]
+        denvironment <- denvironment[name.idx,]
+        dvariation <- dvariation[,name.idx]
+        dvariation <- dvariation[name.idx,]
+        
+        # rename cols and rows
+        colnames(denvironment) <- 1:ncol(denvironment)
+        rownames(denvironment) <- 1:nrow(denvironment)
+        colnames(dvariation) <- 1:ncol(dvariation)
+        rownames(dvariation) <- 1:nrow(dvariation)
         
         obs.data$obs <- 1*(obs.data$abundance>0)
 
@@ -56,7 +76,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_")){
         bioclim.data <- stack(files)
         crs(bioclim.data)<-projection
         
-        return(list(obs.data = obs.data, bioclim.data = bioclim.data, xlim = c(min.lon, max.lon), ylim = c(min.lat, max.lat)))
+        return(list(obs.data = obs.data, bioclim.data = bioclim.data, xlim = c(min.lon, max.lon), ylim = c(min.lat, max.lat), 
+                    denv = denvironment, dvar = dvariation))
 }
 
 # Generate fake data to test the extent to which the model works
@@ -160,7 +181,7 @@ simulated.data <- function(simulated.type="linear.corr"){
 ####
 species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_"),
                                       pca=F, ndim=2,
-                                      simulated=F, simulated.type="linear.corr"){
+                                      simulated=F, simulated.type="linear.corr", min.occurrence=0){
         
         if(simulated){
                 if(!(simulated.type %in% c("linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
@@ -174,7 +195,7 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                 }
                 
                 # Load all data
-                dat <- prepare.data(variables = variables)
+                dat <- prepare.data(variables = variables, min.occurrence=min.occurrence)
                 
                 # extract environmental data
                 clim <- as.data.frame(raster::extract(dat$bioclim.data,data.frame(easting = dat$obs.data$easting, northing = dat$obs.data$northing)))
@@ -190,11 +211,9 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                 }
                 
                 # Standarize environmental variables
-                for(i in c(1:ncol(dataset))[-c(1,2,3,4,5)]){dataset[,i] <- scale(dataset[,i])}
+                for(i in c(1:ncol(dataset))[-c(1:(ncol(dataset)-ndim))]){dataset[,i] <- scale(dataset[,i])}
                 
-                environment=NULL
-                variation=NULL
-                return(list(dataset=dataset, corr=environment, corr2=variation))
+                return(list(dataset=dataset, corr=dat$denv, corr2=dat$dvar))
         }
 }
 

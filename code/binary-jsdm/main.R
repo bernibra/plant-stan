@@ -1,6 +1,6 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
-library("gridExtra")
+# library("gridExtra")
 library(rethinking)
 library(rstan)
 
@@ -204,7 +204,7 @@ binomial.stan.gauss <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_")
 }
 
 # This first one is just a logistic regression, all "variables" are used as predictors in a linear form.
-binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=T, ndim=2, simulated=F, gp_type=2, ofolder="../../results/models/"){
+binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), recompile = T, loglik=F, show.plot=T, pca=T, ndim=2, simulated=F, gp_type=2, min.occurrence=10, ofolder="../../results/models/"){
         
         # File name extension
         extension <- ""
@@ -218,7 +218,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
         # Load the data
         if(is.null(d)){
                 if(recompile){
-                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss")
+                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
                         # rename variables
                         if(simulated){
                                 variables <- c("S1", "S2")
