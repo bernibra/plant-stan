@@ -281,7 +281,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                                 K=length(variables),
                                 L=length(unique(id)),
                                 obs=obs,
-                                bio=bio,
+                                bio=t(bio),
                                 id=id,
                                 Dmat_b=Dis_b,
                                 Dmat_g=Dis_g)
@@ -303,7 +303,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                         rhosq_g = rep(0.1, dat_3.1$K)
                 )
                 
-                model_code=model3.1
+                model_code=model3.2
         }
         
         # Initialize data structure
@@ -363,8 +363,12 @@ check_results_latest <- function(d, model){
         print(figure)
 }
 
-time.first <- c(11.5, 9.56, 10.96, 12.96,10.28, 11.1, 10.97, 10.25, 11.36)
-time.second <- c(13.89, 11.68, 12.11, 12.2, 15.52, 11.04)
-time.three <- c()
-binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
+ptm <- proc.time()
+model1 <- binomial.stan.gauss.RBFs(d=d, simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
+time.first <- proc.time() - ptm
 
+ptm <- proc.time()
+model2 <- binomial.stan.gauss.RBFs(d=d, simulated=T, recompile = T, gp_type = 3, ofolder="~/Desktop/")
+time.second <- proc.time() - ptm
+
+print(rbind(time.first,time.second))

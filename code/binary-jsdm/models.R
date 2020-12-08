@@ -404,8 +404,8 @@ model{
           p[i] = p[i] - gamma[j, id[i]] * radial(bio[i, j], beta[j, id[i]]);
        }
         p[i] = inv_logit(p[i]);
-        obs[i] ~ binomial( 1 , p[i] );
     }
+    obs ~ binomial( 1 , p );
 }
 "
 
@@ -436,7 +436,7 @@ data{
     int K;
     int L;
     int obs[N];
-    real bio[N,K];
+    matrix[K,N] bio;
     int id[N];
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
@@ -450,18 +450,12 @@ parameters{
     vector[K] beta_bar;
     vector[K] gamma_bar;
     real<lower=0> sigma_a;
-    vector[K] zsigma_b;
-    vector[K] zsigma_g;
-    vector[K] zetasq_b;
-    vector[K] zrhosq_b;
-    vector[K] zetasq_g;
-    vector[K] zrhosq_g;
-    real sigma_bar;
-    real etasq_bar;
-    real rhosq_bar;
-    real<lower=0> sigma_sigma;
-    real<lower=0> etasq_sigma;
-    real<lower=0> rhosq_sigma;
+    vector<lower=0>[K] sigma_b;
+    vector<lower=0>[K] sigma_g;
+    vector<lower=0>[K] etasq_b;
+    vector<lower=0>[K] rhosq_b;
+    vector<lower=0>[K] etasq_g;
+    vector<lower=0>[K] rhosq_g;
 }
 transformed parameters{
     vector[L] alpha;
@@ -469,24 +463,11 @@ transformed parameters{
     matrix[K,L] gamma;
     matrix[L, L] L_SIGMA_b[K];
     matrix[L, L] L_SIGMA_g[K];
-    vector<lower=0>[K] sigma_b;
-    vector<lower=0>[K] sigma_g;
-    vector<lower=0>[K] etasq_b;
-    vector<lower=0>[K] rhosq_b;
-    vector<lower=0>[K] etasq_g;
-    vector<lower=0>[K] rhosq_g;
-
     for(i in 1:K){
-        etasq_b[i] = exp(zetasq_b[i]*etasq_sigma + etasq_bar);
-        rhosq_b[i] = exp(zrhosq_b[i]*rhosq_sigma + rhosq_bar);
-        sigma_b[i] = exp(zsigma_b[i]*sigma_sigma + sigma_bar);
         L_SIGMA_b[i] = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b[i], rhosq_b[i], sigma_b[i]));
         beta[i] = zbeta[i]*(L_SIGMA_b[i]') + beta_bar[i];
     }
     for(i in 1:K){
-        etasq_g[i] = exp(zetasq_g[i]*etasq_sigma + etasq_bar);
-        rhosq_g[i] = exp(zrhosq_g[i]*rhosq_sigma + rhosq_bar);
-        sigma_g[i] = exp(zsigma_g[i]*sigma_sigma + sigma_bar);
         L_SIGMA_g[i] = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g[i], rhosq_g[i], sigma_g[i]));
         gamma[i] = zgamma[i]*(L_SIGMA_g[i]') + gamma_bar[i];
         gamma[i] = exp(gamma[i]);
@@ -496,19 +477,13 @@ transformed parameters{
 }
 model{
     vector[N] p;
-    sigma_a ~ exponential( 0 , 1 );
-    zsigma_b ~ normal( 0 , 1 );
-    zsigma_g ~ normal( 0 , 1 );
-    zrhosq_b ~ normal( 0 , 1 );
-    zetasq_b ~ normal( 0 , 1 );
-    zrhosq_g ~ normal( 0 , 1 );
-    zetasq_g ~ normal( 0 , 1 );
-    sigma_bar ~ normal( 0 , 1 );
-    etasq_bar ~ normal( 0 , 1 );
-    rhosq_bar ~ normal( 0 , 1 );
-    sigma_sigma ~ exponential( 1 );
-    etasq_sigma ~ exponential( 1 );
-    rhosq_sigma ~ exponential( 1 );
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    rhosq_b ~ exponential( 0.5 );
+    etasq_b ~ exponential( 1 );
+    rhosq_g ~ exponential( 0.5 );
+    etasq_g ~ exponential( 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ normal( 0 , 1 );
     gamma_bar ~ normal( 0 , 1 );
@@ -519,10 +494,9 @@ model{
     for ( i in 1:N ) {
         p[i] = alpha[id[i]];
         for (j in 1:K){
-          p[i] = p[i] - gamma[j, id[i]] * radial(bio[i, j], beta[j, id[i]]);
+          p[i] = p[i] - gamma[j, id[i]] * radial(bio[j,i], beta[j, id[i]]);
        }
-        p[i] = inv_logit(p[i]);
+        obs[i] ~ binomial( 1 , inv_logit(p[i]) );
     }
-    obs ~ binomial( 1 , p );
 }
 "
