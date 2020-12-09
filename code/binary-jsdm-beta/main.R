@@ -12,9 +12,8 @@ rstan_options(auto_write = TRUE)
 # - Binomial regression with gaussian RBFs.
 ####
 
-binomial.stan.gauss.RBFs <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
-        pca <- T
-        ndim <- 2
+binomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
+        # Fixing some of the options
         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
         gp_type <- 2
         
@@ -30,7 +29,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, recompile = T, simulated=T, min.o
         # Load the data
         if(is.null(d)){
                 if(recompile){
-                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, min.occurrence=min.occurrence)
+                        d <- species_distribution.data(variables=variables, pca=T, ndim = 2, simulated=simulated, min.occurrence=min.occurrence)
                         # rename variables
                         if(simulated){
                                 variables <- c("S1", "S2")
@@ -56,18 +55,19 @@ binomial.stan.gauss.RBFs <- function(d = NULL, recompile = T, simulated=T, min.o
         # Prepare training data for stan model
         Dis_b <- d$corr
         Dis_g <- d$corr2
-        Y <- d$Y
-        X1 <- d$X1
-        X2 <- d$X2
+        N <- sum(d$dataset$id==1)
+        L <- length(unique(d$dataset$id))
+        obs <- matrix(d$dataset$obs, N, L)
         dat <- d$dataset
-        obs <- dat$obs
         id <- dat$id
         bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
+        X1 <- matrix(bio$S1, N, L)[,1]
+        X2 <- matrix(bio$S2, N, L)[,1]
         
-        dat_3.1 <- list(N=nrow(Y),
-                        L=ncol(Y),
+        dat_4.1 <- list(N=N,
+                        L=L,
                         K=2,
-                        Y=t(Y),
+                        Y=t(obs),
                         X1=X1,
                         X2=X2,
                         Dmat_b=Dis_b,
@@ -75,7 +75,7 @@ binomial.stan.gauss.RBFs <- function(d = NULL, recompile = T, simulated=T, min.o
                         )
         
         # Set starting values for the parameters
-        start_3.1 <- list(
+        start_4.1 <- list(
                 zalpha = rep(0, dat_3.1$L),
                 zbeta = matrix(0, dat_3.1$K, dat_3.1$L),
                 zgamma = matrix(0, dat_3.1$K, dat_3.1$L),
@@ -91,24 +91,24 @@ binomial.stan.gauss.RBFs <- function(d = NULL, recompile = T, simulated=T, min.o
                 rhosq_g = rep(0.1, dat_3.1$K)
         )
         
-        model_code=model3.beta
+        model_code=model4.1
 
         # Initialize data structure
-        n_chains_3.1 <- 3
-        init_3.1 <- list()
-        for ( i in 1:n_chains_3.1 ) init_3.1[[i]] <- start_3.1
+        n_chains_4.1 <- 3
+        init_4.1 <- list()
+        for ( i in 1:n_chains_4.1 ) init_4.1[[i]] <- start_4.1
         
         # Run stan model
-        mfit_3.1 <- stan ( model_code=model_code ,
-                           data=dat_3.1 ,
-                           chains=n_chains_3.1 ,
-                           cores= n_chains_3.1 ,
+        mfit_4.1 <- stan ( model_code=model_code ,
+                           data=dat_4.1 ,
+                           chains=n_chains_4.1 ,
+                           cores= n_chains_4.1 ,
                            warmup=1000, iter=2000,
-                           init=init_3.1 , control = list(adapt_delta = 0.95))
+                           init=init_4.1 , control = list(adapt_delta = 0.95))
         
         
-        saveRDS(mfit_3.1, file = paste(ofolder, "binomial-stan-gauss-RBFs",extension,".rds", sep=""))
-        return(mfit_3.1)
+        saveRDS(mfit_4.1, file = paste(ofolder, "binomial-stan-gauss-RBFs-beta",extension,".rds", sep=""))
+        return(mfit_4.1)
         
         
 }

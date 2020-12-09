@@ -139,9 +139,9 @@ simulated.data <- function(){
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
         dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)
         Y <- matrix(dataset$obs, sites, N)
-        X1 <- e1
-        X2 <- e2
-        
+        X1 <- matrix(dataset$S1, sites, N)[,1]
+        X1 <- matrix(dataset$S2, sites, N)[,1]
+
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, Y=Y, X1=X1, X2=X2))
 }
 
