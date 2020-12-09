@@ -56,4 +56,5 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   return(figure)
 }
 
-
+model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
+post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta"))
