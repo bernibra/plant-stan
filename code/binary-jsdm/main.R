@@ -1,6 +1,5 @@
 # source("./prepare-data.R")
 source("./models.R")
-# library("gridExtra")
 library(rethinking)
 library(rstan)
 
@@ -38,7 +37,19 @@ binomial.stan <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_"), reco
                                        variables <- paste("PC", 1:ndim, sep="")
                                }
                        }
-                       saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                       filename <- paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = "")
+                       if (file.exists(filename)){
+                               question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                                    prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                               if(is.na(question)){question <- F}
+                               if(question){
+                                       saveRDS(d, file=filename)
+                               }else{
+                                       stop("you should add 'recompile=T'")
+                               }                                
+                       }else{
+                               saveRDS(d, file=filename)
+                       }
                 }else{
                        # rename variables
                         if(simulated){
@@ -140,7 +151,19 @@ binomial.stan.gauss <- function(d = NULL, variables=c("bio5_", "bio6_","bio12_")
                                         variables <- paste("PC", 1:ndim, sep="")
                                 }
                         }
-                        saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                        filename <- paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = "")
+                        if (file.exists(filename)){
+                                question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                                     prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                                if(is.na(question)){question <- F}
+                                if(question){
+                                        saveRDS(d, file=filename)
+                                }else{
+                                        stop("you should add 'recompile=T'")
+                                }                                
+                        }else{
+                                saveRDS(d, file=filename)
+                        }
                 }else{
                         # rename variables
                         if(simulated){
@@ -228,7 +251,19 @@ binomial.stan.gauss.RBFs <- function(d = NULL, variables=c("bio5_", "bio6_","bio
                                         variables <- paste("PC", 1:ndim, sep="")
                                 }
                         }
-                        # saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                        filename <- paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = "")
+                        if (file.exists(filename)){
+                                question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                                     prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                                if(is.na(question)){question <- F}
+                                if(question){
+                                        saveRDS(d, file=filename)
+                                }else{
+                                        stop("you should add 'recompile=T'")
+                                }                                
+                        }else{
+                                saveRDS(d, file=filename)
+                        }
                 }else{
                         # rename variables
                         if(simulated){
@@ -355,7 +390,20 @@ binomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=T, 
                                         variables <- paste("PC", 1:ndim, sep="")
                                 }
                         }
-                        saveRDS(d, file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                        filename <- paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = "")
+
+                        if (file.exists(filename)){
+                                question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                                     prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                                if(is.na(question)){question <- F}
+                                if(question){
+                                        saveRDS(d, file=filename)
+                                }else{
+                                        stop("you should add 'recompile=T'")
+                                }                                
+                        }else{
+                                saveRDS(d, file=filename)
+                        }
                 }else{
                         # rename variables
                         if(simulated){
