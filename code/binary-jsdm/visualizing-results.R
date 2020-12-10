@@ -1,7 +1,8 @@
 # Import libraries
 library(rethinking)
 library(rstan)
-library("gridExtra")
+library(gridExtra)
+library(grid)
 library(ggpubr)
 
 ####
@@ -56,5 +57,124 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   return(figure)
 }
 
-model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
-post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta"))
+plot.actual.data <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#1b9e77", "#d95f02", "#7570b3")
+
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
+  }
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  
+  # alphas
+  mu_alpha <- apply( post$alpha , 2 , mean )
+  ci_alpha <- apply( post$alpha , 2 , PI )
+  
+  # betas
+  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
+  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
+  
+  # gammas
+  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
+  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
+
+  for(i in 1:2){
+    
+    # Sort beta and gamma
+    beta_order <- sort(mu_beta[[i]],index.return=T)$ix
+    gamma_order <- sort(mu_gamma[[i]],index.return=T)$ix
+    
+    # Generate empty list of plots
+    plist = list()
+      
+    # Beta
+    df <- data.frame(sp=1:length(mu_beta[[i]]),
+                     mean=mu_beta[[i]][beta_order],
+                     low=ci_beta[[i]][1,beta_order],
+                     high=ci_beta[[i]][2,beta_order])
+    
+    plist[[1]] <- ggplot(df, aes(x=sp, y=mean)) + 
+      geom_segment(aes(x=sp, xend=sp, y=low, yend=high), data=df, color=colo[1], alpha=0.5) +
+      geom_point(color=colo[1], alpha=0.7)+
+      ylab("mean")+
+      xlab("species")+
+      scale_x_continuous(expand = expansion(add = c(0, 0)),
+                         limits = c(-extra, length(mu_beta[[i]])+extra),
+                         breaks = seq(from=1, to=length(mu_beta[[i]]), length.out = 6))+
+      scale_y_continuous(expand = expansion(add = c(0, 0)))+
+      coord_cartesian(clip = 'off') +
+      theme_bw() + 
+      theme(legend.position = "none",
+            text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.2)
+            )
+    
+    beta_order <- sort(mu_beta[[i]],index.return=T)$ix
+    gamma_order <- sort(mu_gamma[[i]],index.return=T)$ix
+    
+    # Scatter plot 
+    df <- data.frame(sp=1:length(mu_gamma[[i]]),
+                     mean=mu_beta[[i]],
+                     variance=sqrt(1/2*mu_gamma[[i]]))
+
+    plist[[2]] <- ggplot(df, aes(x=variance, y=mean)) + 
+      geom_point(color=colo[3], alpha=0.7)+
+      ylab("mean")+
+      xlab("variance")+
+      scale_x_continuous(expand = expansion(add = c(0, 0)))+
+      scale_y_continuous(expand = expansion(add = c(0, 0)))+
+      coord_cartesian(clip = 'off') +
+      theme_bw() + 
+      theme(legend.position = "none",
+            text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.2)
+      )
+
+    # Gamma 
+    df <- data.frame(sp=1:length(mu_gamma[[i]]),
+                     mean=mu_gamma[[i]][gamma_order],
+                     low=ci_gamma[[i]][1,gamma_order],
+                     high=ci_gamma[[i]][2,gamma_order])
+    df <- data.frame(sp=df$sp, mean=sqrt(1/(2*df$mean)), low=sqrt(1/(2*df$low)), high=sqrt(1/(2*df$high)))
+    
+    plist[[3]] <- ggplot(df, aes(y=sp, x=mean)) + 
+      geom_segment(aes(y=sp, yend=sp, x=low, xend=high), data=df, color=colo[2], alpha=0.5) +
+      geom_point(color=colo[2], alpha=0.7)+
+      ylab("variance")+
+      xlab("species")+
+      scale_x_continuous(expand = expansion(add = c(0, 0)))+
+      scale_y_continuous(expand = expansion(add = c(0, 0)),
+                         limits = c(-extra, length(mu_beta[[i]])+extra),
+                         breaks = seq(from=1, to=length(mu_beta[[i]]), length.out = 6))+
+      coord_cartesian(clip = 'off') +
+      theme_bw() + 
+      theme(legend.position = "none",
+            text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.2)
+      )
+    
+    hlay <- rbind(c(1,2),
+                  c(NA,3))
+    p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(0.5, 1), layout_matrix=hlay, widths=c(1,0.5)#, vp=viewport(width=1, height=1, clip = TRUE),
+                      # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+                      )
+    print(p)
+   
+  }
+
+}
+
+
+
+
+
