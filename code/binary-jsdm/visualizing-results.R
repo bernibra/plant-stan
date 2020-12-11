@@ -4,6 +4,8 @@ library(rstan)
 library(gridExtra)
 library(grid)
 library(ggpubr)
+library(hrbrthemes)
+library(plotly)
 
 ####
 # Visualizing the results of some of the models
@@ -57,6 +59,106 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   return(figure)
 }
 
+plot.common.to.all <- function(p, fontsize=10){
+  p <- p +
+    coord_cartesian(clip = 'off') +
+    theme_bw() + 
+    theme(legend.position = "none",
+          text = element_text(size=fontsize),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.2)
+    )
+  return(p)
+}
+
+plot.scatter <- function(mu, variance, color="black", xlabel="-", ylabel="-"){
+
+  df <- data.frame(sp=1:length(mu), mean=mu, variance=variance)
+  
+  p <- ggplot(df, aes(x=variance, y=mean)) + 
+    geom_point(color=color, alpha=0.7)+
+    ylab(ylabel)+
+    xlab(xlabel)+
+    scale_x_continuous(expand = expansion(add = c(0, 0)))+
+    scale_y_continuous(expand = expansion(add = c(0, 0)))
+  
+  p <- plot.common.to.all(p)
+  
+  return(p)
+}
+
+plot.ranking.x <- function(mu, ci, color="black", xlabel="-", ylabel="-", extra=1, mu_order=NULL){
+  # Sort data
+  if(is.null(mu_order)){
+    mu_order <- sort(mu,index.return=T)$ix
+  }
+
+  # Generate data.frame  
+  df <- data.frame(sp=1:length(mu), mean=mu[mu_order], low=ci[1,mu_order], high=ci[2,mu_order])
+  
+  p <- ggplot(df, aes(x=sp, y=mean)) + 
+    geom_segment(aes(x=sp, xend=sp, y=low, yend=high), data=df, color=color, alpha=0.5) +
+    geom_point(color=color, alpha=0.7)+
+    ylab(ylabel)+
+    xlab(xlabel)+
+    scale_x_continuous(expand = expansion(add = c(0, 0)),
+                       limits = c(-extra, length(mu)+extra),
+                       breaks = seq(from=1, to=length(mu), length.out = 6))+
+    scale_y_continuous(expand = expansion(add = c(0, 0)))
+  
+  p <- plot.common.to.all(p)
+  
+  return(p)
+}
+
+plot.ranking.y <- function(mu, ci, color="black", xlabel="-", ylabel="-", extra=1, mu_order=NULL){
+  # Sort data
+  if(is.null(mu_order)){
+    mu_order <- sort(mu,index.return=T)$ix 
+  }
+  
+  # Generate data.frame  
+  df <- data.frame(sp=1:length(mu),
+                   mean=mu[mu_order],
+                   low=ci[1,mu_order],
+                   high=ci[2,mu_order])
+  
+  p <- ggplot(df, aes(y=sp, x=mean)) + 
+    geom_segment(aes(y=sp, yend=sp, x=low, xend=high), data=df, color=color, alpha=0.5) +
+    geom_point(color=color, alpha=0.7)+
+    xlab(xlabel)+
+    ylab(ylabel)+
+    scale_x_continuous(expand = expansion(add = c(0, 0)))+
+    scale_y_continuous(expand = expansion(add = c(0, 0)),
+                       limits = c(-extra, length(mu)+extra),
+                       breaks = seq(from=1, to=length(mu), length.out = 6))
+
+  p <- plot.common.to.all(p)
+  
+  return(p)
+}
+
+link.model <- function(data, post){
+  N <- ncol(post$alpha)
+  M <- nrow(data)
+  p <- list()
+  a <- matrix(1,1,M)
+  pb <- txtProgressBar(min = 0, max = N, style = 3)
+  for(i in 1:N){
+    setTxtProgressBar(pb, i)
+    beta1 <- as.matrix(post$beta[,1,i]) %*% a
+    beta2 <- as.matrix(post$beta[,2,i]) %*% a
+    gamma1 <- as.matrix(post$gamma[,1,i]) %*% a
+    gamma2 <- as.matrix(post$gamma[,2,i]) %*% a
+    alpha <- t(as.matrix(post$alpha[,i]) %*% a)
+    
+    p[[i]] <- inv_logit(post$alpha[,i] - post$gamma[,1,i] * (t(data$x1[col(beta1)] - beta1))**2 - post$gamma[,2,i] * (t(data$x2[col(beta2)] - beta2))**2)
+  }
+  close(pb)
+  return(p)
+}
+
 plot.actual.data <- function(model=NULL){
   # Parameters for plots
   extra <- 1
@@ -81,91 +183,42 @@ plot.actual.data <- function(model=NULL){
   # gammas
   mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
   ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
-
+  
+  ## Generate probabilities
+  # data <- expand.grid(x1=seq(from=-3, to=3, length.out = 50), x2=seq(from=-3, to=3, length.out = 50))
+  # p <- link.model(data, post)
+  # p_mu <- lapply(1:length(p),function(x) apply(p[[x]], 1, mean))
+  
+  # Alpha plots
+  plist = list()
+  idx <- sort(mu_beta[[1]],index.return=T)$ix
+  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx)
+  plist[[2]] <- plot.ranking.x(sqrt(1/(2*mu_gamma[[1]])), sqrt(1/(2*ci_gamma[[1]])), color=colo[2], xlabel="species", ylabel="beta 2", extra=1, mu_order = idx)
+  plist[[3]] <- plot.ranking.x(mu_alpha, ci_alpha, color=colo[3], xlabel="species", ylabel="alpha", extra=1, mu_order = idx)
+  
+  p <- grid.arrange(grobs=plist, ncol=1, nrow=3)
+  print(p)
+  
+  p <- plot.scatter(mu=mu_beta[[1]], variance=mu_beta[[2]], color=colo[3], xlabel="variance", ylabel="mean")
+  print(p)
+  
+  # Beta plots
   for(i in 1:2){
-    
-    # Sort beta and gamma
-    beta_order <- sort(mu_beta[[i]],index.return=T)$ix
-    gamma_order <- sort(mu_gamma[[i]],index.return=T)$ix
-    
     # Generate empty list of plots
     plist = list()
       
     # Beta
-    df <- data.frame(sp=1:length(mu_beta[[i]]),
-                     mean=mu_beta[[i]][beta_order],
-                     low=ci_beta[[i]][1,beta_order],
-                     high=ci_beta[[i]][2,beta_order])
-    
-    plist[[1]] <- ggplot(df, aes(x=sp, y=mean)) + 
-      geom_segment(aes(x=sp, xend=sp, y=low, yend=high), data=df, color=colo[1], alpha=0.5) +
-      geom_point(color=colo[1], alpha=0.7)+
-      ylab("mean")+
-      xlab("species")+
-      scale_x_continuous(expand = expansion(add = c(0, 0)),
-                         limits = c(-extra, length(mu_beta[[i]])+extra),
-                         breaks = seq(from=1, to=length(mu_beta[[i]]), length.out = 6))+
-      scale_y_continuous(expand = expansion(add = c(0, 0)))+
-      coord_cartesian(clip = 'off') +
-      theme_bw() + 
-      theme(legend.position = "none",
-            text = element_text(size=10),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_rect(colour = "black", fill=NA, size=0.2)
-            )
-    
-    beta_order <- sort(mu_beta[[i]],index.return=T)$ix
-    gamma_order <- sort(mu_gamma[[i]],index.return=T)$ix
-    
-    # Scatter plot 
-    df <- data.frame(sp=1:length(mu_gamma[[i]]),
-                     mean=mu_beta[[i]],
-                     variance=sqrt(1/2*mu_gamma[[i]]))
+    plist[[1]] <- plot.ranking.x(mu_beta[[i]], ci_beta[[i]], color=colo[1], xlabel="species", ylabel="mean", extra=1)
 
-    plist[[2]] <- ggplot(df, aes(x=variance, y=mean)) + 
-      geom_point(color=colo[3], alpha=0.7)+
-      ylab("mean")+
-      xlab("variance")+
-      scale_x_continuous(expand = expansion(add = c(0, 0)))+
-      scale_y_continuous(expand = expansion(add = c(0, 0)))+
-      coord_cartesian(clip = 'off') +
-      theme_bw() + 
-      theme(legend.position = "none",
-            text = element_text(size=10),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_rect(colour = "black", fill=NA, size=0.2)
-      )
-
-    # Gamma 
-    df <- data.frame(sp=1:length(mu_gamma[[i]]),
-                     mean=mu_gamma[[i]][gamma_order],
-                     low=ci_gamma[[i]][1,gamma_order],
-                     high=ci_gamma[[i]][2,gamma_order])
-    df <- data.frame(sp=df$sp, mean=sqrt(1/(2*df$mean)), low=sqrt(1/(2*df$low)), high=sqrt(1/(2*df$high)))
+    # Scatter plot
+    plist[[2]] <- plot.scatter(mu=mu_beta[[i]], variance=sqrt(1/2*mu_gamma[[i]]), color=colo[3], xlabel="variance", ylabel="mean")
     
-    plist[[3]] <- ggplot(df, aes(y=sp, x=mean)) + 
-      geom_segment(aes(y=sp, yend=sp, x=low, xend=high), data=df, color=colo[2], alpha=0.5) +
-      geom_point(color=colo[2], alpha=0.7)+
-      ylab("variance")+
-      xlab("species")+
-      scale_x_continuous(expand = expansion(add = c(0, 0)))+
-      scale_y_continuous(expand = expansion(add = c(0, 0)),
-                         limits = c(-extra, length(mu_beta[[i]])+extra),
-                         breaks = seq(from=1, to=length(mu_beta[[i]]), length.out = 6))+
-      coord_cartesian(clip = 'off') +
-      theme_bw() + 
-      theme(legend.position = "none",
-            text = element_text(size=10),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_rect(colour = "black", fill=NA, size=0.2)
-      )
+    # Gamma
+    plist[[3]] <- plot.ranking.y(sqrt(1/2*mu_gamma[[i]]), sqrt(1/2*ci_gamma[[i]]), color=colo[2], xlabel="variance", ylabel="species", extra=1)
     
-    hlay <- rbind(c(1,2),
-                  c(NA,3))
-    p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(0.5, 1), layout_matrix=hlay, widths=c(1,0.5)#, vp=viewport(width=1, height=1, clip = TRUE),
+    hlay <- rbind(c(2,1),
+                  c(3,NA))
+    p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(0.7,1), layout_matrix=hlay, widths=c(0.7,1)#, vp=viewport(width=1, height=1, clip = TRUE),
                       # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
                       )
     print(p)
@@ -174,7 +227,162 @@ plot.actual.data <- function(model=NULL){
 
 }
 
+plot.distribution <- function(eta, sigma, tit=""){
+  df <- data.frame(x=c(eta, sigma), type=c(rep("eta", length(eta)), rep("sigma", length(sigma))))
+  
+  p <- ggplot(df, aes(x=x, color=type)) +
+    stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+    theme_bw() +
+    ggtitle(tit)+
+    # scale_fill_grey() +
+    ylab("probability density")+
+    xlab("value")+
+    # guides(color = guide_legend(override.aes = list(shape=1,linetype = 1))) +
+    scale_color_manual(values=c("black", "#ce5c00"))+
+    theme(text = element_text(size=10),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(colour = "black"),
+          legend.title = element_blank(),
+          legend.spacing.x = unit(3, "pt"),
+          legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
+          # legend.position="none",
+          legend.position=c(0.70,.80),
+          legend.background = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+}
 
+plot.distributions.gp <- function(model=NULL){
+
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
+  }
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("etasq_b", "etasq_g", "sigma_b", "sigma_g")) 
+  
+  plist <- list()
+  plist[[1]] <- plot.distribution(post$etasq_b[,1], post$sigma_b[,1], tit = "beta 1")
+  plist[[2]] <- plot.distribution(post$etasq_b[,2], post$sigma_b[,2], tit = "beta 2")
+  plist[[3]] <- plot.distribution(post$etasq_g[,1], post$sigma_g[,1], tit = "gamma 1")
+  plist[[4]] <- plot.distribution(post$etasq_g[,2], post$sigma_g[,2], tit = "gamma 2")
+  
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, #, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  print(p)
+}
+
+plot.direction <- function(){
+  
+}
+
+plot.heatmaps <- function(type="trait", color="black", orderid=NULL){
+  # load data
+  d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2", "data.rds", sep = ""))
+
+  # Find dimensions
+  L <- length(unique(d$dataset$id))
+  N <- sum(d$dataset$id==1)
+  
+  # indices
+  mmsbm <- matrix(d$dataset$mmsbm.id, N, L)
+  
+  # Extract indices  
+  indices = data.frame(mmsbm = mmsbm[1,])
+
+  # Distance matrices  
+  dmat <- as.matrix(read.table(paste("../../data/properties/distance-matrices/", type, ".csv", sep=""), sep=","))
+  
+  # reshape correlation matrices
+  dmat <- dmat[,indices$mmsbm]
+  dmat <- dmat[indices$mmsbm,]
+  
+  # Normalize
+  dmat <- dmat/max(dmat)
+  
+  # reorder
+  if(!is.null(orderid)){
+    dmat <- dmat[, orderid]
+    dmat <- dmat[orderid,]
+  }
+  
+  # Build dataset
+  ij <- which(dmat>-1, arr.ind = T)
+  data <- data.frame(x=ij[,1], y=ij[,2], z=log(1+dmat[ij]))
+  p <- ggplot(data, aes(x, y, fill= z)) + 
+    geom_tile()+
+    ylab("species")+
+    xlab("species")+
+    scale_y_continuous(expand = expansion(add = c(0, 0)), trans = "reverse")+
+    scale_x_continuous(expand = expansion(add = c(0, 0)))+
+    scale_fill_gradient(low="white", high=color)+
+    theme_bw()+
+    theme(text = element_text(size=10),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(colour = "black"),
+          legend.title = element_blank(),
+          legend.spacing.x = unit(3, "pt"),
+          # legend.position="none",
+          # legend.position=c(0.70,.80),
+          legend.background = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA, size=0))
+  return(p)
+}
+
+plot.some.heatmaps <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
+  }
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  
+  # alphas
+  mu_alpha <- apply( post$alpha , 2 , mean )
+  ci_alpha <- apply( post$alpha , 2 , PI )
+  
+  # betas
+  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
+  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
+  
+  # gammas
+  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
+  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
+
+  # Alpha  plots
+  plist = list()
+  idx <- sort(mu_alpha,index.return=T)$ix
+  plist[[1]] <- plot.ranking.x(mu_alpha, ci_alpha, color=colo[3], xlabel="species", ylabel="alpha", extra=1, mu_order = idx)
+  p <- plot.heatmaps(type="trait", color=colo[3], orderid=idx)
+  plist[[3]] <- get_legend(p)
+  plist[[2]] <- p + theme(legend.position="none")
+
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1))  
+  
+  # Beta 1  plots
+  plist = list()
+  idx <- sort(mu_beta[[1]],index.return=T)$ix
+  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx)
+  p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx)
+  plist[[3]] <- get_legend(p)
+  plist[[2]] <- p + theme(legend.position="none")
+
+  hlay <- rbind(c(1,NA),
+                c(2,3))
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1)#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )  
+}
 
 
 
