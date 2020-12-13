@@ -279,7 +279,7 @@ plot.direction <- function(){
   
 }
 
-plot.heatmaps <- function(type="trait", color="black", orderid=NULL){
+plot.heatmaps <- function(type="trait", color="black", orderid=NULL, structure=NULL){
   # load data
   d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2", "data.rds", sep = ""))
 
@@ -302,6 +302,10 @@ plot.heatmaps <- function(type="trait", color="black", orderid=NULL){
   
   # Normalize
   dmat <- dmat/max(dmat)
+  
+  if(!(is.null(structure))){
+    dmat <- structure
+  }
   
   # reorder
   if(!is.null(orderid)){
@@ -330,8 +334,39 @@ plot.heatmaps <- function(type="trait", color="black", orderid=NULL){
           # legend.position="none",
           # legend.position=c(0.70,.80),
           legend.background = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA, size=0))
+          panel.border = element_rect(colour = "black", fill=NA, size=0.3))
   return(p)
+}
+
+generate.association.matrix <- function(){
+  comm <- readRDS("../../data/properties/communities/communities.rds")
+  dsp <- readRDS("../../data/properties/communities/dictionary.rds")
+  dictionary <- read.table("../../data/properties/codes/dictionary.csv", sep=",", header = T)
+  
+  # load data
+  d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2", "data.rds", sep = ""))
+  
+  # Find dimensions
+  L <- length(unique(d$dataset$id))
+  N <- sum(d$dataset$id==1)
+  
+  # Generate base matrix
+  results <- matrix(0,L,L)
+  
+  # indices
+  real <- matrix(d$dataset$real.id, N, L)
+  
+  # Extract indices  
+  indices = real[1,]
+  dis_names <- dictionary[indices,]$new.names
+  
+  for (i in comm.sp){
+    if(sum(i %in% dis_names)>1){
+      results[dis_names %in% i, dis_names %in% i] <- 1
+    }
+  }
+  results <- results*(1-diag(L))
+  return(results)
 }
 
 plot.some.heatmaps <- function(model=NULL){
@@ -376,12 +411,29 @@ plot.some.heatmaps <- function(model=NULL){
   p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx)
   plist[[3]] <- get_legend(p)
   plist[[2]] <- p + theme(legend.position="none")
+  
+  hlay <- rbind(c(1,NA),
+                c(2,3))
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1)#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  
+  # Beta structure
+  mat <- generate.association.matrix()
+  plist = list()
+  idx <- sort(mu_beta[[1]],index.return=T)$ix
+  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx)
+  p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx, structure = mat)
+  plist[[3]] <- get_legend(p)
+  plist[[2]] <- p + theme(legend.position="none")
+  
 
   hlay <- rbind(c(1,NA),
                 c(2,3))
   p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1)#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
-  )  
+  )
+  
 }
 
 
