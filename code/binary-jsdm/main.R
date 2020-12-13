@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -596,5 +596,5 @@ binomial.stan.gauss.RBFs.traits <- function(d = NULL, recompile = T, simulated=T
 }
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-binomial.stan.gauss.RBFs.traits(simulated=F, recompile = T, ofolder="/cluster/scratch/bemora/plant-stan/")
+binomial.stan.gauss.RBFs.traits(simulated=F, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
