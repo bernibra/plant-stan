@@ -27,6 +27,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         correlation_matrix_ids <- read.table("../../data/properties/codes/correlation_matrix_ids.csv", sep="\t", header = F)
         denvironment <- as.matrix(read.table("../../data/properties/distance-matrices/environment.csv", sep=","))
         dvariation <- as.matrix(read.table("../../data/properties/distance-matrices/variation.csv", sep=","))
+        dtraits <- as.matrix(read.table("../../data/properties/distance-matrices/trait.csv", sep=","))
         
         # Check that there aren't unnexpected files
         if(!all(sort(files)==1:length(files))){
@@ -61,12 +62,16 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         denvironment <- denvironment[name.idx,]
         dvariation <- dvariation[,name.idx]
         dvariation <- dvariation[name.idx,]
+        dtraits <- dtraits[,name.idx]
+        dtraits <- dtraits[name.idx,]
         
         # rename cols and rows
         colnames(denvironment) <- 1:ncol(denvironment)
         rownames(denvironment) <- 1:nrow(denvironment)
         colnames(dvariation) <- 1:ncol(dvariation)
         rownames(dvariation) <- 1:nrow(dvariation)
+        colnames(dtraits) <- 1:ncol(dtraits)
+        rownames(dtraits) <- 1:nrow(dtraits)
         
         obs.data$obs <- 1*(obs.data$abundance>0)
 
@@ -77,7 +82,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         crs(bioclim.data)<-projection
         
         return(list(obs.data = obs.data, bioclim.data = bioclim.data, xlim = c(min.lon, max.lon), ylim = c(min.lat, max.lat), 
-                    denv = denvironment, dvar = dvariation))
+                    denv = denvironment, dvar = dvariation, dtrait=dtraits))
 }
 
 # Generate fake data to test the extent to which the model works
@@ -166,7 +171,7 @@ simulated.data <- function(simulated.type="linear.corr"){
                 
                 dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
                 dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
-                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma))
+                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr2=Dis_sigma))
         }else{
                 dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
                 
@@ -213,7 +218,7 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                 # Standarize environmental variables
                 for(i in c(1:ncol(dataset))[-c(1:(ncol(dataset)-ndim))]){dataset[,i] <- scale(dataset[,i])}
                 
-                return(list(dataset=dataset, corr=dat$denv, corr2=dat$dvar))
+                return(list(dataset=dataset, corr=dat$denv, corr2=dat$dvar, corr3=dat$dtrait))
         }
 }
 

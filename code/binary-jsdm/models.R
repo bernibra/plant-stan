@@ -587,3 +587,88 @@ model{
     }
 }
 "
+
+# This is the same as model 3.1 and 3.2 but much faster. 
+# The structure of the model is very different but it helps me vectorize the operations and reduce the size of the objects used
+model5.1 <- "
+functions{
+    matrix cov_GPL2(matrix x, matrix y, real sq_alpha, real sq_alpha_t, real sq_rho, real sq_rho_t, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+        for (i in 1:(N-1)) {
+          K[i, i] = sq_alpha + sq_alpha_t + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = sq_alpha * exp(-sq_rho * square(x[i,j]) ) + sq_alpha_t * exp(-sq_rho_t * square(y[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = sq_alpha + sq_alpha_t + delta;
+        return K;
+    }
+}
+data{
+    int N;
+    int L;
+    int K;
+    int Y[L,N];
+    row_vector[N] X1;
+    row_vector[N] X2;
+    matrix[L,L] Dmat_b;
+    matrix[L,L] Dmat_g;
+    matrix[L,L] Dmat_t;
+}
+parameters{
+    vector[L] zalpha;
+    matrix[K,L] zbeta;
+    matrix[K,L] zgamma;
+    real alpha_bar;
+    vector[K] beta_bar;
+    vector[K] gamma_bar;
+    real<lower=0> sigma_a;
+    vector<lower=0>[K] sigma_b;
+    vector<lower=0>[K] sigma_g;
+    vector<lower=0>[K] etasq_b;
+    vector<lower=0>[K] rhosq_b;
+    vector<lower=0>[K] etasq_g;
+    vector<lower=0>[K] rhosq_g;
+    vector<lower=0>[K] etasq_t;
+    vector<lower=0>[K] rhosq_t;
+}
+transformed parameters{
+    vector[L] alpha;
+    matrix[K,L] beta;
+    matrix[K,L] gamma;
+    matrix[L, L] L_SIGMA_b[K];
+    matrix[L, L] L_SIGMA_g[K];
+    for(i in 1:K){
+        L_SIGMA_b[i] = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b[i], etasq_t[i], rhosq_b[i], rhosq_t[i], sigma_b[i]));
+        beta[i] = zbeta[i]*(L_SIGMA_b[i]') + beta_bar[i];
+    }
+    for(i in 1:K){
+        L_SIGMA_g[i] = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g[i], etasq_t[i], rhosq_g[i], rhosq_t[i], sigma_g[i]));
+        gamma[i] = zgamma[i]*(L_SIGMA_g[i]') + gamma_bar[i];
+        gamma[i] = exp(gamma[i]);
+    }
+
+    alpha = zalpha * sigma_a + alpha_bar;
+}
+model{
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    rhosq_b ~ exponential( 0.5 );
+    etasq_b ~ exponential( 1 );
+    rhosq_g ~ exponential( 0.5 );
+    etasq_g ~ exponential( 1 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    gamma_bar ~ std_normal();
+    zalpha ~ std_normal();
+    to_vector(zgamma) ~ std_normal();
+    to_vector( zbeta ) ~ std_normal();
+
+    for ( i in 1:L ){
+        Y[i] ~ bernoulli_logit(alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i]));
+    }
+}
+"
