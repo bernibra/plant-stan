@@ -571,8 +571,10 @@ binomial.stan.gauss.RBFs.traits <- function(d = NULL, recompile = T, simulated=T
                 rhosq_b = rep(0.1, dat_5.1$K),
                 etasq_g = rep(0.1, dat_5.1$K),
                 rhosq_g = rep(0.1, dat_5.1$K),
-                etasq_t = rep(0.1, dat_5.1$K),
-                rhosq_t = rep(0.1, dat_5.1$K)
+                etasq_tb = rep(0.1, dat_5.1$K),
+                rhosq_tb = rep(0.1, dat_5.1$K),
+                etasq_tg = rep(0.1, dat_5.1$K),
+                rhosq_tg = rep(0.1, dat_5.1$K)
         )
         
         model_code=model5.1

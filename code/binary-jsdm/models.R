@@ -631,8 +631,10 @@ parameters{
     vector<lower=0>[K] rhosq_b;
     vector<lower=0>[K] etasq_g;
     vector<lower=0>[K] rhosq_g;
-    vector<lower=0>[K] etasq_t;
-    vector<lower=0>[K] rhosq_t;
+    vector<lower=0>[K] etasq_tb;
+    vector<lower=0>[K] rhosq_tb;
+    vector<lower=0>[K] etasq_tg;
+    vector<lower=0>[K] rhosq_tg;
 }
 transformed parameters{
     vector[L] alpha;
@@ -641,11 +643,11 @@ transformed parameters{
     matrix[L, L] L_SIGMA_b[K];
     matrix[L, L] L_SIGMA_g[K];
     for(i in 1:K){
-        L_SIGMA_b[i] = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b[i], etasq_t[i], rhosq_b[i], rhosq_t[i], sigma_b[i]));
+        L_SIGMA_b[i] = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b[i], etasq_tb[i], rhosq_b[i], rhosq_tb[i], sigma_b[i]));
         beta[i] = zbeta[i]*(L_SIGMA_b[i]') + beta_bar[i];
     }
     for(i in 1:K){
-        L_SIGMA_g[i] = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g[i], etasq_t[i], rhosq_g[i], rhosq_t[i], sigma_g[i]));
+        L_SIGMA_g[i] = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g[i], etasq_tg[i], rhosq_g[i], rhosq_tg[i], sigma_g[i]));
         gamma[i] = zgamma[i]*(L_SIGMA_g[i]') + gamma_bar[i];
         gamma[i] = exp(gamma[i]);
     }
@@ -660,6 +662,10 @@ model{
     etasq_b ~ exponential( 1 );
     rhosq_g ~ exponential( 0.5 );
     etasq_g ~ exponential( 1 );
+    rhosq_tb ~ exponential( 0.5 );
+    etasq_tb ~ exponential( 1 );
+    rhosq_tg ~ exponential( 0.5 );
+    etasq_tg ~ exponential( 1 );
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
