@@ -27,6 +27,9 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         correlation_matrix_ids <- read.table("../../data/properties/codes/correlation_matrix_ids.csv", sep="\t", header = F)
         denvironment <- as.matrix(read.table("../../data/properties/distance-matrices/environment.csv", sep=","))
         dvariation <- as.matrix(read.table("../../data/properties/distance-matrices/variation.csv", sep=","))
+        dtraits <- as.matrix(read.table("../../data/properties/distance-matrices/trait.csv", sep=","))
+        
+        indicator <- read.table("../../data/properties/codes/temperature_indicator.csv", sep=",")
         
         # Check that there aren't unnexpected files
         if(!all(sort(files)==1:length(files))){
@@ -37,6 +40,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         obs.data <- data.frame()
         name.idx <- c()
         kdx <- 1
+        Tind <- c()
         
         # Read observations
         for(idx in 1:length(files)){
@@ -47,6 +51,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              ### Ok so I think the order for the correlation matrix is the same, but I do need to double-check
              ### This is a very dumb way of doing just that. I didn't want to think.
              new.name <- as.character(dictionary$new.names[as.character(dictionary$old.names)==as.character(sp_codes$sp[idx])])
+             Tind <- rbind(Tind, c(kdx, new.name, as.character(indicator$nflor.T[new.name==indicator$nflor.spnames])))
              name.idx <- c(name.idx,correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name])
              ###
              obs.data_$id <- kdx
@@ -56,19 +61,25 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              kdx <- kdx+1
         }
         
+        write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed.csv", sep=",")
+        
         # reshape correlation matrices
         denvironment <- denvironment[,name.idx]
         denvironment <- denvironment[name.idx,]
         dvariation <- dvariation[,name.idx]
         dvariation <- dvariation[name.idx,]
+        dtraits <- dtraits[,name.idx]
+        dtraits <- dtraits[name.idx,]
         
         # rename cols and rows
         colnames(denvironment) <- 1:ncol(denvironment)
         rownames(denvironment) <- 1:nrow(denvironment)
         colnames(dvariation) <- 1:ncol(dvariation)
         rownames(dvariation) <- 1:nrow(dvariation)
+        colnames(dtraits) <- 1:ncol(dtraits)
+        rownames(dtraits) <- 1:nrow(dtraits)
         
-        obs.data$obs <- 1*(obs.data$abundance>0)
+        obs.data$obs <- obs.data$abundance
 
         # Load environmental data
         files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
@@ -77,15 +88,15 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         crs(bioclim.data)<-projection
         
         return(list(obs.data = obs.data, bioclim.data = bioclim.data, xlim = c(min.lon, max.lon), ylim = c(min.lat, max.lat), 
-                    denv = denvironment, dvar = dvariation))
+                    denv = denvironment, dvar = dvariation, dtrait=dtraits))
 }
 
 # Generate fake data to test the extent to which the model works
 simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
-        N <- 100
-        sites <- 300
+        N <- 20
+        sites <- 100
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
@@ -166,7 +177,7 @@ simulated.data <- function(simulated.type="linear.corr"){
                 
                 dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
                 dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
-                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma))
+                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr2=Dis_sigma))
         }else{
                 dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
                 
@@ -213,7 +224,7 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                 # Standarize environmental variables
                 for(i in c(1:ncol(dataset))[-c(1:(ncol(dataset)-ndim))]){dataset[,i] <- scale(dataset[,i])}
                 
-                return(list(dataset=dataset, corr=dat$denv, corr2=dat$dvar))
+                return(list(dataset=dataset, corr=dat$denv, corr2=dat$dvar, corr3=dat$dtrait))
         }
 }
 

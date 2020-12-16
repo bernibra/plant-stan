@@ -29,6 +29,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         dvariation <- as.matrix(read.table("../../data/properties/distance-matrices/variation.csv", sep=","))
         dtraits <- as.matrix(read.table("../../data/properties/distance-matrices/trait.csv", sep=","))
         
+        indicator <- read.table("../../data/properties/codes/temperature_indicator.csv", sep=",")
+        
         # Check that there aren't unnexpected files
         if(!all(sort(files)==1:length(files))){
             stop("Odd files in the folder")    
@@ -38,6 +40,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         obs.data <- data.frame()
         name.idx <- c()
         kdx <- 1
+        Tind <- c()
         
         # Read observations
         for(idx in 1:length(files)){
@@ -48,6 +51,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              ### Ok so I think the order for the correlation matrix is the same, but I do need to double-check
              ### This is a very dumb way of doing just that. I didn't want to think.
              new.name <- as.character(dictionary$new.names[as.character(dictionary$old.names)==as.character(sp_codes$sp[idx])])
+             Tind <- rbind(Tind, c(kdx, new.name, as.character(indicator$nflor.T[new.name==indicator$nflor.spnames])))
              name.idx <- c(name.idx,correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name])
              ###
              obs.data_$id <- kdx
@@ -56,6 +60,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              obs.data <- rbind(obs.data, obs.data_)
              kdx <- kdx+1
         }
+        
+        write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed.csv", sep=",")
         
         # reshape correlation matrices
         denvironment <- denvironment[,name.idx]

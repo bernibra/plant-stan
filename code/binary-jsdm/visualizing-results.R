@@ -88,7 +88,7 @@ plot.scatter <- function(mu, variance, color="black", xlabel="-", ylabel="-"){
   return(p)
 }
 
-plot.ranking.x <- function(mu, ci, color="black", xlabel="-", ylabel="-", extra=1, mu_order=NULL){
+plot.ranking.x <- function(mu, ci, color="black", xlabel="-", ylabel="-", extra=1, mu_order=NULL, additional_label=c("", "")){
   # Sort data
   if(is.null(mu_order)){
     mu_order <- sort(mu,index.return=T)$ix
@@ -100,6 +100,7 @@ plot.ranking.x <- function(mu, ci, color="black", xlabel="-", ylabel="-", extra=
   p <- ggplot(df, aes(x=sp, y=mean)) + 
     geom_segment(aes(x=sp, xend=sp, y=low, yend=high), data=df, color=color, alpha=0.5) +
     geom_point(color=color, alpha=0.7)+
+    annotate("text", x = length(mu_order)-40, y = c(-2.7,1.9), label = additional_label, colour = "#525252") +
     ylab(ylabel)+
     xlab(xlabel)+
     scale_x_continuous(expand = expansion(add = c(0, 0)),
@@ -281,7 +282,7 @@ plot.direction <- function(){
 
 plot.heatmaps <- function(type="trait", color="black", orderid=NULL, structure=NULL){
   # load data
-  d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2", "data.rds", sep = ""))
+  # d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2data_backup", ".rds", sep = ""))
 
   # Find dimensions
   L <- length(unique(d$dataset$id))
@@ -344,7 +345,7 @@ generate.association.matrix <- function(){
   dictionary <- read.table("../../data/properties/codes/dictionary.csv", sep=",", header = T)
   
   # load data
-  d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2", "data.rds", sep = ""))
+  # d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2data_backup", ".rds", sep = ""))
   
   # Find dimensions
   L <- length(unique(d$dataset$id))
@@ -360,7 +361,7 @@ generate.association.matrix <- function(){
   indices = real[1,]
   dis_names <- dictionary[indices,]$new.names
   
-  for (i in comm.sp){
+  for (i in comm){
     if(sum(i %in% dis_names)>1){
       results[dis_names %in% i, dis_names %in% i] <- 1
     }
@@ -394,6 +395,11 @@ plot.some.heatmaps <- function(model=NULL){
   mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
   ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
 
+  #indicator values
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  
+  hlay <- rbind(c(1,NA),
+                c(2,3))
   # Alpha  plots
   plist = list()
   idx <- sort(mu_alpha,index.return=T)$ix
@@ -407,13 +413,16 @@ plot.some.heatmaps <- function(model=NULL){
   # Beta 1  plots
   plist = list()
   idx <- sort(mu_beta[[1]],index.return=T)$ix
-  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx)
+  Tind_ <- as.numeric(as.character(Tind[idx,3]))
+  Tind_ <- Tind_[!(is.na(Tind_))]
+  Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+  Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+  
+  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx, additional_label = Tind_)
   p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx)
   plist[[3]] <- get_legend(p)
   plist[[2]] <- p + theme(legend.position="none")
   
-  hlay <- rbind(c(1,NA),
-                c(2,3))
   p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1)#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
@@ -422,15 +431,17 @@ plot.some.heatmaps <- function(model=NULL){
   mat <- generate.association.matrix()
   plist = list()
   idx <- sort(mu_beta[[1]],index.return=T)$ix
-  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx)
-  p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx, structure = mat)
-  plist[[3]] <- get_legend(p)
-  plist[[2]] <- p + theme(legend.position="none")
+  Tind_ <- as.numeric(as.character(Tind[idx,3]))
+  Tind_ <- Tind_[!(is.na(Tind_))]
+  Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+  Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
   
+  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx, additional_label = Tind_)
+  p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx, structure = mat)
+  # plist[[3]] <- get_legend(p)
+  plist[[2]] <- p + theme(legend.position="none")
 
-  hlay <- rbind(c(1,NA),
-                c(2,3))
-  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1)#, vp=viewport(width=1, height=1, clip = TRUE),
+  p <- grid.arrange(grobs=plist, ncol=1, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1)#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
   
