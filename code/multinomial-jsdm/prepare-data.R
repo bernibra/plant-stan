@@ -98,8 +98,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
 simulated.data <- function(){
         
         # Define system dimensions
-        N <- 20
-        sites <- 100
+        N <- 100
+        sites <- 300
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
@@ -107,14 +107,16 @@ simulated.data <- function(){
         
         # uncorrelated coefficients for each species and parameters
         levels <- 1:5
-        alpha_base <- rnorm(N)
-        alpha4 <- runif(N)
-        alpha3 <- runif(N)+alpha4
-        alpha2 <- runif(N)+alpha3
-        alpha1 <- runif(N)+alpha2
-        alpha <- data.frame(alpha1=alpha1, alpha2=alpha2, alpha3=alpha3, alpha4=alpha4)
-        alpha <- as.data.frame(t(scale(t(alpha))))
-        
+        alpha <- rnorm(N)
+        b01 <- 1
+        b02 <- 0.05
+        b03 <- -0.05
+        b04 <- -1
+        alpha1 <- 1
+        alpha2 <- 0.05
+        alpha3 <- -0.05
+        alpha4 <- -1
+
         sigma1 <- 0.3 # sd beta1
         mean1 <- -1 # mean beta1
         sigma2 <- 0.4 # sd beta2
@@ -154,18 +156,18 @@ simulated.data <- function(){
         dataset$S2 <- e2[dataset$site]
         dataset$beta1 <- beta1[dataset$id] 
         dataset$beta2 <- beta2[dataset$id] 
-        dataset$alpha_base <- alpha_base[dataset$id]
-        dataset$alpha1 <- alpha$alpha1[dataset$id]
-        dataset$alpha2 <- alpha$alpha2[dataset$id]
-        dataset$alpha3 <- alpha$alpha3[dataset$id]
-        dataset$alpha4 <- alpha$alpha4[dataset$id]
+        dataset$alpha <- alpha[dataset$id]
+        dataset$alpha1 <- rep(alpha1, length(dataset$id))
+        dataset$alpha2 <- rep(alpha2, length(dataset$id))
+        dataset$alpha3 <- rep(alpha3, length(dataset$id))
+        dataset$alpha4 <- rep(alpha4, length(dataset$id))
         
         dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
         dataset$sigma_beta2 <- sigma_beta2[dataset$id]
-        dataset$prob_2to5 <- inv_logit(alpha$alpha1[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
-        dataset$prob_3to5 <- inv_logit(alpha$alpha2[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
-        dataset$prob_4to5 <- inv_logit(alpha$alpha3[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
-        dataset$prob_5 <- inv_logit(alpha$alpha4[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_2to5 <- inv_logit(alpha1 + alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_3to5 <- inv_logit(alpha2 + alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_4to5 <- inv_logit(alpha3 + alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_5 <- inv_logit(alpha4 + alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
         dataset$prob_1 <- 1 - dataset$prob_2to5
         dataset$prob_2 <- dataset$prob_2to5 - dataset$prob_3to5
         dataset$prob_3 <- dataset$prob_3to5 - dataset$prob_4to5
@@ -181,8 +183,8 @@ simulated.data <- function(){
         }
         
         dataset$obs <- obs
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha_base, alpha1=dataset$alpha1, alpha2=dataset$alpha2, alpha3=dataset$alpha3, alpha4=dataset$alpha4,  beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
-        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr2=Dis_sigma))
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, alpha1=dataset$alpha1, alpha2=dataset$alpha2, alpha3=dataset$alpha3, alpha4=dataset$alpha4,  beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
+        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis_sigma))
 
 }
 

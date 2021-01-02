@@ -27,11 +27,9 @@ data{
     row_vector[N] X2;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
-
 }
 parameters{
-    //ordered[L] zalpha[M];
-    
+    ordered[M] alpha_hat;
     vector[L] zalpha;
     matrix[K,L] zbeta;
     matrix[K,L] zgamma;
@@ -65,6 +63,7 @@ transformed parameters{
     alpha = zalpha * sigma_a + alpha_bar;
 }
 model{
+    alpha_hat ~ normal(0,1.5);
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
@@ -80,7 +79,7 @@ model{
     to_vector( zbeta ) ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ ordered_logistic( gamma[1,i] * columns_dot_self(X1 - beta[1, i]) + gamma[2,i] * columns_dot_self(X2 - beta[2, i]), alpha[i] );
+        Y[i] ~ ordered_logistic(to_vector(alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])), alpha_hat);
     }
 }
 "

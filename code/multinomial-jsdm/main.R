@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -81,6 +81,7 @@ multinomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=
         dat_1.1 <- list(N=N,
                         L=L,
                         K=2,
+                        M=length(unique(as.vector(obs)))-1,
                         Y=t(obs),
                         X1=X1,
                         X2=X2,
@@ -90,6 +91,7 @@ multinomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=
         
         # Set starting values for the parameters
         start_1.1 <- list(
+                alpha_hat = 1:dat_1.1$M/dat_1.1$M-length(dat_1.1$M)*0.5,
                 zalpha = rep(0, dat_1.1$L),
                 zbeta = matrix(0, dat_1.1$K, dat_1.1$L),
                 zgamma = matrix(0, dat_1.1$K, dat_1.1$L),
@@ -105,26 +107,25 @@ multinomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=
                 rhosq_g = rep(0.1, dat_1.1$K)
         )
         
-        model_code=model4.1
+        model_code=model1.1
         
         # Initialize data structure
-        n_chains_4.1 <- 3
-        init_4.1 <- list()
-        for ( i in 1:n_chains_4.1 ) init_4.1[[i]] <- start_4.1
+        n_chains_1.1 <- 3
+        init_1.1 <- list()
+        for ( i in 1:n_chains_1.1 ) init_1.1[[i]] <- start_1.1
         
         # Run stan model
-        mfit_4.1 <- stan ( model_code=model_code ,
-                           data=dat_4.1 ,
-                           chains=n_chains_4.1 ,
-                           cores= n_chains_4.1 ,
+        mfit_1.1 <- stan ( model_code=model_code ,
+                           data=dat_1.1 ,
+                           chains=n_chains_1.1 ,
+                           cores= n_chains_1.1 ,
                            warmup=1000, iter=2000,
-                           init=init_4.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+                           init=init_1.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_4.1, file = paste(ofolder, "binomial-stan-gauss-RBFs-beta",extension,".rds", sep=""))
-        return(mfit_4.1)
+        saveRDS(mfit_1.1, file = paste(ofolder, "multinomial-stan-gauss-RBFs-beta",extension,".rds", sep=""))
+        return(mfit_1.1)
 }
 
-# model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-multinomial.stan.gauss.RBFs.beta(simulated=F, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+multinomial.stan.gauss.RBFs.beta(simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
