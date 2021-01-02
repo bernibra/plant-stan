@@ -262,7 +262,7 @@ plot.distributions.gp <- function(model=NULL){
   }
   
   # extract samples
-  post <- extract.samples(model, n = 1000, pars=c("etasq_b", "etasq_g", "sigma_b", "sigma_g")) 
+  post <- extract.samples(model, n = 1000, pars=c("etasq_b", "etasq_g", "sigma_b", "sigma_g", "etasq_tb", "etasq_tg")) 
   
   plist <- list()
   plist[[1]] <- plot.distribution(post$etasq_b[,1], post$sigma_b[,1], tit = "beta 1")

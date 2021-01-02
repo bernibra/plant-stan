@@ -39,7 +39,7 @@ multinomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=
                                         variables <- paste("PC", 1:ndim, sep="")
                                 }
                         }
-                        filename <- paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = "")
+                        filename <- paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "_abundance_data.rds", sep = "")
 
                         if (file.exists(filename)){
                                 question <- askYesNo("Do you want to overwrite the file?", default = F, 
@@ -62,7 +62,7 @@ multinomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=
                                         variables <- paste("PC", 1:ndim, sep="")
                                 }
                         }
-                        d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                        d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "_abundance_data.rds", sep = ""))
                 }
         }
         

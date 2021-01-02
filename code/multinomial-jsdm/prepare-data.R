@@ -6,6 +6,7 @@ library("rJava")
 library(SDMTools)
 source("../prepare-data/useful-tools.R")
 library(MASS)
+library(MCMCpack)
 
 # Define projection as global variable
 projection <- "+proj=somerc +init=world:CH1903"
@@ -79,7 +80,9 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         colnames(dtraits) <- 1:ncol(dtraits)
         rownames(dtraits) <- 1:nrow(dtraits)
         
-        obs.data$obs <- obs.data$abundance
+        obs.data$obs <- factor(obs.data$abundance,
+               levels = sort(unique(obs.data$abundance)),
+               labels = 1:length(unique(obs.data$abundance)))
 
         # Load environmental data
         files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)
@@ -92,7 +95,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
 }
 
 # Generate fake data to test the extent to which the model works
-simulated.data <- function(simulated.type="linear.corr"){
+simulated.data <- function(){
         
         # Define system dimensions
         N <- 20
@@ -103,7 +106,15 @@ simulated.data <- function(simulated.type="linear.corr"){
         e2 <- rnorm(sites)
         
         # uncorrelated coefficients for each species and parameters
-        alpha <- rnorm(N)
+        levels <- 1:5
+        alpha_base <- rnorm(N)
+        alpha4 <- runif(N)
+        alpha3 <- runif(N)+alpha4
+        alpha2 <- runif(N)+alpha3
+        alpha1 <- runif(N)+alpha2
+        alpha <- data.frame(alpha1=alpha1, alpha2=alpha2, alpha3=alpha3, alpha4=alpha4)
+        alpha <- as.data.frame(t(scale(t(alpha))))
+        
         sigma1 <- 0.3 # sd beta1
         mean1 <- -1 # mean beta1
         sigma2 <- 0.4 # sd beta2
@@ -115,53 +126,27 @@ simulated.data <- function(simulated.type="linear.corr"){
         s <- 0.5
         Dis <- (as.matrix(dist(1:N))/N)
         
-        if(simulated.type=="linear.corr"){
-                z1 <- rnorm(N)
-                z2 <- rnorm(N)
+        # coefficients for each species
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
+        z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
+        z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
+        
+        # Generate correlations
+        beta1 <- z1
+        beta2 <- z2
+        sigma_beta1 <- abs(rnorm(N, 0,0.2))
+        sigma_beta2 <- abs(rnorm(N, 0,0.2))
+        
+        vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        
+        Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.2
+        sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
+        Sigma <- 1*exp(-1/(0.2*0.2)*(Dis_sigma^2)) + diag(N)*0.1
+        sigma_beta2 <- exp(mvrnorm(mu = rep(-2, times = N), Sigma = Sigma))
 
-                # Generate correlations
-                beta1 <- z1 * sigma1 + mean1
-                beta2 <- (rho*z1 + sqrt(1-rho^2)*z2)*sigma2 + mean2
-                
-        }else if (simulated.type=="linear.corr.gauss"){
-                
-                # coefficients for each species
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1_ <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2_ <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
-                
-                # remove correlation
-                rho_ <- cor(z1_, z2_)
-                z1 <- (z1_-mean(z1_))/sd(z1_)
-                z2 <- ((z2_-mean(z2_))/sd(z2_) - rho_ * z1)/sqrt(1-rho_^2)
-                
-                # Generate correlations
-                beta1 <- z1 * sigma1 + mean1
-                beta2 <- (rho*z1 + sqrt(1-rho^2)*z2)*sigma2 + mean2
-                
-        }else{
-                # coefficients for each species
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
-                
-                # Generate correlations
-                beta1 <- z1
-                beta2 <- z2
-                sigma_beta1 <- abs(rnorm(N, 0,0.2))
-                sigma_beta2 <- abs(rnorm(N, 0,0.2))
-                
-                vec <- c(1:round(N*0.5), 1:round(N*0.5))
-                Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
-                Dis_sigma <- (Dis_sigma/max(Dis_sigma))
-                
-                Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.2
-                sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
-                Sigma <- 1*exp(-1/(0.2*0.2)*(Dis_sigma^2)) + diag(N)*0.1
-                sigma_beta2 <- exp(mvrnorm(mu = rep(-2, times = N), Sigma = Sigma))
-        }
         
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
@@ -169,22 +154,36 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$S2 <- e2[dataset$site]
         dataset$beta1 <- beta1[dataset$id] 
         dataset$beta2 <- beta2[dataset$id] 
-        dataset$alpha <- alpha[dataset$id]
-        if (simulated.type=="gauss.gauss"){
-                dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
-                dataset$sigma_beta2 <- sigma_beta2[dataset$id]
-                dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
-                
-                dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-                dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
-                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr2=Dis_sigma))
-        }else{
-                dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
-                
-                dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-                dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, S1=dataset$S1, S2=dataset$S2)                
-                return(list(dataset=dataset, corr=Dis))
+        dataset$alpha_base <- alpha_base[dataset$id]
+        dataset$alpha1 <- alpha$alpha1[dataset$id]
+        dataset$alpha2 <- alpha$alpha2[dataset$id]
+        dataset$alpha3 <- alpha$alpha3[dataset$id]
+        dataset$alpha4 <- alpha$alpha4[dataset$id]
+        
+        dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
+        dataset$sigma_beta2 <- sigma_beta2[dataset$id]
+        dataset$prob_2to5 <- inv_logit(alpha$alpha1[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_3to5 <- inv_logit(alpha$alpha2[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_4to5 <- inv_logit(alpha$alpha3[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_5 <- inv_logit(alpha$alpha4[dataset$id] + alpha_base[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+        dataset$prob_1 <- 1 - dataset$prob_2to5
+        dataset$prob_2 <- dataset$prob_2to5 - dataset$prob_3to5
+        dataset$prob_3 <- dataset$prob_3to5 - dataset$prob_4to5
+        dataset$prob_4 <- dataset$prob_4to5 - dataset$prob_5
+        
+        obs <- c()
+        for (i in 1:length(dataset$prob_4)) {
+                obs[i] <- sample(
+                        x = c(1:5), 
+                        size = 1, 
+                        prob = c(dataset$prob_1[i], dataset$prob_2[i], dataset$prob_3[i], dataset$prob_4[i], dataset$prob_5[i])
+                )
         }
+        
+        dataset$obs <- obs
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha_base, alpha1=dataset$alpha1, alpha2=dataset$alpha2, alpha3=dataset$alpha3, alpha4=dataset$alpha4,  beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
+        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr2=Dis_sigma))
+
 }
 
 ####
@@ -195,10 +194,7 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                                       simulated=F, simulated.type="linear.corr", min.occurrence=0){
         
         if(simulated){
-                if(!(simulated.type %in% c("linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
-                        stop(paste("'", simulated.type, "' is not a valid 'simulated.type'", sep=""))
-                }
-                dataset <- simulated.data(simulated.type=simulated.type)
+                dataset <- simulated.data()
                 return(dataset)
         }else{
                 if(pca){
@@ -228,13 +224,4 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
         }
 }
 
-playing.with.multivariate <- function(n, s, c, mu, N){
-        vec <- c(1:round(N*0.5), 1:round(N*0.5))
-        # vec <- 1:N
-        Dis <- dist(vec)
-        Sigma <- n*exp(-(1/(s*s))*((as.matrix(Dis)/max(Dis))^2)) + diag(N)*c
-        z1 <- exp(mvrnorm(mu = rep(mu, times = N), Sigma = Sigma))
-        plot(1:N, z1)
-        return(z1)
-}
 
