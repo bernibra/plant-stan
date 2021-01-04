@@ -98,8 +98,8 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
 simulated.data <- function(){
         
         # Define system dimensions
-        N <- 100
-        sites <- 300
+        N <- 50
+        sites <- 100
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
