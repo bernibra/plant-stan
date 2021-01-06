@@ -72,7 +72,7 @@ plot.common.to.all <- function(p, fontsize=10){
   return(p)
 }
 
-plot.scatter <- function(mu, variance, color="black", xlabel="-", ylabel="-"){
+plot.scatter <- function(mu, variance, color="black", xlabel="-", ylabel="-", tit=NULL){
 
   df <- data.frame(sp=1:length(mu), mean=mu, variance=variance)
   
@@ -84,6 +84,9 @@ plot.scatter <- function(mu, variance, color="black", xlabel="-", ylabel="-"){
     scale_y_continuous(expand = expansion(add = c(0, 0)))
   
   p <- plot.common.to.all(p)
+  if(!(is.null(tit))){
+    p <- p + ggtitle(tit)
+  }
   
   return(p)
 }
@@ -167,7 +170,7 @@ plot.actual.data <- function(model=NULL){
 
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
+    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
   }
   
   # extract samples
@@ -228,8 +231,11 @@ plot.actual.data <- function(model=NULL){
 
 }
 
-plot.distribution <- function(eta, sigma, tit=""){
-  df <- data.frame(x=c(eta, sigma), type=c(rep("eta", length(eta)), rep("sigma", length(sigma))))
+plot.distribution <- function(eta, sigma, eta_prima, tit=""){
+  df <- data.frame(x=c(sigma, eta, eta_prima),
+                   type=c(rep("sigma", length(sigma)),
+                          rep("indicator values", length(eta)),
+                          rep("traits", length(eta_prima))))
   
   p <- ggplot(df, aes(x=x, color=type)) +
     stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
@@ -239,7 +245,7 @@ plot.distribution <- function(eta, sigma, tit=""){
     ylab("probability density")+
     xlab("value")+
     # guides(color = guide_legend(override.aes = list(shape=1,linetype = 1))) +
-    scale_color_manual(values=c("black", "#ce5c00"))+
+    scale_color_manual(values=c("#4daf4a", "black", "#e41a1c"))+
     theme(text = element_text(size=10),
           axis.title.y=element_blank(),
           panel.grid.major = element_blank(),
@@ -265,11 +271,35 @@ plot.distributions.gp <- function(model=NULL){
   post <- extract.samples(model, n = 1000, pars=c("etasq_b", "etasq_g", "sigma_b", "sigma_g", "etasq_tb", "etasq_tg")) 
   
   plist <- list()
-  plist[[1]] <- plot.distribution(post$etasq_b[,1], post$sigma_b[,1], tit = "beta 1")
-  plist[[2]] <- plot.distribution(post$etasq_b[,2], post$sigma_b[,2], tit = "beta 2")
-  plist[[3]] <- plot.distribution(post$etasq_g[,1], post$sigma_g[,1], tit = "gamma 1")
-  plist[[4]] <- plot.distribution(post$etasq_g[,2], post$sigma_g[,2], tit = "gamma 2")
+  plist[[1]] <- plot.distribution(post$etasq_b[,1],
+                                  post$sigma_b[,1],
+                                  post$etasq_tb[,1],
+                                  tit = "beta 1")
+  plist[[2]] <- plot.distribution(post$etasq_b[,2],
+                                  post$sigma_b[,2],
+                                  post$etasq_tb[,2],
+                                  tit = "beta 2")
+  plist[[3]] <- plot.distribution(post$etasq_g[,1],
+                                  post$sigma_g[,1],
+                                  post$etasq_tg[,1],
+                                  tit = "gamma 1")
+  plist[[4]] <- plot.distribution(post$etasq_g[,2],
+                                  post$sigma_g[,2],
+                                  post$etasq_tg[,2],
+                                  tit = "gamma 2")
   
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, #, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  print(p)
+  
+  plist = list()
+  
+  # Scatter plot
+  plist[[1]] <- plot.scatter(mu=post$etasq_b[,1], variance=post$etasq_tb[,1], color="#fbb4ae", xlabel="traits", ylabel="indicator values", tit="beta 1")
+  plist[[2]] <- plot.scatter(mu=post$etasq_b[,2], variance=post$etasq_tb[,2], color="#b3cde3", xlabel="traits", ylabel="indicator values", tit="beta 2")
+  plist[[3]] <- plot.scatter(mu=post$etasq_g[,1], variance=post$etasq_tg[,1], color="#ccebc5", xlabel="traits", ylabel="indicator values", tit="gamma 1")
+  plist[[4]] <- plot.scatter(mu=post$etasq_g[,2], variance=post$etasq_tg[,2], color="#decbe4", xlabel="traits", ylabel="indicator values", tit="gamma 2")
   p <- grid.arrange(grobs=plist, ncol=2, nrow=2, #, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )

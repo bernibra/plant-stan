@@ -119,7 +119,7 @@ multinomial.stan.gauss.RBFs.beta <- function(d = NULL, recompile = T, simulated=
                            data=dat_1.1 ,
                            chains=n_chains_1.1 ,
                            cores= n_chains_1.1 ,
-                           warmup=1000, iter=1001,
+                           warmup=1000, iter=2001,
                            init=init_1.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
