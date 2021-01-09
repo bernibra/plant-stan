@@ -678,3 +678,99 @@ model{
     }
 }
 "
+
+# This is the same as model 5.1, but only one variable and I am adding correlations between the hyperparameters of the gaussian process. 
+model6.1 <- "
+functions{
+    matrix cov_GPL2(matrix x, matrix y, real sq_alpha, real sq_alpha_t, real sq_rho, real sq_rho_t, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+        for (i in 1:(N-1)) {
+          K[i, i] = sq_alpha + sq_alpha_t + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = sq_alpha * exp(-sq_rho * square(x[i,j]) ) + sq_alpha_t * exp(-sq_rho_t * square(y[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = sq_alpha + sq_alpha_t + delta;
+        return K;
+    }
+}
+data{
+    int N;
+    int L;
+    int K;
+    int Y[L,N];
+    row_vector[N] X1;
+    matrix[L,L] Dmat_b;
+    matrix[L,L] Dmat_g;
+    matrix[L,L] Dmat_t;
+}
+parameters{
+    vector[L] zalpha;
+    vector[2*L] zbeta;
+    real alpha_bar;
+    real beta_bar;
+    real gamma_bar;
+    real<lower=0> sigma_a;
+    real<lower=0> sigma_b;
+    real<lower=0> sigma_g;
+    real<lower=0> etasq_b;
+    real<lower=0> rhosq_b;
+    real<lower=0> etasq_g;
+    real<lower=0> rhosq_g;
+    real<lower=0> etasq_tb;
+    real<lower=0> rhosq_tb;
+    real<lower=0> etasq_tg;
+    real<lower=0> rhosq_tg;
+    real rho;
+}
+transformed parameters{
+    vector[L] alpha;
+    vector[2*L] beta;
+    matrix[L, L] L_SIGMA_b;
+    matrix[L, L] L_SIGMA_g;
+    matrix[2*L, 2*L] L_SIGMA;
+    
+    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b, etasq_tb, rhosq_b, rhosq_tb, sigma_b));
+    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g, etasq_tg, rhosq_g, rhosq_tg, sigma_g));
+    
+    block(L_SIGMA, 1, 1, L, L) = L_SIGMA_b * (L_SIGMA_b');
+    block(L_SIGMA, L+1, L+1, 2*L, 2*L) = L_SIGMA_g * (L_SIGMA_g');
+    block(L_SIGMA, L+1, 1, 2*L, L) = L_SIGMA_b * (L_SIGMA_g') * rho;
+    block(L_SIGMA, 1, L+1, L, 2*L) = L_SIGMA_g * (L_SIGMA_b') * rho;
+
+    L_SIGMA = cholesky_decompose(L_SIGMA);
+    
+    beta = L_SIGMA*zbeta + MEANSSS;
+    
+
+    //gamma = L_SIGMA_g*zgamma + gamma_bar;
+    //gamma = exp(gamma);
+
+    alpha = zalpha * sigma_a + alpha_bar;
+}
+model{
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    rhosq_b ~ exponential( 0.5 );
+    etasq_b ~ exponential( 1 );
+    rhosq_g ~ exponential( 0.5 );
+    etasq_g ~ exponential( 1 );
+    rhosq_tb ~ exponential( 0.5 );
+    etasq_tb ~ exponential( 1 );
+    rhosq_tg ~ exponential( 0.5 );
+    etasq_tg ~ exponential( 1 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    gamma_bar ~ std_normal();
+    zalpha ~ std_normal();
+    zgamma ~ std_normal();
+    zbeta ~ std_normal();
+
+    for ( i in 1:L ){
+        Y[i] ~ bernoulli_logit(alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+    }
+}
+"

@@ -231,6 +231,55 @@ plot.actual.data <- function(model=NULL){
 
 }
 
+plot.actual.data.means <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
+  }
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  
+  # alphas
+  mu_alpha <- apply( post$alpha , 2 , mean )
+  ci_alpha <- apply( post$alpha , 2 , PI )
+  
+  # betas
+  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
+  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
+  
+  # gammas
+  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
+  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
+  
+
+
+  # Generate empty list of plots
+  plist = list()
+    
+  # Beta
+  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="mean", extra=1)
+    
+  # Scatter plot
+  plist[[2]] <- plot.scatter(mu=mu_beta[[1]], variance=mu_beta[[2]], color=colo[3], xlabel="beta 2", ylabel="beta 1")
+    
+  # Gamma
+  plist[[3]] <- plot.ranking.y(mu_beta[[2]], ci_beta[[2]], color=colo[2], xlabel="mean", ylabel="species", extra=1)
+    
+  hlay <- rbind(c(2,1),
+                  c(3,NA))
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(0.7,1), layout_matrix=hlay, widths=c(0.7,1)#, vp=viewport(width=1, height=1, clip = TRUE),
+                      # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+    )
+  print(p)
+    
+}
+
+
 plot.distribution <- function(eta, sigma, eta_prima, tit=""){
   df <- data.frame(x=c(sigma, eta, eta_prima),
                    type=c(rep("sigma", length(sigma)),

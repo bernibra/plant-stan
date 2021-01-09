@@ -63,6 +63,9 @@ transformed parameters{
     alpha = zalpha * sigma_a + alpha_bar;
 }
 model{
+    // variable I can remove if I change the form below
+    matrix[L,N] p;
+
     alpha_hat ~ normal(0,1.5);
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
@@ -79,7 +82,17 @@ model{
     to_vector( zbeta ) ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ ordered_logistic(to_vector(alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])), alpha_hat);
+        p[i] ~ alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i]);
     }
+    for (i in 1:L){
+        for (j in 1:N){
+            y[i, j] ~ ordered_logistic(p[i, j], alpha_hat);
+        }
+    }
+    
+    //for ( i in 1:L ){
+    //    Y[i] ~ ordered_logistic(to_vector(alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])), alpha_hat);
+    //}
+
 }
 "
