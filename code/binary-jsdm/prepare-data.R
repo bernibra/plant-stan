@@ -173,7 +173,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         if (simulated.type=="gauss.gauss"){
                 dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
                 dataset$sigma_beta2 <- sigma_beta2[dataset$id]
-                dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)              
+                dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)
                 
                 dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
                 dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
@@ -229,11 +229,11 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
 }
 
 playing.with.multivariate <- function(n, s, c, mu, N){
-        vec <- c(1:round(N*0.5), 1:round(N*0.5))
-        # vec <- 1:N
+        # vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        vec <- 1:N
         Dis <- dist(vec)
         Sigma <- n*exp(-(1/(s*s))*((as.matrix(Dis)/max(Dis))^2)) + diag(N)*c
-        z1 <- exp(mvrnorm(mu = rep(mu, times = N), Sigma = Sigma))
+        z1 <- mvrnorm(mu = rep(mu, times = N), Sigma = Sigma)
         plot(1:N, z1)
         return(z1)
 }

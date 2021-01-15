@@ -176,6 +176,11 @@ plot.actual.data <- function(model=NULL){
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
   
+  # correlation
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,1,], post$gamma[x,1,]))
+  meanPI <- mean(corPI)
+  corPI <- PI(corPI)
+  
   # alphas
   mu_alpha <- apply( post$alpha , 2 , mean )
   ci_alpha <- apply( post$alpha , 2 , PI )
