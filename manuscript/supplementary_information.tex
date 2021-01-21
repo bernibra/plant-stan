@@ -1,0 +1,368 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{authblk}
+\usepackage{titlesec}
+
+% Maths tools
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Margin
+\usepackage[margin=2.9cm]{geometry}
+
+% Line numbers
+\usepackage{lineno}
+
+%Scientific notation
+\usepackage{siunitx}
+
+% Spacing
+\usepackage{setspace}
+\doublespacing
+
+% Enumeration
+\usepackage{enumerate}
+
+% indentation
+\setlength\parindent{10pt}
+\setlength{\parskip}{5pt}
+
+% Figures
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{epstopdf}
+\renewcommand{\thefigure}{\textbf{\arabic{figure}}}
+\renewcommand{\figurename}{\textbf{Supplementary Figure}}
+
+%table
+\usepackage{multirow}
+\usepackage{hhline}
+\usepackage[table]{xcolor}
+\renewcommand{\thetable}{\textbf{\arabic{table}}}
+\renewcommand{\tablename}{\textbf{Supplementary Table}}
+
+%footnotes
+\usepackage{footmisc}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+% References
+\usepackage[sort&compress, numbers,super]{natbib}
+\bibliographystyle{unsrtnat}
+\PassOptionsToPackage{hyphens}{url}\usepackage[colorlinks=true,linkcolor=magenta, citecolor=magenta]{hyperref}
+\renewcommand\refname{Supplementary References}
+
+%subsubsection format
+\titleformat*{\subsubsection}{\large\it}
+
+%highlighting text
+\usepackage{color, xcolor,soul}
+\definecolor{blau}{RGB}{236,226,240}
+\soulregister\cite7
+\soulregister\citet7
+\soulregister\citealt7
+\soulregister\citenum7
+\soulregister\citep7
+\soulregister\ref7
+\DeclareRobustCommand{\hlc}[1]{{\sethlcolor{blau}\hl{#1}}}
+
+\usepackage{titlesec}% http://ctan.org/pkg/titlesec
+\titleformat{\section}%
+  [hang]% <shape>
+  {\normalfont\bfseries\Large}% <format>
+  {}% <label>
+  {0pt}% <sep>
+  {}% <before code>
+  
+\renewcommand{\thesection}{}% Remove section references...
+\renewcommand{\thesubsection}{}%... from subsections
+  \renewcommand{\thesubsubsection}{Supplementary Method \arabic{subsubsection}:}%... from subsections
+
+
+  
+%Title paper
+\title{\vspace{-1cm} \normalsize Supplementary Information\\\vspace{0.2cm}
+\LARGE Untangling the seasonal dynamics of plant-pollinator communities}
+
+\author{\textit{Bramon Mora et al.}}
+
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\clearpage
+
+\section*{Supplementary Methods}
+%\subsubsection*{Species' structural roles}
+%There are multiple ways to characterize the structural roles of species in a community. In this work, we used a definition based on the idea of network motifs\cite{milo2002network}, which characterize the distinct patterns of interactions between $n$ species found within a network. Following the ideas presented by \citet{stouffer2012evolutionary} and \citet{baker2015species}, we defined the role of any species $a$ based on the number of times it appears in any of the unique positions of the $n$-species network motifs. In particular, we used the tools developed by \citet{mora2018pymfinder} to describe the role of $a$ as measure of the number of times $a$ appears in any of the distinct positions found within motifs made of $3$, $4$ and $5$ species. As described in  \citet{mora2018pymfinder}, this measure is designed in such a way that it can incorporate information regarding the interaction strengths between species.
+
+\subsubsection*{Alignment matrix}
+We compiled all alignments between the networks in our dataset using the alignment matrix $M$. In particular, $M$ contains information regarding every pairwise alignment between the networks $\{A,B,C,D...\}$ in our dataset---in our case, this corresponds to the pairwise alignment between 44 empirical networks. Given a set of $n$ alignments $\{\lambda\}$ between $A$ and $B$, we calculate a given element $m^{AB}_{ij}$ as $\sum^{n}_{\lambda} k_{\lambda}$, where $k_{\lambda}$ is 0 if species $i\in A$ and $j\in B$ are not paired in the alignment $\lambda$, and $c_{ij}$ otherwise. Notice that $c_{ij}$ characterizes the quality of the pairing $i$-$j$ between $i\in A$ and $j\in B$ presented in the main text. The quality of the pairing $i$-$j$ is calculated as the Pearson's correlation coefficient between the two species' motif-role profiles\citep{mora2018identifying}. Specifically, this coefficient is equal to $1$ if $i$ and $j$ have equivalent roles, $0$ when there is no correlation between them, and $-1$ if they have opposite roles.
+
+\subsubsection*{Relationship between group and position properties}
+To compare the different groups of positions, we studied the three position properties described in the main text using a multivariate autoregressive model. Specifically, we studied species' relative degree, neighbours' average relative degree and neighbours' maximum relative degree using species' position group and year of sampling. To do so, we used the R package \textit{brms}\cite{burkner2017brms} to fit a Bayesian multivariate linear regression. As outcome variables, we included, species' relative degree, neighbours' average relative degree, and neighbours' maximum relative degree. As categorical predictors, we included species' position group and year of sampling. We treated species' identity as a random effect, and added a first-order autoregression term using the week of sampling as a covariate and species' identity for every year as a grouping factor. To fit the Bayesian models, we chose weakly informative normally distributed priors---with mean $\mu=0$ and standard deviation $\sigma=1$---for the population-level effects; the default \textit{brms} half Student-\textit{t} priors with 3 degrees of freedom for the standard deviations of the group-level effects; and, the default \textit{brms} flat priors bounded between -1 and 1 for the autocorrelation parameters. To calculate the effect sizes for the comparisons of the different predictions across position groups, we first drew 1000 samples from the different posterior distributions for a given position group and year using the `pp\_expect' function from the R package \textit{brms}\cite{burkner2017brms}. Then, we used the function `cohen.d' of the R package \textit{effsize}\cite{torchiano2017effsize} to calculate the effect sizes for the comparison of every pair of posterior distributions.
+
+\subsubsection*{Species structural dynamics across groups}
+As described in the main text, we examined the movement of pollinator and plant species across the different network positions using different probabilistic models. Given $n$ groups of positions, our models describe a scenario in which every species can be found in $n+2$ possible states $\vec{y}$ at time $t$. These include: $n$ states $y_1\dots y_n$ characterizing a species in each of the different groups of positions; a state $y_{n+1}=y_{\text{pre}}$ describing a species that has not yet entered the network; and a state $y_{n+2}=y_{\text{post}}$ describing a species that has already exited the network.
+
+We estimated the rate of movement between the different states using Bayesian multinomial logistic regressions. In particular, our models considers $n+2$ types of events, describing the transition probability $\Pr\left(y_j|s_1\left(y_i,t\right), s_2\left(y_i,t\right),\ldots,s_{n+2}\left(y_i,t\right)\right)$ of species from any state $y_i$ to any possible state $y_j$ at time $t$ following Eq.~(1) from the main text. To infer the scores $s_k\left(y_i,t\right)$ that determine the resulting probabilities, we fixed one of them to serve as an arbitrary baseline---i.e.\,\,we assigned $s_1\left(y_i,t\right)=0$---and estimated the remaining scores as $n+1$ linear models. The form of these linear models characterizes the type of transition probabilities considered. Specifically, we considered the following:
+\begin{itemize}
+\item[\textbf{i)}] \textbf{Constant transition probabilities.} For this model, we defined the scores as
+\begin{equation}
+s_k\left(y_i\right)=\alpha_{k1} + \sum_{l=2}^{n+2} \alpha_{kl}\delta_{il},
+\end{equation}
+where $\alpha_{kl}$ are the parameters inferred by the model, and $\delta_{il}$ is a Kronecker delta that is set to 1 if $y_l=y_i$, and 0 otherwise. For any parameter $\alpha_{kl}$, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.
+
+\item[\textbf{ii)}] \textbf{Constant transition probabilities accounting for sampling seasons as treatments to the intercept.} For this model, we defined the scores as
+\begin{equation}
+s_k\left(y_i, m\right)=\alpha_{k1} + \sum_{n=2}^{3} \gamma_{k}^n\delta_{mn} + \sum_{l=2}^{n+2} \alpha_{kl}\delta_{il},
+\end{equation}
+where $m={1,2,3}$ is a factor characterizing the sampling season; $\alpha_{kl}$ and $\gamma_{k}^n$ are the parameters inferred by the model; and, $\delta_{mn}$ and $\delta_{il}$ are Kronecker deltas that are set to 1 if $m=n$ and $y_l=y_i$, respectively, and 0 otherwise. Notice that the parameters $\gamma_{k}^n$ are used to treat the three sampling seasons as temporal replicates. For any parameter, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.
+
+\item[\textbf{iii)}] \textbf{Constant probabilities with sampling seasons as group-specific treatments.}  For this model, we defined the scores as
+\begin{equation}
+s_k\left(y_i, m\right)=\alpha_{k1} + \sum_{n=2}^{3} \gamma_{k1}^n\delta_{mn} + \sum_{l=2}^{n+2} \left(\alpha_{kl} + \sum_{n=2}^{3} \gamma_{kl}^n\delta_{mn}\right)\delta_{il},
+\end{equation}
+where $m={1,2,3}$ is a factor characterizing the sampling season; $\alpha_{kl}$ and $\gamma_{kl}^n$ are the parameters inferred by the model; and, $\delta_{mn}$ and $\delta_{il}$ are Kronecker deltas that are set to 1 if $m=n$ and $y_l=y_i$, respectively, and 0 otherwise. Notice that the parameters $\gamma_{kl}^n$ are used to treat the three sampling seasons as temporal replicates. For any parameter, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.
+
+\item[\textbf{iv)}] \textbf{Time-dependent transition probabilities}  This model is the one defined in the main text; therefore, scores are defined following Eq.~(2) of the main text.
+
+\item[\textbf{v)}] \textbf{Time-dependent transition probabilities accounting for sampling seasons as treatments to the intercept.} For this model, we defined the scores as
+\begin{equation}
+s_k\left(y_i, m, t\right)=\alpha_{k1} +\beta_{k1} t + \sum_{n=2}^{3} \gamma_{k}^n\delta_{mn} + \sum_{l=2}^{n+2} \left(\alpha_{kl}+\beta_{kl} t\right)\delta_{il},
+\end{equation}
+where $m={1,2,3}$ is a factor characterizing the sampling season; $\alpha_{kl}$, $\beta_{kl}$ and $\gamma_{k}^n$ are the parameters inferred by the model; and, $\delta_{mn}$ and $\delta_{il}$ are Kronecker deltas that are set to 1 if $m=n$ and $y_l=y_i$, respectively, and 0 otherwise. Notice that the parameters $\gamma_{k}^n$ are used to treat the three sampling seasons as temporal replicates. For any parameter, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.
+
+\item[\textbf{vi)}] \textbf{Time-dependent probabilities with sampling seasons as group-specific treatments} For this model, we defined the scores as
+\begin{equation}
+s_k\left(y_i, m, t\right)=\alpha_{k1} +\beta_{k1} t + \sum_{n=2}^{3} \gamma_{k1}^n\delta_{mn} + \sum_{l=2}^{n+2} \left(\alpha_{kl}+\beta_{kl} t  + \sum_{n=2}^{3} \gamma_{kl}^n\delta_{mn}\right)\delta_{il},
+\end{equation}
+where $m={1,2,3}$ is a factor characterizing the sampling season; $\alpha_{kl}$, $\beta_{kl}$ and $\gamma_{kl}^n$ are the parameters inferred by the model; and, $\delta_{mn}$ and $\delta_{il}$ are Kronecker deltas that are set to 1 if $m=n$ and $y_l=y_i$, respectively, and 0 otherwise. Notice that the parameters $\gamma_{kl}^n$ are used to treat the three sampling seasons as temporal replicates. For any parameter, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.
+
+%\item[\textbf{vii)}] \hlc{\textbf{Density-dependent transition probabilities.} For this model, we defined the scores as}
+%\begin{equation}
+%s_k\left(y_i, N_{t-\Delta t}\right)=\alpha_{k1} +\beta_{k1} N_{t-\Delta t} + \sum_{l=2}^{n+2} \left(\alpha_{kl}+\beta_{kl} N_{t-\Delta t}\right)\delta_{il},
+%\end{equation}
+%\hlc{where $N_{t-\Delta t}$ describe the total number of species in the network at time $t-\Delta t$; $\alpha_{kl}$ and $\beta_{kl}$ are the parameters inferred by the model; and $\delta_{il}$ is a Kronecker delta that is set to 1 if $y_l=y_i$, and 0 otherwise. For any parameter, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.}
+
+%\item[\textbf{viii)}] \hlc{\textbf{Density-dependent transition probabilities accounting for sampling seasons as treatments to the intercept.} For this model, we defined the scores as}
+%\begin{equation}
+%s_k\left(y_i, m, N_{t-\Delta t}\right)=\alpha_{k1} +\beta_{k1} N_{t-\Delta t} + \sum_{n=2}^{3} \gamma_{k}^n\delta_{mn} + \sum_{l=2}^{n+2} \left(\alpha_{kl}+\beta_{kl} N_{t-\Delta t}\right)\delta_{il},
+%\end{equation}
+%\hlc{where $m={1,2,3}$ is a factor characterizing the sampling season; $N_{t-\Delta t}$ describe the total number of species in the network at time $t-\Delta t$; $\alpha_{kl}$, $\beta_{kl}$ and $\gamma_{k}^n$ are the parameters inferred by the model; and, $\delta_{mn}$ and $\delta_{il}$ are Kronecker deltas that are set to 1 if $m=n$ and $y_l=y_i$, respectively, and 0 otherwise. Notice that the parameters $\gamma_{k}^n$ are used to treat the three sampling seasons as temporal replicates. For any parameter, we chose weakly informative normally distributed priors, with mean $\mu=0$ and standard deviation $\sigma=10$.}
+\end{itemize}
+
+\subsubsection*{Choosing the priors for the Bayesian models}
+As described in the main text, we defined the priors for the different parameters of the models as weakly informative normally distributed priors with mean $\mu=0$ and standard deviation $\sigma=10$. We did not have a preconceived notion of what these priors should be, and more restrictive priors--i.e.\,\,normally distributed with $\mu=0$ and $\sigma=1$---produced qualitatively the same results described in Fig.~4 of the main text. That said, we tested the design of model iv using simulated data, and these tests showed that less informative priors were needed in order to produce good estimates for some transition probability matrices.
+
+\subsubsection*{Effect sizes for the comparison of the different transition probabilities}
+To understand the differences between the transition probabilities estimated by the Bayesian models, we compared the corresponding posteriors distributions using Cohen's \textit{d}. Given any two transition probabilities described in the Results section of the main text at time $t$, we drew 1000 samples from their posterior distributions using the `extract.samples' function of the R package \textit{rethinking}\cite{mcelreath2018statisticalWAIC}. Then, we used the function `cohen.d' of the R package \textit{effsize}\cite{torchiano2017effsize} to calculate the effect sizes for the comparison of these two posterior distributions.
+
+\section*{Supplementary Notes}
+\setcounter{subsubsection}{0}
+
+\subsubsection*{Supplementary Note 1: Relationship between position uniqueness and species richness}
+\citet{mora2018identifying} showed that large food webs ($\gtrapprox50$ species) might be more redundant than smaller ones, as these have a greater probability of including trophically identical species as well as species that participate in just a single interaction. That is, species in larger networks might present lower position uniqueness than species in smaller networks. However, it is unclear to what extent uniqueness depends on species richness or is instead an intrinsic property of large ecological networks. For example, if a network of 10 species has a central node individually connected to the remaining 9 species, each of these 9 species will present very low position uniqueness. In contrast, if a network of 10 species is connected as two non-symmetric 5 species motifs, all 10 species will have high position uniqueness. This argument can be made for any number of species $n$. For the sake of this current study, nevertheless, all species show similar levels of position uniqueness, and if larger networks were significantly more redundant, we would expect to see lower levels of uniqueness in Fig.~2a from the main text. That is, controlling for species richness would not change the observed distribution in Fig.~2a in a way that would change our conclusions. 
+
+\subsubsection*{Supplementary Note 2: Relationship between species' relative degree and abundances}
+To study the link between species' relative degree and abundance, we used the abundance estimates from \citet{caradonna2017interaction}. For plant species, these were measured by independent counting of flowers and flower heads within a series of transects at the study site. On the other side, weekly pollinator abundances were estimated using the number of observation periods in which these were observed during the collection of plant-pollinator interaction data (see \citealt{caradonna2017interaction} for details). Notice that since the abundance data for pollinator species was estimated from the interaction surveys from which their relative degree was calculated, one should expect the abundance measures to be at least somewhat dependent on the pollinators' observed number of interactions.
+
+We studied the relationship between species' relative degree and abundance using two different models. First, and for the sake of simplicity, we used a linear regression to understand the overall trend of the relationship between these variables. We found a positive relationship between relative degree of plants and pollinators and their estimated abundance (Supplementary Fig.~\ref{sfig:abundance}). The regressions presented $R^2$ values of $0.14$ and $0.34$ for plants and pollinators, respectively. Second, we used the Hill function to fit a more realistic scenario, where the relationship is nonlinear and absent species are expected to present 0 relative degree. In this case, we found the model to fit the data with a residual standard error of $0.2627$ on $388$ degrees of freedom for plants, and a residual standard error of $0.1928$ on $850$ degrees of freedom for pollinators (Supplementary Fig.~\ref{sfig:abundance}). Overall, although we observed a positive relationship between relative degree and abundance of species, there is considerable variation ($85.9\%$ and $66.5\%$ according to the linear regression for plants and pollinators, respectively) in species' relative degree that is not explained by abundance (Supplementary Fig.~\ref{sfig:abundance}). Linear regressions including the year of sampling as an additional fixed effect support this observation, with $R^2$ values of $0.17$ and $0.36$ for plants and pollinators, respectively.
+
+\clearpage
+
+\section*{Supplementary Figures and Tables}
+
+\begin{figure}[ht]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure2-unweighted.png}
+    	  \vspace{0.3cm}
+	   \caption[Analysis of species' positions across binary networks]{Analysis of species' positions across binary networks. (a) Uniqueness of the position of plant and pollinator species within networks. (b) Variability of species' position across networks, including only plant and pollinator species that appear in multiple networks during a season.}
+      \label{sfig:variability-positions}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[ht]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/brms-pollinators.pdf}
+        \vspace{0.3cm}
+	   \caption[Relationships between group and position properties]{Relationships between group and position properties. Every panel describes the comparison between the different properties studied (species' relative degree, neighbours' average relative degree and neighbours' maximum relative degree) for every pair of pollinator position groups ($A$, $B$, $C$). Each color and shape characterize the predictions of a different position group. The different columns of every panel describe the comparison of the predictions for every year of sampling. The points characterize the mean values, and the errorbars represent the credible intervals (2.5 and 97.5 percent quantiles).The scores along the x axis of every panel describe the mean effect size for each comparison (calculated as Cohen's \textit{d} using 1000 samples from the different posterior distributions; see Supplementary Methods for further details). Just as an example, the panel in the top-left corner of the figure compares the degree of species from groups $A$ and $B$, showing the predictions for every year of sampling.}
+      \label{sfig:multivariate}
+\end{figure}
+
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure3-modularity-3-2013.pdf}
+	  \vspace{0.3cm}
+	   \caption[Distinguishing properties of the different groups of pollinator positions found for the 2013 sampling season]{Distinguishing properties of the different groups of pollinator positions found for the 2013 sampling season. (a) Number of pollinator species in each group of positions over time. Each color represents a different group of positions. (b) Different properties summarizing the species forming each group. The first panel depicts the relative degree distribution of the best connected neighbor of every species in each group. The second panel shows the neighbours' average relative degree for the species in each group. The third panel shows the relative degree distribution of species in each group. The colored segments depicted under the distributions characterize the mean of each distribution.}
+      \label{sfig:groups2013}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure3-modularity-3-2014.pdf}
+	  \vspace{0.3cm}
+	   \caption[Distinguishing properties of the different groups of pollinator positions found for the 2014 sampling season]{Distinguishing properties of the different groups of pollinator positions found for the 2014 sampling season. (a) Number of pollinator species in each group of positions over time. Each color represents a different group of positions. (b) Different properties summarizing the species forming each group. The first panel depicts the relative degree distribution of the best connected neighbor of every species in each group. The second panel shows the neighbours' average relative degree for the species in each group. The third panel shows the relative degree distribution of species in each group. The colored segments depicted under the distributions characterize the mean of each distribution.}
+      \label{sfig:groups2014}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure3-modularity-3-2013-plants.pdf}
+	  \vspace{0.3cm}
+	   \caption[Distinguishing properties of the different groups of plant positions found for the 2013 sampling season]{Distinguishing properties of the different groups of plant positions found for the 2013 sampling season. (a) Number of plant species in each group of positions over time. Each color represents a different group of positions. (b) Different properties summarizing the species forming each group. The first panel depicts the relative degree distribution of the best connected neighbor of every species in each group. The second panel shows the neighbours' average relative degree for the species in each group. The third panel shows the relative degree distribution of species in each group. The colored segments depicted under the distributions characterize the mean of each distribution.}
+      \label{sfig:groups2013-plants}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure3-modularity-3-2014-plants.pdf}
+	  \vspace{0.3cm}
+	   \caption[Distinguishing properties of the different groups of plant positions found for the 2014 sampling season]{Distinguishing properties of the different groups of plant positions found for the 2014 sampling season. (a) Number of plant species in each group of positions over time. Each color represents a different group of positions. (b) Different properties summarizing the species forming each group. The first panel depicts the relative degree distribution of the best connected neighbor of every species in each group. The second panel shows the neighbours' average relative degree for the species in each group. The third panel shows the relative degree distribution of species in each group. The colored segments depicted under the distributions characterize the mean of each distribution.}
+      \label{sfig:groups2014-plants}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure3-modularity-3-2015-plants.pdf}
+	  \vspace{0.3cm}
+	   \caption[Distinguishing properties of the different groups of plant positions found for the 2014 sampling season]{Distinguishing properties of the different groups of plant positions found for the 2014 sampling season. (a) Number of plant species in each group of positions over time. Each color represents a different group of positions. (b) Different properties summarizing the species forming each group. The first panel depicts the relative degree distribution of the best connected neighbor of every species in each group. The second panel shows the neighbours' average relative degree for the species in each group. The third panel shows the relative degree distribution of species in each group. The colored segments depicted under the distributions characterize the mean of each distribution.}
+      \label{sfig:groups2015-plants}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure3-modularity-7-2015.pdf}
+	  \vspace{0.3cm}
+	   \caption[Distinguishing properties of the different groups of species' position found for the 2015 sampling season using the multi-level community detection method]{Distinguishing properties of the different groups of species' position found for the 2015 sampling season using the multi-level community detection method (Table 1; \citealt{blondel2008fast}). (a) Number of pollinator species in each group of positions over time. Each color represents a different group of positions. (b) Different properties summarizing the species forming each group. The first panel depicts the relative degree distribution of the best connected neighbor of every species in each group. The second panel shows the neighbours' average relative degree for the species in each group. The third panel shows the relative degree distribution of species in each group. The colored segments depicted under the distributions characterize the mean of each distribution.}
+      \label{sfig:groups2015-modularity7}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[ht]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.9\textwidth]{figures/abundance_degree.png}
+	   \caption{Relationship between relative degree and abundance of plants and pollinators. The points represent the information of a plant or pollinator for a given week and year. The lines characterize the fit of a linear regression and the Hill function to the data. The shaded areas describe the confidence intervals around the fitted models. The estimated slopes for the linear regression $\num{7.90e-05}\pm \num{9.90e-06}$ and $\num{2.70e-02}\pm \num{0.13}$ show a positive relationship between the relative degree and abundance of plants and pollinators, respectively. The estimated half-saturation density for the Hill function shows that the relationship vanishes at $453.01\pm 90.07$ flower counts and $5.47\pm 0.25$ pollinator observations.}
+
+      \label{sfig:abundance}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/WAIC-models.pdf}
+	  \vspace{0.3cm}
+	   \caption[WAIC models]{Comparison of the different models using WAIC values. Each row describes one of the models from the `Species dynamics across groups' section described above. Specifically, each row represents a model considering the following: i) constant transition probabilities; ii) constant transition probabilities accounting for sampling seasons as treatments to the intercept; iii) constant probabilities with sampling seasons as group-specific treatments; iv) time-dependent transition probabilities; v) time-dependent transition probabilities accounting for sampling seasons as treatments to the intercept; and vi) time-dependent probabilities with sampling seasons as group-specific treatments. (a) WAIC comparison of the different models. The filled points are the in-sample deviance of each model, and the open points are the estimated WAIC values. The dark line segments represent the standard error of each WAIC. The vertical line references the model with the lowest WAIC value. (b) Akaike weight for each model used to compare predictive accuracy of the different Bayesian models (see \citealt{mcelreath2018statisticalWAIC}). The open points are the mean Akaike weights and the line segments represent the corresponding standard error. The vertical line references the model with the highest Akaike weight. Note that the Akaike weights use the standard error of the difference between each WAIC and the best performing model to compare the relative predictive accuracy of the models. While the uncertainty in the WAIC values overlap between models, the measure shows that model iv) is the best model when accounting for the correlation between these uncertainties. The graphs were generated using some of the functions from the R package \textit{rethinking}\cite{mcelreath2018statisticalWAIC}.}
+      \label{sfig:WAIC}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/effectsizes-pollinators.pdf}
+	  \vspace{0.3cm}
+	   \caption[Effect sizes for the comparison of the transition probabilities reported in the Fig.~4 of the main text]{Effect sizes for the conclusions reported in the ``Results'' section of main text. Every panel represents the effect sizes for the comparison between the time-dependent transition probabilities of Fig.~4. These are calculated based on differences between means, using Cohen's \textit{d} (see Supplementary Methods for further details). Using the notation from Fig.~4, effect sizes are reported for the following comparisons: (a) `enter in A' relative to `enter in B' and `enter in C'; (b) `stay in A' relative to `A$\to$B', `A$\to$C' and `exit from A'; (c) `exit from A' relative to `A$\to$B' and `A$\to$C'; (d) `A$\to$B' relative to `A$\to$C'; (e) `stay in B' relative to `B$\to$A', `B$\to$C' and `exit from B'; (f) `B$\to$A' relative to `B$\to$C' and `exit from B'; (g) `C$\to$A' relative to `C$\to$B', `Stay in C' and `exit from C'; and (h) `exit from C' relative to `C$\to$B' and `Stay in C'. The different lines characterize the estimated effect size, and the shade of each line characterizes the first and third quantiles. The dotted gray line at 1.20 indicates the threshold for which the effect sizes are considered to be very large\cite{sawilowsky2009new}.}
+      \label{sfig:effectsizes}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/new-figure4-modularity-3-plants.pdf}
+	  \vspace{0.5cm}
+	   \caption[Movement of plant species across position groups]{Movement of plant species across position groups. Every panel in the matrix describes the transition probability between the different groups of positions (see model iv from Supplementary Methods). The order of the matrix is such that it characterizes the transition probabilities from row groups to column groups over time. The different groups are those presented in Supplementary Figs.~\ref{sfig:groups2013-plants}--\ref{sfig:groups2015-plants}. The shaded row describes the probabilities of species entering the network into the different groups ($A$, $B$ and $C$) whereas the shaded column describes the probabilities of species exiting the network from each of these groups (the low values reflect the fact that plant species rarely leave the networks). The different lines in the graph represent the results found for every sampling year, where the shade of each line characterizes the first and third quantiles. The different lines in the graph represent the mean transition probabilities and the shade of each line characterizes the first and third quantiles. Notice that the color is chosen based on the recipient group of the transition probability.}
+      \label{sfig:dynamics-plants}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/new-figure4-modularity-3-control_indepe.pdf}
+	  \vspace{0.5cm}
+	   \caption[Movement of pollinator species across position groups estimated using a model with constant transition probabilities]{Movement of pollinator species across position groups estimated using a model with constant transition probabilities (see model i from Supplementary Methods). Every panel in the matrix describes the transition probability between the different groups of positions. The order of the matrix is such that it characterizes the transition probabilities from row groups to column groups over time. The different groups are those presented in Fig.~3 of the main text. The shaded row describes the probabilities of species entering the network into the different groups ($A$, $B$ and $C$) whereas the shaded column describes the probabilities of species exiting the network from each of these groups. The different lines in the graph represent the mean transition probabilities and the shade of each line characterizes the first and third quantiles. Notice that the color is chosen based on the recipient group of the transition probability.}
+      \label{sfig:dynamics-constant}
+\end{figure}
+
+\clearpage
+
+%\begin{figure}[p]
+% \centering
+%    \vspace{0.5cm}
+%    \includegraphics{figures/new-figure4-modularity-3-control_abundance.pdf}
+%	  \vspace{0.5cm}
+%	   \caption[Movement of pollinator species across position groups estimated using a model with density-dependent transition probabilities]{Movement of pollinator species across position groups estimated using a model with density-dependent transition probabilities (Supplementary Methods). Every panel in the matrix describes the transition probability between the different groups of positions. The order of the matrix is such that it characterizes the transition probabilities from row groups to column groups over time. The different groups are those presented in Fig.\ 3 of the main text. The shaded row describes the probabilities of species entering the network into the different groups ($A$, $B$ and $C$) whereas the shaded column describes the probabilities of species exiting the network from each of these groups. The different lines in the graph represent the mean transition probabilities and the shade of each line characterizes the first and third quantiles. Notice that the color is chosen based on the recipient group of the transition probability.}
+%      \label{sfig:dynamics-abundance}
+%\end{figure}
+
+\clearpage
+
+\begin{figure}[p]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics{figures/figure4-modularity-7.pdf}
+	  \vspace{0.5cm}
+	   \caption[Movement of pollinator species across position groups]{Movement of pollinator species across position groups. Every panel in the matrix describes the transition probability between the different groups of positions (see model iv from Supplementary Methods). The order of the matrix is such that it characterizes the transition probabilities from row groups to column groups over time. The different groups are those presented in Supplementary Fig.~\ref{sfig:groups2015-modularity7}. The shaded row describes the probabilities of species entering the network into the different groups ($A$, $B$, $C$ and $D$) whereas the shaded column describes the probabilities of species exiting the network from each of these groups. The different lines in the graph represent the mean transition probabilities and the shade of each line characterizes the first and third quantiles. Notice that the color is chosen based on the recipient group of the transition probability.}
+      \label{sfig:dynamics-modularity7}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[ht]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.65\textwidth]{figures/sensitivity.png}
+    	  \vspace{0.3cm}
+	   \caption{Analysis of the sensitivity of species' relative degree and number of links to random removal of observations. (a) Sensitivity of species' relative degree to 5\%, 10\%, 25\% and 50\% random removal of observations for each different year. (b) Percent loss of links following the random removal of 5\%, 10\%, 25\% and 50\% of observations for each different year. The boxes in both panels characterize the median, and the the first and third quantiles; the line segments indicate the minima and maxima; and the whiskers represent the corresponding outliers.}
+      \label{sfig:sensitivity}
+\end{figure}
+
+\clearpage
+
+\begin{table}[p]
+\begin{center}
+\def\arraystretch{1.3}
+\input{table1_SI.tex}
+\end{center}
+\caption[Community detection methods summary]{Community detection methods summary. The first column lists the community detection methods used here. The methods used are the following: greedy optimization (greedy\cite{clauset2004finding}); edge betweenness (betweenness\cite{newman2004finding}); short random walks (random walks\cite{pons2006computing});  map equation optimization (infomap\cite{rosvall2009map}); and, multi-level optimization (louvain\cite{blondel2008fast}). The second and third columns describe the number of pollinator (pol.) and plant (pl.) groups found with each method. The rest of the columns provide a pairwise comparison of the results found with the different methods by means of the normalized mutual information criteria\cite{danon2005comparing}. The methods highlighted are the ones used in the paper.}
+\label{stable:difference-community}
+\end{table}
+
+\clearpage
+\bibliography{references_ab}
+
+\end{document}

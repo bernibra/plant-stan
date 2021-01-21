@@ -1,0 +1,104 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{authblk}
+\usepackage{titlesec}
+
+
+% Maths tools
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% Margin
+\usepackage[margin=2.9cm]{geometry}
+
+% Line numbers
+\usepackage{lineno}
+
+% Spacing
+\usepackage{setspace}
+\doublespacing
+
+% Enumeration
+\usepackage{enumerate}% http://ctan.org/pkg/enumerate
+\usepackage{enumitem}
+
+
+% indentation
+\setlength\parindent{10pt}
+\setlength{\parskip}{5pt}
+
+% Figures
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{epstopdf}
+\usepackage{float}
+\renewcommand{\thefigure}{\textbf{\arabic{figure}}}
+\renewcommand{\figurename}{\textbf{Figure}}
+
+
+%table
+\usepackage{multirow}% http://ctan.org/pkg/multirow
+\usepackage{hhline}
+\usepackage[table]{xcolor}
+
+\usepackage{authblk}
+
+
+% References
+\usepackage[round]{natbib}
+\bibliographystyle{ecology_letters2.bst}
+
+\usepackage{color, xcolor,soul}
+%\definecolor{blau}{RGB}{168,221,181}
+\definecolor{blau}{RGB}{236,226,240}
+\soulregister\cite7
+\soulregister\citenum7
+\soulregister\citep7
+\soulregister\citealt7
+\soulregister\citealp7
+\soulregister\citet7
+\soulregister\ref7
+
+
+\PassOptionsToPackage{hyphens}{url}\usepackage[colorlinks=true,linkcolor=magenta, citecolor=magenta]{hyperref}
+
+\DeclareRobustCommand{\hlc}[1]{{\sethlcolor{blau}\hl{#1}}}
+
+%subsubsection format
+\titleformat*{\subsubsection}{\large\it}
+
+\makeatletter
+\renewcommand\AB@affilsepx{; \protect\Affilfont}
+\makeatother
+
+%Title paper
+\title{\vspace{-1cm}
+Combining Gaussian Processes}
+
+\renewcommand\Authands{ and }
+\date{}
+
+\begin{document}
+\maketitle
+\linenumbers
+Imagine that you have the ``the varying slopes model'' case described Richard McElreath book (Statistical Rethinking, second edition). In that example, you had a coffee robot that was programmed to move among cafés, order coffee, and record the waiting time in the morning and the afternoon. In short, it was an example of pooling in multilevel models and covariance among parameters. Given the waiting times $W_i$ for all cafés and a binary variable $A_i$ indicating whether or not the waiting time was recorded in the afternoon, the model for this example was the following:
+\begin{equation*} 
+\begin{split}
+W_i & \sim \text{Normal}\left(\mu_{i}, \sigma\right)\\
+\mu_{i} & = \alpha_{\text{\tiny CAFE}_i} + \beta_{\text{\tiny CAFE}_i} A_i\\
+r_n & = x_n-\lambda\\
+\lambda  & \sim \text{MVNormal}\left(\hat{\lambda}, E\right)\\
+\epsilon  & \sim \text{MVNormal}\left(\hat{\epsilon}, V\right)\\
+\alpha  & \sim \text{Normal}\left(\hat{\alpha}, \sigma_{\alpha}\right)\\
+\hat{\lambda}  & \sim \text{Normal}\left(0,1\right)\\
+\hat{\epsilon}  & \sim \text{Normal}\left(0,1\right)\\
+\hat{\alpha}  & \sim \text{Normal}\left(0,1\right)\\
+\sigma_{\alpha}  & \sim \text{Exponential}\left(1\right)
+\end{split}
+\end{equation*}
+
+Imagine now that we have additional information on the different cafés. For example, suppose that we know how far these cafés are from each other. One could hypothesise that different neighbourhoods might have different waiting times (i.e. fancy cafés from posh neighbourhoods might have similar waiting times, or cafés from non-residential areas might have longer morning times). To incorporate this prior information, we could use Gaussian processes to characterize the different parameters. That is, $alpha_i$ could be characterized by a multivariate normal distribution $N(\mu_i, \Sigma)$, where $\Sigma$ is a covariance matrix such that $\Sigma_{ij} = \rho^2 \exp(-\frac{(D_{ij}^{2})}{2\gamma^2}) + \delta_{ij} \sigma^{2}$, and $D_{ij}$ is the distance between cafés $i$ and $j$.
+
+\end{document}

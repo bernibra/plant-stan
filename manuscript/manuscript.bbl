@@ -1,0 +1,45 @@
+\begin{thebibliography}{5}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{{Godoy-Lorite} \emph{et~al.}(2016){Godoy-Lorite}, Guimer{\`a}, Moore
+  \& {Sales-Pardo}}]{godoy-loriteAccurateScalableSocial2016}
+{Godoy-Lorite}, A., Guimer{\`a}, R., Moore, C. \& {Sales-Pardo}, M. (2016).
+\newblock Accurate and scalable social recommendation using mixed-membership
+  stochastic block models.
+\newblock \emph{PNAS}, 113, 14207--14212.
+
+\bibitem[{Landolt \emph{et~al.}(2010)Landolt, B{\"a}umler, Ehrhardt, Hegg,
+  Kl{\"o}tzli, L{\"a}mmler, Nobis, {Rudmann-Maurer}, Schweingruber, Theurillat,
+  Urmi, Vust \& Wohlgemuth}]{landoltFloraIndicativaOkologische2010}
+Landolt, E., B{\"a}umler, B., Ehrhardt, A., Hegg, O., Kl{\"o}tzli, F.,
+  L{\"a}mmler, W., Nobis, M., {Rudmann-Maurer}, K., Schweingruber, F.~H.,
+  Theurillat, J.-P., Urmi, E., Vust, M. \& Wohlgemuth, T. (2010).
+\newblock \emph{{Flora indicativa: Okologische Zeigerwerte und biologische
+  Kennzeichen zur Flora der Schweiz und der Alpen}}.
+\newblock {Haupt}, {Bern}.
+\newblock ISBN 978-3-258-07461-0.
+
+\bibitem[{Scherrer \& Guisan(2019)}]{scherrerEcologicalIndicatorValues2019}
+Scherrer, D. \& Guisan, A. (2019).
+\newblock Ecological indicator values reveal missing predictors of species
+  distributions.
+\newblock \emph{Scientific Reports}, 9, 1--8.
+
+\bibitem[{{Tarr{\'e}s-Deulofeu} \emph{et~al.}(2019){Tarr{\'e}s-Deulofeu},
+  {Godoy-Lorite}, Guimer{\`a} \&
+  {Sales-Pardo}}]{tarres-deulofeuTensorialBipartiteBlock2019}
+{Tarr{\'e}s-Deulofeu}, M., {Godoy-Lorite}, A., Guimer{\`a}, R. \&
+  {Sales-Pardo}, M. (2019).
+\newblock Tensorial and bipartite block models for link prediction in layered
+  networks and temporal networks.
+\newblock \emph{Phys. Rev. E}, 99, 032307.
+
+\bibitem[{Team \emph{et~al.}(2019)}]{rstan}
+Team, S.~D. \emph{et~al.} (2019).
+\newblock {RStan}: the {R} interface to {Stan}.
+\newblock R package version 2.19.1.
+
+\end{thebibliography}
