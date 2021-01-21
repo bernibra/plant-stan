@@ -802,6 +802,130 @@ model{
 }
 "
 
+# This is the same as model 3.1 and 3.2 but much faster. 
+# The structure of the model is very different but it helps me vectorize the operations and reduce the size of the objects used
+model5.3 <- "
+functions{
+    matrix cov_GPL2(matrix x, matrix y, matrix z, real a1, real a2, real a3, real b1, real b2, real b3, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+
+        for (i in 1:(N-1)) {
+          K[i, i] = a1 + a2 + a3 + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = a1 * exp(- b1 * square(x[i,j]) ) + a2 * exp(-b2 * square(y[i,j]) )  + a3 * exp(-b3 * square(z[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = a1 + a2 + a3 + delta;
+        return K;
+    }
+}
+data{
+    int N;
+    int L;
+    int K;
+    int Y[L,N];
+    row_vector[N] X1;
+    row_vector[N] X2;
+    matrix[L,L] Dmat_b;
+    matrix[L,L] Dmat_g;
+    matrix[L,L] Dmat_t;
+}
+parameters{
+    vector[L] zalpha;
+    matrix[K,L] zbeta;
+    matrix[K,L] zgamma;
+    real alpha_bar;
+    vector[K] beta_bar;
+    vector[K] gamma_bar;
+    real zsigma_a;
+    vector[3] zetasq_a;
+    vector[3] zrhosq_a;
+    vector[K] zsigma_b;
+    matrix[K,3] zetasq_b;
+    matrix[K,3] zrhosq_b;
+    vector[K] zsigma_g;
+    matrix[K,3] zetasq_g;
+    matrix[K,3] zrhosq_g;
+    real<lower=0> sigma_sigma;
+    real sigma_mean;
+    real<lower=0> rho_sigma;
+    real rho_mean;
+    real<lower=0> eta_sigma;
+    real eta_mean;
+}
+transformed parameters{
+    vector[L] alpha;
+    matrix[K,L] beta;
+    matrix[K,L] gamma;
+    matrix[L, L] L_SIGMA_a;
+    matrix[L, L] L_SIGMA_b[K];
+    matrix[L, L] L_SIGMA_g[K];
+    real sigma_a;
+    vector[3] etasq_a;
+    vector[3] rhosq_a;
+    vector[K] sigma_b;
+    matrix[K,3] etasq_b;
+    matrix[K,3] rhosq_b;
+    vector[K] sigma_g;
+    matrix[K,3] etasq_g;
+    matrix[K,3] rhosq_g;
+    
+    sigma_a = exp(zsigma_a * sigma_sigma + sigma_mean);
+    etasq_a = exp(zetasq_a * eta_sigma + eta_mean);    
+    rhosq_a = exp(zrhosq_a * rho_sigma + rho_mean);
+    sigma_b = exp(zsigma_b * sigma_sigma + sigma_mean);
+    etasq_b = exp(zetasq_b * eta_sigma + eta_mean);    
+    rhosq_b = exp(zrhosq_b * rho_sigma + rho_mean);
+    sigma_g = exp(zsigma_g * sigma_sigma + sigma_mean);
+    etasq_g = exp(zetasq_g * eta_sigma + eta_mean);    
+    rhosq_g = exp(zrhosq_g * rho_sigma + rho_mean);    
+
+    L_SIGMA_a = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_g, Dmat_t, etasq_a[1], etasq_a[2], etasq_a[3], rhosq_a[1], rhosq_a[2], rhosq_a[3], sigma_a));
+    alpha = exp(L_SIGMA_a * zalpha + alpha_bar);
+
+    for(i in 1:K){
+        L_SIGMA_b[i] = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_g, Dmat_t, etasq_b[i, 1], etasq_b[i, 2], etasq_b[i, 3], rhosq_b[i, 1], rhosq_b[i, 2], rhosq_b[i, 3], sigma_b[i]));
+        beta[i] = zbeta[i]*(L_SIGMA_b[i]') + beta_bar[i];
+    }
+    for(i in 1:K){
+        L_SIGMA_g[i] = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_g, Dmat_t, etasq_g[i, 1], etasq_g[i, 2], etasq_g[i, 3], rhosq_g[i, 1], rhosq_g[i, 2], rhosq_g[i, 3], sigma_g[i]));
+        gamma[i] = zgamma[i]*(L_SIGMA_g[i]') + gamma_bar[i];
+        gamma[i] = exp(gamma[i]);
+    }
+
+}
+model{
+    zsigma_a ~ std_normal();
+    zsigma_b ~ std_normal();
+    zsigma_g ~ std_normal();
+    zrhosq_a ~ std_normal();
+    zrhosq_a ~ std_normal();
+    to_vector(zrhosq_b) ~ std_normal();
+    to_vector(zrhosq_g) ~ std_normal();
+    to_vector(zrhosq_b) ~ std_normal();
+    to_vector(zrhosq_g) ~ std_normal();
+    sigma_sigma ~ exponential( 1 );
+    sigma_mean ~ std_normal();
+    rho_sigma ~ exponential( 1 );
+    rho_mean ~ std_normal();
+    eta_sigma ~ exponential( 1 );
+    eta_mean ~ std_normal();
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    gamma_bar ~ std_normal();
+    zalpha ~ std_normal();
+    to_vector( zgamma ) ~ std_normal();
+    to_vector( zbeta ) ~ std_normal();
+
+    for ( i in 1:L ){
+        Y[i] ~ binomial(1, exp(- alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i]))) ;
+    }
+}
+"
+
+
 ########################################
 ########################################
 # The following are just trials...
