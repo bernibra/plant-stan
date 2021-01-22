@@ -1,8 +1,14 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{6}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Austin(2002)}]{austin2002spatial}
+Austin, M. (2002).
+\newblock Spatial prediction of species distribution: an interface between
+  ecological theory and statistical modelling.
+\newblock \emph{Ecological modelling}, 157, 101--118.
 
 \bibitem[{{Godoy-Lorite} \emph{et~al.}(2016){Godoy-Lorite}, Guimer{\`a}, Moore
   \& {Sales-Pardo}}]{godoy-loriteAccurateScalableSocial2016}

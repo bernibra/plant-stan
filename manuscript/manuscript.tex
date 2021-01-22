@@ -83,7 +83,7 @@
 
 %Title paper
 \title{\vspace{-1cm}
-A fresh perspective on distribution modelling: a bayesian framework to understand the distribution of plant species along an environmental gradient}
+Model simplicity breeds contempt: using simple models to answer basic questions on species' distributions}
 \author[1,*]{\normalsize Bernat Bramon Mora}
 \author[1]{\normalsize Jake M.\ Alexander}
 \affil[1]{\footnotesize Institute of Integrative Biology, ETH Zürich, Zürich, Switzerland}
@@ -95,7 +95,27 @@ A fresh perspective on distribution modelling: a bayesian framework to understan
 \begin{document}
 \maketitle
 \linenumbers
-%\section*{Abstract}
+\section*{Introduction}
+{\color{gray}
+These are just a bunch of thoughts that I had on how to frame the introduction for the manuscript. I want to say something along the lines: \textit{we know a lot about the factors that could theoretically influence species' distributions, and a rapidly growing body of research have been primarily focused on trying to untangle some of such biotic and abiotic predictors---with an increasing effort placed in improving the predictive power of statistical models. However, much less is known about how species' distributions compare to each other. Here, we use a conceptually more conservative approach to instead understand and compare basic aspects regarding the shape of species' distribution along environmental gradients.}}
+%\citet{austin2002spatial} writes "\textit{there are three major components in any framework for statistical modelling in plant ecology. There needs to be an ecological model, a data model, and a statistical model. The ecological model consists of the ecological knowledge and theory to be used or tested in the study. The data model consists of the decisions made regarding how the data are collected and how the data will be measured or estimated. The statistical model involves the choice of statistical method, error function and significance tests. Each model interacts in both obvious and subtle ways with the other models to determine the success of any statistical modelling exercise.}" While a lot of work has been developed for all three components outlined by \citet{austin2002spatial}, increasing emphasis has been put into advancing the data and statistical models. Indeed,
+
+Increasing efforts have been devoted to improving the ability of statistical models to predict the presence/absence of species across ranges. However, much less attention is paid to how species' distributions compare to each other. 
+
+There is no general agreement the shape of species distributions. While many ecological textbooks (Begon et al., 1990, Giller, 1984, Krebs, 1994) assume this to be unimodal and symmetric, some have warned that empirical distributions can take many different forms \citep{austin2002spatial}. There is not an easy way to untangle the true shape of species' distributions, as this shape is likely to showcase idiosyncrasies at the species level and across systems. The aim of this work, it is not to answer these questions nor to provide a general approach that accommodates such idiosyncrasies. Instead, we want to use a model that is solely constrained by the empirical information that we truly have regarding a particular system, relaxing as much as possible the structural constrains of the statistical framework. Then, we want to use this model to answer basic aspects regarding the way systems of many species are distributed along an environmental gradient. 
+
+To decide among modelling approaches, we first needs to agree on what we know about the system. We know that species occupy a geographic range; therefore, we know that their distributions have finite variance. Indeed, observations on species' geographic variation and optimal climatic conditions have been long documented, with extensive databases compiled by botanists and field ecologists documenting basic knowledge on species' distributions. One could point out that we also know that many other factors might influence species' presence/absence---e.g. the influence of biotic interactions among species. However, we do not necessarily have an intuition of how exactly these factors will influence the shape of species' distributions. As a result, if all we truly knew about a species' distribution was that they have finite variance, the most conservative assumption and the safest bet---i.e. the one with the largest entropy---is that such distribution is a Gaussian.
+
+%There is a growing literature on species' distribution models. For the most part, however, these models have often focussed on model performance and understanding the predictive power of certain covariates. This models often take a response variable, such as presence/absence or abundance data, and fit it with a set of environmental variables and species' ecological or phylogenetic relationships. There... The shape of distributions on systems of many species is rarely studied. That is, simple ...
+%model comparison... 
+%creating maps of relative suitabilities...
+%extrapolate to new data...
+
+%It will be argued in this paper that neglect of ecological knowledge is a limiting factor in the application of statistical modelling in ecology and conservation planning
+
+%The field has shifted towards understanding the effects of biotic factors on such distributions. And while the theory is advancing quickly, the...
+
+%This is a generalised additive model.
 % Results are presented for both simulated and empirical data.
 % But this approach understates the posterior uncertainty in inference. 
 %\section*{Introduction}
@@ -141,7 +161,7 @@ y_{ij} & \sim \text{Binomial}\left(1, p_{ij}\right)\\
 \end{split}
 \label{eq:baseline}
 \end{equation}
-Notice that this model structure assumes all plants to have a uni-modal distributions along each environmental axis (see the model's behaviour in Supplementary Figure XX), where parameters $\alpha_i$, $\beta_i^k$, and $\lambda_i^k$ describe amplitude of the probability $p_{ij}$, species' average climatic suitability and range of variation along the different environmental gradients, respectively. While potentially sacrificing predictive accuracy, this model structure allows us to explicitly incorporate all prior knowledge that we have regarding species' distributions via $\Sigma^{\alpha}$, $\Sigma^{\beta_{k}}$ and $\Sigma^{\lambda_{k}}$. More specifically, we express $\beta_i^k$ and $\log\left(\lambda_i^k\right)$ as multivariate normal distributions---i.e. Gaussian processes---such that $\Sigma^{\beta_{k}}$ and $\Sigma^{\lambda_{k}}$ are variance-covariance matrices describing species' similarity in terms of their average climatic suitability and range of variation along the different environmental gradients, respectively. Likewise, $\log\left(\alpha\right)$ is characterized as a Gaussian Process, where the corresponding variance-covariance matrix $\Sigma^{\alpha}$ is designed to also incorporate some of the prior information that we have with regards to species' physiological traits.
+Notice that this model structure assumes all plants to have a uni-modal distributions along each environmental axis (see the model's behaviour in Supplementary Figure XX), where parameters $\alpha_i$, $\beta_i^k$, and $\lambda_i^k$ describe amplitude of the probability $p_{ij}$, species' average climatic suitability and range of variation along the different environmental gradients, respectively\footnote[2]{I'll rewrite the likelihood function to an ordered categorical as soon as I get things to work properly with count data.}. While potentially sacrificing predictive accuracy, this model structure allows us to explicitly incorporate all prior knowledge that we have regarding species' distributions via $\Sigma^{\alpha}$, $\Sigma^{\beta_{k}}$ and $\Sigma^{\lambda_{k}}$. More specifically, we express $\beta_i^k$ and $\log\left(\lambda_i^k\right)$ as multivariate normal distributions---i.e. Gaussian processes---such that $\Sigma^{\beta_{k}}$ and $\Sigma^{\lambda_{k}}$ are variance-covariance matrices describing species' similarity in terms of their average climatic suitability and range of variation along the different environmental gradients, respectively. Likewise, $\log\left(\alpha\right)$ is characterized as a Gaussian Process, where the corresponding variance-covariance matrix $\Sigma^{\alpha}$ is designed to also incorporate some of the prior information that we have with regards to species' physiological traits.
 
 In all cases, all variance-covariance matrices are defined as follows:
 \begin{equation} 
@@ -161,7 +181,7 @@ Given a set of interactions $R^{*}$ between $N$ and $M$, we use a Mixed Membersh
 Pr[r_{ij}=r] = \sum_{\alpha \beta} \theta_{i\alpha} \phi_{j\beta} p_{\alpha\beta}\left(r\right)
 \end{equation}
 Following this definition, we want to find the group memberships that maximize the likelihood $P\left(R^{*}|\theta, \phi, p\right)$. Doing so is difficult optimization problem; however, it has been shown that one can estimate the different $\theta_{i\alpha}$, $\phi_{j\beta}$, and $p_{\alpha\beta}\left(r\right)$ parameters by maximizing the likelihood using an expectation-maximization algorithm \citep{godoy-loriteAccurateScalableSocial2016, tarres-deulofeuTensorialBipartiteBlock2019}. In simple terms, one can iteratively find multiple local minima for the likelihood, and average over the estimated the parameter values \citep{godoy-loriteAccurateScalableSocial2016}\footnote[2]{
-While this averaging is trivial for the estimated probabilities $Pr[r_{ij}=r]$, it is non-trivial if one wants to find averages for the group memberships. The reason for this is related to the stochastic nature of the expectation-maximization algorithm. This algorithm initially assigns random group memberships to both species and traits. While this random labelling is irrelevant when studying the probabilities $Pr[r_{ij}=r]$, it is instead crucial for averaging $\theta_{i\alpha}$, $\phi_{j\beta}$, and $p_{\alpha\beta}\left(r\right)$. Therefore, before averaging the group membership estimates, one needs to find the bijective relationship for the labellings of different iterations of the optimization algorithm. In a nutshell, for every iteration, I do this by using a simulated annealing algorithm on the estimated $p_{\alpha\beta}\left(r\right)$, matching the corresponding labelling to a reference iteration. A full section for this is required in the Supplementary Information.}. 
+While this averaging is trivial for the estimated probabilities $Pr[r_{ij}=r]$, it is non-trivial if one wants to find averages for the group memberships. The reason for this is related to the stochastic nature of the expectation-maximization algorithm. This algorithm initially assigns random group memberships to both species and traits. While this random labelling is irrelevant when studying the probabilities $Pr[r_{ij}=r]$, it is instead crucial for averaging $\theta_{i\alpha}$, $\phi_{j\beta}$, and $p_{\alpha\beta}\left(r\right)$. Therefore, before averaging the group membership estimates, one needs to find the bijective relationship for the labellings of different iterations of the optimization algorithm. In a nutshell, for every iteration, I do this by using a simulated annealing algorithm on the estimated $p_{\alpha\beta}\left(r\right)$, matching the corresponding labelling to a reference iteration.}. 
 
 The average estimates for the group memberships provide us with a different scale to classify species based on the traits these have. In short, for any species $i$, we can estimate a $K$-dimensional vector $\vec{\theta}_{i}$ that describes the extend to which $i$ belong to each group membership---i.e. the extend to which a species is of one type or another. This classification is useful because it can be used to compare species, defining a way to measure the distance between species based on an arbitrary---and potentially incomplete---set of categorical or ordinal traits $M$. The simplest case is to define the distance as $D_{ij} = |\vec{\theta}_{i}-\vec{\theta}_{j}|$. Alternatively, one could also define $K$ distance matrices based on the different group memberships $D^{\alpha}_{ij} = |\theta_{i\alpha}-\theta_{j\alpha}|$.
 
@@ -174,9 +194,27 @@ The model structure defined in Eq.~(\ref{eq:baseline}) allows us to test the eff
 where now $\rho_{\alpha k}$ are separate relevance hyperparameters for each distance matrix in the total variance of $\alpha_i$. Notice that the same is true for the covariance of parameters $\beta_i^k$ and $\lambda_i^k$. Finally, for all hyperparameters and as described for the baseline model, we use adaptive priors across covariance structures.
 
 \section*{Results}
+%We first use the baseline model to estimate the distribution of all species with at least 10 occurrences using all the data that we have with regard to...
+\begin{figure}[ht]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.9\textwidth]{figures/figure1}
+    	  \vspace{0.3cm}
+	   \caption{Relationship between mean and variance of species' distributions. These are the results for the main axis of variation for the climatic data (results for the second axis of variation presented in the Supplementary Fig.~2).}
+      \label{fig:correlation}
+\end{figure}
 
-\section*{Discussion}
+\begin{figure}[h]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.9\textwidth]{figures/invasive}
+    	  \vspace{0.3cm}
+	   \caption{Are there clear geographical patterns for neophytes and for species with decreasing or increasing abundance?}
+      \label{fig:neophytes}
+\end{figure}
 
+%\section*{Discussion}
+\clearpage
 \bibliography{references}
 
 \end{document}
