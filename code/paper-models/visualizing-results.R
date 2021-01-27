@@ -201,7 +201,7 @@ plot.actual.data <- function(model=NULL){
 
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
+    model <- readRDS("../../results/models/baseline-model.rds")
   }
   
   #indicator values

@@ -138,10 +138,10 @@ parameters{
     real zetasq_a;
     real zrhosq_a;
     vector[K] zsigma_b;
-    matrix[K] zetasq_b;
+    vector[K] zetasq_b;
     matrix[K,2] zrhosq_b;
     vector[K] zsigma_g;
-    matrix[K] zetasq_g;
+    vector[K] zetasq_g;
     matrix[K,2] zrhosq_g;
     real<lower=0> sigma_sigma;
     real sigma_mean;
@@ -161,10 +161,10 @@ transformed parameters{
     real etasq_a;
     vector[3] rhosq_a;
     vector[K] sigma_b;
-    matrix[K] etasq_b;
+    vector[K] etasq_b;
     matrix[K,2] rhosq_b;
     vector[K] sigma_g;
-    matrix[K] etasq_g;
+    vector[K] etasq_g;
     matrix[K,2] rhosq_g;
     
     sigma_a = exp(zsigma_a * sigma_sigma + sigma_mean);
