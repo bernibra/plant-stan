@@ -245,11 +245,11 @@ baseline.traits <- function(d = NULL, recompile = T, simulated=T, min.occurrence
                            init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, "binomial-stan-gauss-RBFs-traits_beta",extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, "baseline-model-traits.rds", sep=""))
         return(mfit_5.1)
 }
 
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-baseline(simulated=F, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.traits(simulated=F, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
