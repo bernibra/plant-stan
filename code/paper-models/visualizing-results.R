@@ -6,6 +6,7 @@ library(grid)
 library(ggpubr)
 library(hrbrthemes)
 library(plotly)
+library(cowplot)
 
 ####
 # Visualizing the results of some of the models

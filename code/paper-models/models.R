@@ -159,7 +159,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_g[K];
     real sigma_a;
     real etasq_a;
-    vector[3] rhosq_a;
+    real rhosq_a;
     vector[K] sigma_b;
     vector[K] etasq_b;
     matrix[K,2] rhosq_b;
@@ -216,7 +216,7 @@ model{
     to_vector( zbeta ) ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ bernoulli(-exp(alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])));
+        Y[i] ~ bernoulli(exp(-alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])));
     }
 }
 "
