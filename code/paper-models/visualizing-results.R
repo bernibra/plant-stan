@@ -544,28 +544,68 @@ plot.actual.data.distribution <- function(model=NULL){
   
   # Beta plots
   for(i in 1:2){
-    beta <- as.vector(post$beta[,i,])
-    beta_normal <- rnorm(length(beta),mean(beta),sd(beta))
-    beta_unif <- runif(length(beta),min=min(beta),max = max(beta))
-    gamma <- as.vector(post$gamma[,i,])
-    gamma_random <- exp(rnorm(length(gamma),mean(log(gamma)),sd(log(gamma))))
-    alpha <- as.vector(post$alpha)
-    alpha_random <- exp(rnorm(length(alpha),mean(log(alpha)),sd(log(alpha))))
-    xx <- seq(from = min(beta), to = max(beta), length.out = 100)
-    probability_random <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = exp(- alpha_random - gamma_random * (x-beta_normal)^2))))
-    probability_unif <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = exp(- alpha_random - gamma_random * (x-beta_unif)^2))))
-    probability <- sapply(xx, function(x) sum(rbinom(length(alpha), 1, prob = exp(-alpha - gamma * (x-beta)^2))))
+    xx <- seq(from = min(post$beta[,i,]), to = max(post$beta[,i,]), length.out = 100)
+    beta <- lapply(1:1000, function(j) sapply(xx, function(x) sum((post$beta[j,i,]<=x)*1)/length(post$beta[j,i,])))
+    beta <- matrix(unlist(beta), ncol = length(xx), byrow = TRUE)
+    mu_beta <- apply( beta , 2 , mean )
+    ci_beta <- apply( beta , 2 , PI )
     
-    df=data.frame(group=c("real", "normal", "uniform")[c(rep(1,length(xx)),rep(2,length(xx)),rep(3,length(xx)))],
-                  x=c(xx,xx,xx),
-                  y=c(probability/max(probability),probability_random/max(probability_random), probability_unif/max(probability_unif)))
+    beta_normal <- matrix(rnorm(ncol(post$beta[,i,])*1000, mean=mean(post$beta[,i,]), sd=sd(post$beta[,i,])), 1000, ncol = ncol(post$beta[,i,]))
+    beta_normal <- lapply(1:nrow(beta_normal), function(j) sapply(xx, function(x) sum((beta_normal[j,]<=x)*1)/ncol(beta_normal)))
+    beta_normal <- matrix(unlist(beta_normal), ncol = length(xx), byrow = TRUE)
+    mu_beta_normal <- apply( beta_normal , 2 , mean )
+    ci_beta_normal <- apply( beta_normal , 2 , PI )
+    
+    beta_unif <- matrix(runif(ncol(post$beta[,i,])*1000, min =min(post$beta[,i,]), max=max(post$beta[,i,])), 1000, ncol = ncol(post$beta[,i,]))
+    beta_unif <- lapply(1:nrow(beta_unif), function(j) sapply(xx, function(x) sum((beta_unif[j,]<=x)*1)/ncol(beta_unif)))
+    beta_unif <- matrix(unlist(beta_unif), ncol = length(xx), byrow = TRUE)
+    mu_beta_unif <- apply( beta_unif , 2 , mean )
+    ci_beta_unif <- apply( beta_unif , 2 , PI )
+    
+    df <- data.frame(x=c(xx,xx,xx),
+                     mean=c(mu_beta, mu_beta_normal, mu_beta_unif),
+                     group=c(rep("real", length(mu_beta)), rep("normal", length(mu_beta_normal)), rep("unif", length(mu_beta_normal))),
+                     lower=c(ci_beta[1,], ci_beta_normal[1,], ci_beta_unif[1,]),
+                     upper=c(ci_beta[2,], ci_beta_normal[2,], ci_beta_unif[2,]))
+    
+    p <- ggplot(data=df, aes(x=x, y=mean, colour=group, fill=group)) +
+         geom_line() +
+        geom_ribbon(aes(ymin=lower, ymax=upper), alpha=0.3, colour = NA)+
+        theme_bw()+
+        theme(legend.title = element_blank(),
+              legend.position = c(0.8, 0.2),
+              legend.background = element_blank())
+    print(p)
+    # 
+    # beta <- as.vector(post$beta[,i,])
+    # beta_normal <- rnorm(length(beta),mean(beta),sd(beta))
+    # beta_unif <- runif(length(beta),min=min(beta),max = max(beta))
+    # gamma <- as.vector(post$gamma[,i,])
+    # gamma_random <- exp(rnorm(length(gamma),mean(log(gamma)),sd(log(gamma))))
+    # alpha <- as.vector(post$alpha)
+    # alpha_random <- exp(rnorm(length(alpha),mean(log(alpha)),sd(log(alpha))))
+    # xx <- seq(from = min(beta), to = max(beta), length.out = 100)
+    # beta_c <- sapply(xx, function(x) sum((beta<=x)*1))
+    # beta_c <- beta_c/max(beta_c)
+    # beta_normal_c <- sapply(xx, function(x) sum((beta_normal<=x)*1))
+    # beta_normal_c <- beta_normal_c/max(beta_normal_c)
+    # beta_unif_c <- sapply(xx, function(x) sum((beta_unif<=x)*1))
+    # beta_unif_c <- beta_unif_c/max(beta_unif_c)
+    # probability_random <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = exp(- alpha_random - gamma_random * (x-beta_normal)^2))))
+    # probability_unif <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = exp(- alpha_random - gamma_random * (x-beta_unif)^2))))
+    # probability <- sapply(xx, function(x) sum(rbinom(length(alpha), 1, prob = exp(-alpha - gamma * (x-beta)^2))))
+    
+    # df=data.frame(group=c("real", "normal", "uniform")[c(rep(1,length(xx)),rep(2,length(xx)),rep(3,length(xx)))],
+    #               x=c(xx,xx,xx),
+    #               y=c(probability/max(probability),probability_random/max(probability_random), probability_unif/max(probability_unif)))
+    # ggplot(df, aes(x=x, y=y, color=group)) +
+    #   stat_ecdf(geom = "step")
+    
+    df=data.frame(group=c("real", "normal", "uniform")[c(rep(1,length(beta_c)),rep(2,length(beta_c)),rep(3,length(beta_c)))],
+                  y=c(beta_c,beta_normal_c,beta_unif_c),
+                  x=c(xx,xx,xx))
     ggplot(df, aes(x=x, y=y, color=group)) +
-      stat_ecdf(geom = "step")
-    
-    df=data.frame(group=c("real", "normal", "uniform")[c(rep(1,length(beta)),rep(2,length(beta)),rep(3,length(beta)))],
-                  y=c(beta,beta_normal,beta_unif))
-    ggplot(df, aes(x=y, color=group)) +
-      stat_ecdf(geom = "step")
+      geom_line()
   }
   
 }
