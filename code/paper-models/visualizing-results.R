@@ -94,13 +94,17 @@ plot.scatter <- function(mu, variance, color="black", xlabel="-", ylabel="-", ti
   return(p)
 }
 
-plot.scatter2 <- function(mu, variance, label, color="black", xlabel="-", ylabel="-", tit=NULL, mar=margin(5.5,5.5,5.5,5.5)){
+plot.scatter2 <- function(mu, variance, label, color="black", alpha=NULL, xlabel="-", ylabel="-", tit=NULL, mar=margin(5.5,5.5,5.5,5.5)){
   
-  df <- data.frame(sp=1:length(mu), mean=mu, variance=variance, label=label)
+  if(is.null(alpha)){
+    alpha <- rep(0.7, length(mu))
+  }
+  df <- data.frame(sp=1:length(mu), mean=mu, variance=variance, label=label, alpha=alpha)
   
-  p <- ggplot(df, aes(x=variance, y=mean, color=label)) + 
-    geom_point(alpha=0.7)+
+  p <- ggplot(df, aes(x=variance, y=mean, color=label, alpha=alpha)) + 
+    geom_point()+
     scale_color_manual(values=color)+
+    guides(alpha = FALSE)+
     ylab(ylabel)+
     xlab(xlabel)+
     scale_x_continuous(expand = expansion(add = c(0, 0)))+
@@ -242,22 +246,27 @@ plot.actual.data <- function(model=NULL){
     ylim = c(min(ci_beta[[i]]), max(ci_beta[[i]]))
     xlim = c(-1, length(mu_beta[[i]])+1)
     posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
-    posx = (xlim[2]-xlim[1])*0.796 + xlim[1]
+    posx = (xlim[2]-xlim[1])*0.8 + xlim[1]
     
     # Beta
-    plist[[1]] <- plot.ranking.x(mu_beta[[i]], ci_beta[[i]], color=colo[1], xlabel="species", ylabel="", ylim=ylim, xlim=xlim, mar=margin(5.5,5.5,5.5,5.5), additional_label = Tind_, posx=posx, posy=c(posy, ylim[2]-(posy-ylim[1])))
+    plist[[1]] <- plot.ranking.x(mu_beta[[i]], ci_beta[[i]], color=colo[1], xlabel="species", ylabel="", ylims=ylim, xlims=xlim, mar=margin(5.5,5.5,5.5,5.5), additional_label = Tind_, posx=posx, posy=c(posy, ylim[2]-(posy-ylim[1])))
 
-    xlim = c(min(sqrt(1/2*ci_gamma[[i]])), max(sqrt(1/2*ci_gamma[[i]])))
-    posx = (xlim[2]-xlim[1])*0.796 + xlim[1]
+    xlim = c(min(ci_gamma[[i]]), max(ci_gamma[[i]]))
+    posx = exp((log(xlim[2])-log(xlim[1]))*0.796 + log(xlim[1]))
     
     # Scatter plot
-    plist[[2]] <- plot.scatter(mu=mu_beta[[i]], variance=sqrt(1/2*mu_gamma[[i]]), color=colo[3], xlabel="", ylabel="mean", mar=margin(5.5,5.5,5.5,5.5), ylim=ylim, xlim=xlim)
+    plist[[2]] <- plot.scatter(mu=mu_beta[[i]], variance=mu_gamma[[i]], color=colo[3], xlabel="", ylabel=expression(beta), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
+    breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+    plist[[2]] <- plist[[2]] + coord_trans(x="log")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
     plist[[2]] <- plist[[2]] + annotate("text", x=posx, y = posy, label=paste0(round(meanPI,2), " ± ", round(sdPI,2)), size=3)
     
-    ylim = c(-1, length(sqrt(1/2*mu_gamma[[i]]))+1)
+    ylim = c(-1, length(mu_gamma[[i]])+1)
     
     # Gamma
-    plist[[3]] <- plot.ranking.y(sqrt(1/2*mu_gamma[[i]]), sqrt(1/2*ci_gamma[[i]]), color=colo[2], xlabel="variance", ylabel="species", xlim=xlim, ylim=ylim, mar=margin(5.5,5.5,5.5,5.5))
+    plist[[3]] <- plot.ranking.y(mu_gamma[[i]], ci_gamma[[i]], color=colo[2], xlabel=expression(gamma), ylabel="species", xlims=xlim, ylims=ylim, mar=margin(5.5,5.5,5.5,5.5))
+    plist[[3]] <- plist[[3]] + coord_trans(x="log") +
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
     
     hlay <- rbind(c(2,1),
                   c(3,NA))
@@ -280,14 +289,118 @@ plot.actual.data <- function(model=NULL){
 
 }
 
-plot.actual.data <- function(model=NULL){
+plot.actual.data.alpha <- function(model=NULL){
   # Parameters for plots
   extra <- 1
   colo <- c("#1b9e77", "#d95f02", "#7570b3")
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
+    model <- readRDS("../../results/models/baseline-model.rds")
+  }
+  
+  #indicator values
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  
+  # alphas
+  mu_alpha <- apply( post$alpha , 2 , mean )
+  ci_alpha <- apply( post$alpha , 2 , PI )
+  
+  # betas
+  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
+  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
+  
+  # gammas
+  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
+  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
+  
+  # Beta plots
+  for(i in 1:2){
+    if(i==1){
+      target <- post$beta[,i,]      
+      mu_target <- mu_beta[[1]]
+      ci_target <- ci_beta[[1]]
+    }else{
+      target <- post$gamma[,i,]
+      mu_target <- mu_gamma[[1]]
+      ci_target <- ci_gamma[[1]]
+    }
+    
+    # correlation
+    corPI <- sapply(1:dim(post$beta)[1], function(x) cor(target[x,], post$alpha[x,]))
+    meanPI <- mean(corPI)
+    sdPI <- sd(corPI)
+    corPIci <- round(sort(c(as.vector(PI(corPI)),meanPI)), 2)
+    
+    # Generate empty list of plots
+    plist = list()
+    idx <- sort(mu_target,index.return=T)$ix
+    Tind_ <- as.numeric(as.character(Tind[idx,3]))
+    Tind_ <- Tind_[!(is.na(Tind_))]
+    Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+    Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+    
+    ylim = c(min(ci_target), max(ci_target))
+    xlim = c(-1, length(mu_target)+1)
+    posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
+    posx = (xlim[2]-xlim[1])*0.8 + xlim[1]
+    if(i==2){
+      posy = exp((log(ylim[2])-log(ylim[1]))*0.1 + log(ylim[1]))
+    }
+    
+    # Beta
+    plist[[1]] <- plot.ranking.x(mu_target,ci_target, color=colo[1], xlabel="species", ylabel="", ylims=ylim, xlims=xlim, mar=margin(5.5,5.5,5.5,5.5), additional_label = Tind_, posx=posx, posy=c(posy, ylim[2]-(posy-ylim[1])))
+    xlim = c(min(ci_alpha), max(ci_alpha))
+    posx = (xlim[2]-xlim[1])*0.796 + xlim[1]
+    
+    # Scatter plot
+    plist[[2]] <- plot.scatter(mu=mu_target, variance=mu_alpha, color=colo[3], xlabel="", ylabel=expression(beta), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
+    if(i==2){
+      breaks <- round(seq(from=ylim[1], to=ylim[2], length.out = 4))+1
+      plist[[1]] <- plist[[1]] + coord_trans(y="log")+
+        scale_y_continuous(breaks = breaks, labels = breaks, limits = ylim)
+      plist[[2]] <- plist[[2]] + coord_trans(y="log")+
+      scale_y_continuous(breaks = breaks, labels = breaks, limits = ylim)
+    }
+    
+    plist[[2]] <- plist[[2]] + annotate("text", x=posx, y = posy, label=paste0(round(meanPI,2), " ± ", round(sdPI,2)), size=3)
+    
+    ylim = c(-1, length(mu_alpha)+1)
+    
+    # Gamma
+    plist[[3]] <- plot.ranking.y(mu_alpha, ci_alpha, color=colo[2], xlabel=expression(alpha), ylabel="species", xlims=xlim, ylims=ylim, mar=margin(5.5,5.5,5.5,5.5))
+
+    hlay <- rbind(c(2,1),
+                  c(3,NA))
+    grobs <- list()
+    widths <- list()
+    for (k in 1:length(plist)){
+      grobs[[k]] <- ggplotGrob(plist[[k]])
+      widths[[k]] <- grobs[[k]]$widths[2:5]
+    }    
+    maxwidth <- do.call(grid::unit.pmax, widths)
+    for (k in 1:length(grobs)){
+      grobs[[k]]$widths[2:5] <- as.list(maxwidth)
+    }
+    p <- grid.arrange(grobs=grobs, ncol=2, nrow=2, heights=c(0.8,1), layout_matrix=hlay, widths=c(0.8,1)#, vp=viewport(width=1, height=1, clip = TRUE),
+                      # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+    )
+    print(p)
+    
+  }
+}
+
+plot.actual.data.means <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/baseline-model.rds")
   }
   
   #indicator values
@@ -310,7 +423,24 @@ plot.actual.data <- function(model=NULL){
   mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
   ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
   
+  mu_beta_dec <- as.vector(post$beta[,1,(Tend$V3+Tend$V4)==1])
+  mu_beta_inc <- as.vector(post$beta[,1,Tend$V5==1])
+  mu_gamma_dec <- as.vector(post$gamma[,1,(Tend$V3+Tend$V4)==1])
+  mu_gamma_inc <- as.vector(post$gamma[,1,Tend$V5==1])
+  
+  plist <- list()
+  df <- data.frame(group=c("other", "increasing")[c(rep(1, length(mu_beta_dec)), rep(2, length(mu_beta_inc)))],
+                   x=c(mu_beta_dec, mu_beta_inc))
+  plist[[1]] <- ggplot(df, aes(x=x, color=group, fill=group)) +
+    geom_boxplot(alpha=0.3)
+  df <- data.frame(group=c("other", "increasing")[c(rep(1, length(mu_gamma_dec)), rep(2, length(mu_gamma_inc)))],
+                   x=c(mu_gamma_dec, mu_gamma_inc))
+  plist[[2]] <- ggplot(df, aes(x=x, color=group, fill=group)) +
+    geom_boxplot(alpha=0.3)
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=1)
+  
   plist = list()
+  ylab <- expression(beta)
   for(i in 1:2){
     idx <- sort(mu_beta[[i]],index.return=T)$ix
     Tind_ <- as.numeric(as.character(Tind[idx,3]))
@@ -319,16 +449,22 @@ plot.actual.data <- function(model=NULL){
     Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
 
     ylim = c(min(mu_beta[[i]]), max(mu_beta[[i]]))
-    xlim = c(min(sqrt(1/2*mu_gamma[[i]])), max(sqrt(1/2*mu_gamma[[i]])))
-    posx = (xlim[2]-xlim[1])*0.83 + xlim[1]
+    xlim = c(min(mu_gamma[[i]]), max(mu_gamma[[i]]))
+    posx = exp((log(xlim[2])-log(xlim[1]))*0.83 + log(xlim[1]))
     posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
     posy = c(posy, ylim[2]-(posy-ylim[1]))
     
     labels = ifelse(NEO$V3==1, "neophyte", "other")
-    color <- c("red",colo[3])
+    alphas = ifelse(NEO$V3==1, 0.7, 0.6)
+    color <- c("#e7298a",colo[4])
     xlab=""
-
-    p <- plot.scatter2(mu=mu_beta[[i]], variance=sqrt(1/2*mu_gamma[[i]]), label = labels, color=color, xlabel=xlab, ylabel="mean", mar=margin(5.5,5.5,5.5,5.5))
+    breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+    
+    p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha = alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+    # Scatter plot
+    p <- p + coord_trans(x="log", clip = "off")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+    
     if(i==1){
       p <- p+annotate("text", x = posx, y = posy, label = Tind_, colour = "#525252", size=3)+
         ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
@@ -340,20 +476,24 @@ plot.actual.data <- function(model=NULL){
     legend1 <- get_legend(p)
     plist[[2*(i-1)+1]] <- p+theme(legend.position = "none", plot.title = element_blank())
     # 
-    labs <- c("decreasing", "decreasing", "increasing", "other")
+    labs <- c("decreasing", "decreasing low", "increasing", "other")
     labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
     color <- colo
-    xlab="variance"
+    alphas <- c(0.7,0.7,0.7,0.6)
+    alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+    xlab=expression(gamma)
     
-    p <- plot.scatter2(mu=mu_beta[[i]], variance=sqrt(1/2*mu_gamma[[i]]), label = labels, color=color, xlabel=xlab, ylabel="mean", mar=margin(5.5,5.5,5.5,5.5))
+    p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha=alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
     legend2 <- get_legend(p)
+    p <- p + coord_trans(x="log", clip = "off")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
     if(i==1){
       p <- p+ ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
     }else{
       p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
     }
     plist[[2*(i-1)+2]] <- p+theme(legend.position = "none", plot.title = element_blank())
-    xlab="variance"
+    ylab <- ""
   }
   plist[[5]] <- legend1
   plist[[6]] <- legend2
@@ -363,16 +503,7 @@ plot.actual.data <- function(model=NULL){
   hlay <- rbind(c(7,8,NA),
                 c(1,3,5),
                 c(2,4,6))
-  # grobs <- list()
-  # widths <- list()
-  # for (k in 1:length(plist)){
-  #   grobs[[k]] <- ggplotGrob(plist[[k]])
-  #   widths[[k]] <- grobs[[k]]$widths[2:5]
-  # }    
-  # maxwidth <- do.call(grid::unit.pmax, widths)
-  # for (k in 1:length(grobs)){
-  #   grobs[[k]]$widths[2:5] <- as.list(maxwidth)
-  # }
+
   p <- grid.arrange(grobs=plist, ncol=3, nrow=3, heights=c(0.1,1,1), layout_matrix=hlay, widths=c(1,1,0.27)#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
@@ -380,7 +511,8 @@ plot.actual.data <- function(model=NULL){
   
 }
 
-plot.actual.data.means <- function(model=NULL){
+
+plot.actual.data.distribution <- function(model=NULL){
   # Parameters for plots
   extra <- 1
   colo <- c("#1b9e77", "#d95f02", "#7570b3")
@@ -389,6 +521,9 @@ plot.actual.data.means <- function(model=NULL){
   if(is.null(model)){
     model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
   }
+  
+  #indicator values
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -405,29 +540,35 @@ plot.actual.data.means <- function(model=NULL){
   mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
   ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
   
-
-
-  # Generate empty list of plots
   plist = list()
+  
+  # Beta plots
+  for(i in 1:2){
+    beta <- as.vector(post$beta[,i,])
+    beta_normal <- rnorm(length(beta),mean(beta),sd(beta))
+    beta_unif <- runif(length(beta),min=min(beta),max = max(beta))
+    gamma <- as.vector(post$gamma[,i,])
+    gamma_random <- exp(rnorm(length(gamma),mean(log(gamma)),sd(log(gamma))))
+    alpha <- as.vector(post$alpha)
+    alpha_random <- exp(rnorm(length(alpha),mean(log(alpha)),sd(log(alpha))))
+    xx <- seq(from = min(beta), to = max(beta), length.out = 100)
+    probability_random <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = exp(- alpha_random - gamma_random * (x-beta_normal)^2))))
+    probability_unif <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = exp(- alpha_random - gamma_random * (x-beta_unif)^2))))
+    probability <- sapply(xx, function(x) sum(rbinom(length(alpha), 1, prob = exp(-alpha - gamma * (x-beta)^2))))
     
-  # Beta
-  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="mean", extra=1)
+    df=data.frame(group=c("real", "normal", "uniform")[c(rep(1,length(xx)),rep(2,length(xx)),rep(3,length(xx)))],
+                  x=c(xx,xx,xx),
+                  y=c(probability/max(probability),probability_random/max(probability_random), probability_unif/max(probability_unif)))
+    ggplot(df, aes(x=x, y=y, color=group)) +
+      stat_ecdf(geom = "step")
     
-  # Scatter plot
-  plist[[2]] <- plot.scatter(mu=mu_beta[[1]], variance=mu_beta[[2]], color=colo[3], xlabel="beta 2", ylabel="beta 1")
-    
-  # Gamma
-  plist[[3]] <- plot.ranking.y(mu_beta[[2]], ci_beta[[2]], color=colo[2], xlabel="mean", ylabel="species", extra=1)
-    
-  hlay <- rbind(c(2,1),
-                  c(3,NA))
-  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(0.7,1), layout_matrix=hlay, widths=c(0.7,1)#, vp=viewport(width=1, height=1, clip = TRUE),
-                      # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
-    )
-  print(p)
-    
+    df=data.frame(group=c("real", "normal", "uniform")[c(rep(1,length(beta)),rep(2,length(beta)),rep(3,length(beta)))],
+                  y=c(beta,beta_normal,beta_unif))
+    ggplot(df, aes(x=y, color=group)) +
+      stat_ecdf(geom = "step")
+  }
+  
 }
-
 
 plot.distribution <- function(eta, sigma, eta_prima, tit=""){
   df <- data.frame(x=c(sigma, eta, eta_prima),
@@ -504,69 +645,6 @@ plot.distributions.gp <- function(model=NULL){
   print(p)
 }
 
-plot.direction <- function(){
-  
-}
-
-plot.heatmaps <- function(type="trait", color="black", orderid=NULL, structure=NULL){
-  # load data
-  # d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2data_backup", ".rds", sep = ""))
-
-  # Find dimensions
-  L <- length(unique(d$dataset$id))
-  N <- sum(d$dataset$id==1)
-  
-  # indices
-  mmsbm <- matrix(d$dataset$mmsbm.id, N, L)
-  
-  # Extract indices  
-  indices = data.frame(mmsbm = mmsbm[1,])
-
-  # Distance matrices  
-  dmat <- as.matrix(read.table(paste("../../data/properties/distance-matrices/", type, ".csv", sep=""), sep=","))
-  
-  # reshape correlation matrices
-  dmat <- dmat[,indices$mmsbm]
-  dmat <- dmat[indices$mmsbm,]
-  
-  # Normalize
-  dmat <- dmat/max(dmat)
-  
-  if(!(is.null(structure))){
-    dmat <- structure
-  }
-  
-  # reorder
-  if(!is.null(orderid)){
-    dmat <- dmat[, orderid]
-    dmat <- dmat[orderid,]
-  }
-  
-  # Build dataset
-  ij <- which(dmat>-1, arr.ind = T)
-  data <- data.frame(x=ij[,1], y=ij[,2], z=log(1+dmat[ij]))
-  p <- ggplot(data, aes(x, y, fill= z)) + 
-    geom_tile()+
-    ylab("species")+
-    xlab("species")+
-    scale_y_continuous(expand = expansion(add = c(0, 0)), trans = "reverse")+
-    scale_x_continuous(expand = expansion(add = c(0, 0)))+
-    scale_fill_gradient(low="white", high=color)+
-    theme_bw()+
-    theme(text = element_text(size=10),
-          axis.title.y=element_blank(),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          axis.text = element_text(colour = "black"),
-          legend.title = element_blank(),
-          legend.spacing.x = unit(3, "pt"),
-          # legend.position="none",
-          # legend.position=c(0.70,.80),
-          legend.background = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA, size=0.3))
-  return(p)
-}
-
 generate.association.matrix <- function(){
   comm <- readRDS("../../data/properties/communities/communities.rds")
   dsp <- readRDS("../../data/properties/communities/dictionary.rds")
@@ -596,134 +674,6 @@ generate.association.matrix <- function(){
   }
   results <- results*(1-diag(L))
   return(results)
-}
-
-plot.some.heatmaps <- function(model=NULL){
-  # Parameters for plots
-  extra <- 1
-  colo <- c("#1b9e77", "#d95f02", "#7570b3")
-  
-  # Load the data if not added  
-  if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
-  }
-  
-  # extract samples
-  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
-  
-  # alphas
-  mu_alpha <- apply( post$alpha , 2 , mean )
-  ci_alpha <- apply( post$alpha , 2 , PI )
-  
-  # betas
-  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
-  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
-  
-  # gammas
-  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
-  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
-
-  #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
-  
-  hlay <- rbind(c(1,NA),
-                c(2,3))
-  # Alpha  plots
-  plist = list()
-  idx <- sort(mu_alpha,index.return=T)$ix
-  plist[[1]] <- plot.ranking.x(mu_alpha, ci_alpha, color=colo[3], xlabel="species", ylabel="alpha", extra=1, mu_order = idx)
-  p <- plot.heatmaps(type="trait", color=colo[3], orderid=idx)
-  plist[[3]] <- get_legend(p)
-  plist[[2]] <- p + theme(legend.position="none")
-
-  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1))  
-  
-  # Beta 1  plots
-  plist = list()
-  idx <- sort(mu_beta[[1]],index.return=T)$ix
-  Tind_ <- as.numeric(as.character(Tind[idx,3]))
-  Tind_ <- Tind_[!(is.na(Tind_))]
-  Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
-  Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
-  
-  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx, additional_label = Tind_)
-  p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx)
-  plist[[3]] <- get_legend(p)
-  plist[[2]] <- p + theme(legend.position="none")
-  
-  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,0.1)#, vp=viewport(width=1, height=1, clip = TRUE),
-                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
-  )
-  
-  # Beta structure
-  mat <- generate.association.matrix()
-  plist = list()
-  idx <- sort(mu_beta[[1]],index.return=T)$ix
-  Tind_ <- as.numeric(as.character(Tind[idx,3]))
-  Tind_ <- Tind_[!(is.na(Tind_))]
-  Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
-  Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
-  
-  plist[[1]] <- plot.ranking.x(mu_beta[[1]], ci_beta[[1]], color=colo[1], xlabel="species", ylabel="beta 1", extra=1, mu_order = idx, additional_label = Tind_)
-  p <- plot.heatmaps(type="environment", color=colo[1], orderid=idx, structure = mat)
-  # plist[[3]] <- get_legend(p)
-  plist[[2]] <- p + theme(legend.position="none")
-
-  p <- grid.arrange(grobs=plist, ncol=1, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1)#, vp=viewport(width=1, height=1, clip = TRUE),
-                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
-  )
-  
-}
-
-
-plot.actual.data <- function(model=NULL){
-  # Parameters for plots
-  extra <- 1
-  colo <- c("#1b9e77", "#d95f02", "#7570b3")
-  
-  # Load the data if not added  
-  if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
-  }
-  
-  #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
-  
-  # extract samples
-  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
-  
-  # alphas
-  mu_alpha <- apply( post$alpha , 2 , mean )
-  ci_alpha <- apply( post$alpha , 2 , PI )
-  
-  # betas
-  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
-  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
-  
-  # gammas
-  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
-  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
-  
-  plist = list()
-  
-  # Beta plots
-  for(i in 1:2){
-    beta <- as.vector(post$beta[,i,])
-    beta_random <- rnorm(length(beta),0,2)
-    gamma <- as.vector(post$gamma[,i,])
-    gamma_random <- exp(rnorm(length(gamma),0,2))
-    alpha <- as.vector(post$alpha)
-    alpha_random <- rnorm(length(alpha),0,2)
-    xx <- seq(from = min(beta), to = max(beta), length.out = 100)
-    probability_random <- sapply(xx, function(x) sum(rbinom(length(alpha_random), 1, prob = inv_logit(alpha_random - gamma_random * (x-beta_random)^2))))
-    probability <- sapply(xx, function(x) sum(rbinom(length(alpha), 1, prob = inv_logit(alpha - gamma * (x-beta)^2))))
-
-    ggplot(data.frame(group=c(rep(1,length(xx)),rep(2,length(xx))), x=c(xx,xx), y=c(probability/max(probability),probability_random/max(probability_random))), aes(x=x, y=y, group=group)) +
-          geom_line(aes(color=group))
-    ggplot(data.frame(x=as.vector(post$beta[,i,])), aes(x=x)) +
-      geom_density()
-  }
-  
 }
 
 

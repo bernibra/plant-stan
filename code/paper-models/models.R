@@ -134,29 +134,6 @@ parameters{
     real alpha_bar;
     vector[K] beta_bar;
     vector[K] gamma_bar;
-    real zsigma_a;
-    real zetasq_a;
-    real zrhosq_a;
-    vector[K] zsigma_b;
-    vector[K] zetasq_b;
-    matrix[K,2] zrhosq_b;
-    vector[K] zsigma_g;
-    vector[K] zetasq_g;
-    matrix[K,2] zrhosq_g;
-    real<lower=0> sigma_sigma;
-    real sigma_mean;
-    real<lower=0> rho_sigma;
-    real rho_mean;
-    real<lower=0> eta_sigma;
-    real eta_mean;
-}
-transformed parameters{
-    vector[L] alpha;
-    matrix[K,L] beta;
-    matrix[K,L] gamma;
-    matrix[L, L] L_SIGMA_a;
-    matrix[L, L] L_SIGMA_b[K];
-    matrix[L, L] L_SIGMA_g[K];
     real sigma_a;
     real etasq_a;
     real rhosq_a;
@@ -166,16 +143,14 @@ transformed parameters{
     vector[K] sigma_g;
     vector[K] etasq_g;
     matrix[K,2] rhosq_g;
-    
-    sigma_a = exp(zsigma_a * sigma_sigma + sigma_mean);
-    etasq_a = exp(zetasq_a * eta_sigma + eta_mean);    
-    rhosq_a = exp(zrhosq_a * rho_sigma + rho_mean);
-    sigma_b = exp(zsigma_b * sigma_sigma + sigma_mean);
-    etasq_b = exp(zetasq_b * eta_sigma + eta_mean);    
-    rhosq_b = exp(zrhosq_b * rho_sigma + rho_mean);
-    sigma_g = exp(zsigma_g * sigma_sigma + sigma_mean);
-    etasq_g = exp(zetasq_g * eta_sigma + eta_mean);    
-    rhosq_g = exp(zrhosq_g * rho_sigma + rho_mean);    
+}
+transformed parameters{
+    vector[L] alpha;
+    matrix[K,L] beta;
+    matrix[K,L] gamma;
+    matrix[L, L] L_SIGMA_a;
+    matrix[L, L] L_SIGMA_b[K];
+    matrix[L, L] L_SIGMA_g[K];
 
     L_SIGMA_a = cholesky_decompose(cov_GPL2_alpha( Dmat_t, etasq_a, rhosq_a, sigma_a));
     alpha = L_SIGMA_a * zalpha + alpha_bar;
@@ -193,21 +168,16 @@ transformed parameters{
 
 }
 model{
-    zsigma_a ~ std_normal();
-    zsigma_b ~ std_normal();
-    zsigma_g ~ std_normal();
-    zrhosq_a ~ std_normal();
-    zrhosq_a ~ std_normal();
-    zetasq_b ~ std_normal();
-    zetasq_g ~ std_normal();
-    to_vector(zrhosq_b) ~ std_normal();
-    to_vector(zrhosq_g) ~ std_normal();
-    sigma_sigma ~ exponential( 1 );
-    sigma_mean ~ std_normal();
-    rho_sigma ~ exponential( 1 );
-    rho_mean ~ std_normal();
-    eta_sigma ~ exponential( 1 );
-    eta_mean ~ std_normal();
+
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    etasq_a ~ exponential( 1 );
+    etasq_b ~ exponential( 1 );
+    etasq_g ~ exponential( 1 );
+    rhosq_a ~ exponential( 0.5 );
+    to_vector(rhosq_b) ~ exponential( 0.5 );
+    to_vector(rhosq_g) ~ exponential( 0.5 );
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();

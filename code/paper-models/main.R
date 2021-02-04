@@ -212,21 +212,15 @@ baseline.traits <- function(d = NULL, recompile = T, simulated=T, min.occurrence
                 alpha_bar = 0,
                 beta_bar = rep(0, dat_5.1$K),
                 gamma_bar = rep(0, dat_5.1$K),
-                zsigma_a = 0.1,
-                zetasq_a = 0,
-                zrhosq_a = 0,
-                zsigma_b = rep(0.1, dat_5.1$K),
-                zetasq_b = rep(0, dat_5.1$K),
-                zrhosq_b = matrix(0, dat_5.1$K, 2),
-                zsigma_g = rep(0.1, dat_5.1$K),
-                zetasq_g = rep(0, dat_5.1$K),
-                zrhosq_g = matrix(0, dat_5.1$K, 2),
-                sigma_sigma = 0.1,
-                sigma_mean = 0,
-                rho_sigma = 0.1,
-                rho_mean = 0,
-                eta_sigma = 0.1,
-                eta_mean = 0
+                sigma_a = 0.1,
+                etasq_a = 0.1,
+                rhosq_a = 0.1,
+                sigma_b = rep(0.1, dat_5.1$K),
+                etasq_b = rep(0.1, dat_5.1$K),
+                rhosq_b = matrix(0.1, dat_5.1$K, 2),
+                sigma_g = rep(0.1, dat_5.1$K),
+                etasq_g = rep(0.1, dat_5.1$K),
+                rhosq_g = matrix(0.1, dat_5.1$K, 2)
         )
         
         model_code=base.model.traits
