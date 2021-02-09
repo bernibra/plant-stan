@@ -345,14 +345,16 @@ plot.actual.data.alpha <- function(model=NULL){
     xlim = c(min(ci_alpha), max(ci_alpha))
     posx = (xlim[2]-xlim[1])*0.796 + xlim[1]
     
-    # Scatter plot
-    plist[[2]] <- plot.scatter(mu=mu_target, variance=mu_alpha, color=colo[3], xlabel="", ylabel=expression(beta), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
     if(i==2){
+      plist[[2]] <- plot.scatter(mu=mu_target, variance=mu_alpha, color=colo[3], xlabel="", ylabel=expression(gamma), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
       breaks <- round(seq(from=ylim[1], to=ylim[2], length.out = 4))+1
       plist[[1]] <- plist[[1]] + coord_trans(y="log")+
         scale_y_continuous(breaks = breaks, labels = breaks, limits = ylim)
       plist[[2]] <- plist[[2]] + coord_trans(y="log")+
       scale_y_continuous(breaks = breaks, labels = breaks, limits = ylim)
+    }else{
+      # Scatter plot
+      plist[[2]] <- plot.scatter(mu=mu_target, variance=mu_alpha, color=colo[3], xlabel="", ylabel=expression(beta), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
     }
     
     plist[[2]] <- plist[[2]] + annotate("text", x=posx, y = posy, label=paste0(round(meanPI,2), " ± ", round(sdPI,2)), size=3)
