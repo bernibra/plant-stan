@@ -359,7 +359,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
                            init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "again-baseline-model-1d", extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "baseline-model-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 
@@ -557,7 +557,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
         Dis_g <- d$corr2
         N <- sum(d$dataset$id==1)
         L <- length(unique(d$dataset$id))
-        obs <- d$dataset$obs
+        obs <- matrix(d$dataset$obs, N, L)
         dat <- d$dataset
         id <- dat$id
         bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
@@ -565,8 +565,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
         
         dat_5.1 <- list(N=N,
                         L=L,
-                        K=length(obs),
-                        Y=obs,
+                        Y=t(obs),
                         X1=X1,
                         Dmat_b=Dis_b,
                         Dmat_g=Dis_g
@@ -611,5 +610,5 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
 }
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-baseline.1d(d=NULL, simulated=T, recompile = T, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 

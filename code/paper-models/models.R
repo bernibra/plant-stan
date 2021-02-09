@@ -212,8 +212,8 @@ functions{
 data{
     int N;
     int L;
-    # int K;
-    # int Y[K];
+    // int K;
+    // int Y[K];
     int Y[L, N];
     row_vector[N] X1;
     matrix[L,L] Dmat_b;
@@ -270,11 +270,10 @@ model{
     zbeta ~ std_normal();
 
     for ( i in 1:L ){
-        # p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+        // p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
         Y[i] ~ binomial(1, exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])));
     }
-    
-    # Y ~ binomial(1, to_vector(p));
+    // Y ~ binomial(1, to_vector(p));
 }
 "
 
@@ -623,8 +622,7 @@ functions{
 data{
     int N;
     int L;
-    int K;
-    int Y[K];
+    int Y[L,N];
     row_vector[N] X1;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
@@ -688,8 +686,7 @@ model{
     for ( i in 1:L ){
         p[i] = (X1 - beta[i]) * gamma[i];
         p[i] = 0.5 * exp(-alpha[i] - columns_dot_self(p[i])) * (1 + erf(lambda * p[i] / sqrt2()));
+        Y[i] ~ binomial(1, p[i]);
     }
-    
-    Y ~ binomial(1, to_vector(p'));
 }
 "
