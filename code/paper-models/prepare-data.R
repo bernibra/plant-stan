@@ -6,6 +6,8 @@ library("rJava")
 library(SDMTools)
 source("../prepare-data/useful-tools.R")
 library(MASS)
+library(gridExtra)
+library(grid)
 
 # Define projection as global variable
 projection <- "+proj=somerc +init=world:CH1903"
@@ -104,15 +106,13 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
 simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
-        N <- 20
-        sites <- 100
+        N <- 50
+        sites <- 300
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
-        e2 <- rnorm(sites)
-        
+
         # uncorrelated coefficients for each species and parameters
-        alpha <- rnorm(N)
         sigma1 <- 0.3 # sd beta1
         mean1 <- -1 # mean beta1
         sigma2 <- 0.4 # sd beta2
@@ -124,76 +124,33 @@ simulated.data <- function(simulated.type="linear.corr"){
         s <- 0.5
         Dis <- (as.matrix(dist(1:N))/N)
         
-        if(simulated.type=="linear.corr"){
-                z1 <- rnorm(N)
-                z2 <- rnorm(N)
+        # coefficients for each species
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
+        z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
 
-                # Generate correlations
-                beta1 <- z1 * sigma1 + mean1
-                beta2 <- (rho*z1 + sqrt(1-rho^2)*z2)*sigma2 + mean2
-                
-        }else if (simulated.type=="linear.corr.gauss"){
-                
-                # coefficients for each species
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1_ <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2_ <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
-                
-                # remove correlation
-                rho_ <- cor(z1_, z2_)
-                z1 <- (z1_-mean(z1_))/sd(z1_)
-                z2 <- ((z2_-mean(z2_))/sd(z2_) - rho_ * z1)/sqrt(1-rho_^2)
-                
-                # Generate correlations
-                beta1 <- z1 * sigma1 + mean1
-                beta2 <- (rho*z1 + sqrt(1-rho^2)*z2)*sigma2 + mean2
-                
-        }else{
-                # coefficients for each species
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-                z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
-                Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma2*sigma2
-                z2 <- mvrnorm(mu = rep(mean2, times = N), Sigma = Sigma)
-                
-                # Generate correlations
-                beta1 <- z1
-                beta2 <- z2
-                sigma_beta1 <- abs(rnorm(N, 0,0.2))
-                sigma_beta2 <- abs(rnorm(N, 0,0.2))
-                
-                vec <- c(1:round(N*0.5), 1:round(N*0.5))
-                Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
-                Dis_sigma <- (Dis_sigma/max(Dis_sigma))
-                
-                Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.2
-                sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
-                Sigma <- 1*exp(-1/(0.2*0.2)*(Dis_sigma^2)) + diag(N)*0.1
-                sigma_beta2 <- exp(mvrnorm(mu = rep(-2, times = N), Sigma = Sigma))
-        }
+        # Generate correlations
+        beta1 <- z1
+
+        vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
         
+        Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
+        sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
+        Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+        alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
         dataset$S1 <- e1[dataset$site]
-        dataset$S2 <- e2[dataset$site]
         dataset$beta1 <- beta1[dataset$id] 
-        dataset$beta2 <- beta2[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
-        if (simulated.type=="gauss.gauss"){
-                dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
-                dataset$sigma_beta2 <- sigma_beta2[dataset$id]
-                dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2 - sigma_beta2[dataset$id]*(beta2[dataset$id] - dataset$S2)**2)
-                
-                dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-                dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, sigma_beta1=dataset$sigma_beta1, sigma_beta2=dataset$sigma_beta2,  S1=dataset$S1, S2=dataset$S2)                
-                return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr2=Dis_sigma))
-        }else{
-                dataset$p <- inv_logit(alpha[dataset$id] + beta1[dataset$id] * dataset$S1  + beta2[dataset$id] * dataset$S2 )
-                
-                dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-                dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, beta2=dataset$beta2, S1=dataset$S1, S2=dataset$S2)                
-                return(list(dataset=dataset, corr=Dis))
-        }
+        dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
+        dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        
+        dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1)                
+        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 
 ####
@@ -222,9 +179,23 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                 
                 # Find main axes
                 if(pca){
+                        # colnames(clim) <- unlist(lapply(strsplit(colnames(clim), split = "_"), function(xx) xx[1]))
                         pca.clim <- prcomp(clim, center = TRUE, scale = TRUE) 
                         # Prepare full dataset
                         dataset = cbind(dat$obs.data, pca.clim$x[,c(1:ndim)])
+                        
+                        # p1 <- fviz_eig(pca.clim)+
+                        #         scale_y_continuous(expand = expansion(add = c(0, 0)))+
+                        #         theme_bw()+
+                        #         theme(plot.title = element_blank(), text = element_text(size=10))
+                        # p2 <- fviz_pca_var(pca.clim,
+                        #              col.var = "contrib", # Color by contributions to the PC
+                        #              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                        #              repel = T,     # Avoid text overlapping
+                        # ) + theme(plot.title = element_blank(), text = element_text(size=10))
+                        # 
+                        # p <- grid.arrange(grobs=list(p1, p2), ncol=2, nrow=1, widths=c(0.65,1))
+                        
                 }else{
                         # Prepare full dataset
                         dataset = cbind(dat$obs.data, clim)

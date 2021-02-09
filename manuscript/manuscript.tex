@@ -95,16 +95,56 @@ Model simplicity breeds contempt: using simple models to answer basic questions 
 \begin{document}
 \maketitle
 \linenumbers
+
+\section*{Abstract}
+We know a lot about the factors that could theoretically influence species' distributions, and a rapidly growing body of research have been primarily focused on trying to untangle some of such biotic and abiotic predictors---with an increasing effort placed in improving the predictive power of statistical models. However, much less is known about how species' distributions compare to each other. Here, we use a conceptually more conservative approach to instead understand and compare basic aspects regarding the shape of species' distribution along environmental gradients.
+
 \section*{Introduction}
-Accounting for expert knowledge on species' environmental preferences to understand general distribution patterns.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PARAGRAPH 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+One of the central goals of ecology is to understand the ways species are distributed across space (ref). Over the years, researchers have developed multiple distribution models to try to untangle the factors that play a role in defining such distributions (ref). These models estimate species' realized niches using several covariates, including environmental variables (ref), species ecological traits' (ref) and phylogenetic relations (ref). Moreover, recent work on these modelling approaches has focused on estimating (ref) and accounting for (ref) biotic factors, such as competitive or facilitative relationships. Overall, these methodological advances have provided with crucial ecological insights into the factors shaping species' distributions (ref); however, they have also faced some criticism as a result of the... For example, ...
 
 The use of species distribution models has grown a lot. These models try to estimate species' realized niches using several covariates, including environmental variables (ref), species ecological traits' (ref) and phylogenetic relations (ref). Recent work on these modelling approaches has increasingly focused on estimating (ref) and accounting for (ref) biotic factors, such as competitive or facilitative relationships. The idea is that by understanding how all such factors shape species' distribution we will gain a mechanistic understanding on how these distributions are established and change over time. Unfortunately, while some of this approaches will certainly increase the predictive performance of distribution models (ref), the nature of some of the estimates have been shown to theoretically have some mishaps (ref).
 
-{\color{gray}
-These are just a bunch of thoughts that I had on how to frame the introduction for the manuscript. I want to say something along the lines: \textit{we know a lot about the factors that could theoretically influence species' distributions, and a rapidly growing body of research have been primarily focused on trying to untangle some of such biotic and abiotic predictors---with an increasing effort placed in improving the predictive power of statistical models. However, much less is known about how species' distributions compare to each other. Here, we use a conceptually more conservative approach to instead understand and compare basic aspects regarding the shape of species' distribution along environmental gradients.}}
+%Ecology has been described as the scientific understanding of factors determining the abundance and distribution of species (Smith 1966; Begon et al. 1986). This understanding can hardly be achieved by studying species one by one since their abundances and distributions depend not only on their indi- vidual responses to the abiotic environment, but also on their interactions (Wisz et al. 2013). Thus, a key aim in modern community ecology is to gain an integrative understanding of how biotic and abiotic factors mould local species pools at different spatiotemporal scales. Community ecology began as a descriptive science in which communities were classified based on the identities and sizes of local species pools (e.g. Clements 1936; Elton 1966). Mod- ern community ecology is progressing from the description of patterns towards a mechanistic perspective, which seeks to understand the processes determining the identities and abundances of the species from local to global spatiotemporal scales (Agrawal et al. 2007; Logue et al. 2011). During the last few decades, experimental ecologist have used observations and experiments to assess the relative influences of stochastic- ity, competition and niche differentiation (see Logue et al. 2011), theoretical ecologists have developed models for pre- dicting community dynamics (e.g. Tilman 1990, 2004; Holt et al. 1994; Bolker et al. 2003; Leibold et al. 2004; Holyoak et al. 2005), and statistical ecologists have developed metrics for assessing compositional changes among local communities (e.g. Gauch 1982; ter Braak & Prentice 1988; Legendre & Legendre 2012).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PARAGRAPH 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Increasing efforts have been devoted to improving the ability of statistical models to predict the presence/absence of species across ranges (ref). Accurately predicting how species are distributed across ranges, it is crucial for understanding the impacts and effect of global climate change. With that said, accounting for the mechanisms can come at the cost of modelling noise... However, much less attention is paid to how species' distributions compare to each other. 
+
+
 %\citet{austin2002spatial} writes "\textit{there are three major components in any framework for statistical modelling in plant ecology. There needs to be an ecological model, a data model, and a statistical model. The ecological model consists of the ecological knowledge and theory to be used or tested in the study. The data model consists of the decisions made regarding how the data are collected and how the data will be measured or estimated. The statistical model involves the choice of statistical method, error function and significance tests. Each model interacts in both obvious and subtle ways with the other models to determine the success of any statistical modelling exercise.}" While a lot of work has been developed for all three components outlined by \citet{austin2002spatial}, increasing emphasis has been put into advancing the data and statistical models. Indeed,
 
 Increasing efforts have been devoted to improving the ability of statistical models to predict the presence/absence of species across ranges. However, much less attention is paid to how species' distributions compare to each other. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PARAGRAPH 3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+A lot can be learned from the basic properties of species' realized niches.
+
+Accounting for expert knowledge on species' environmental preferences to understand general distribution patterns.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PARAGRAPH 4
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Here, we...Bayesian framework... This allow us to account for... as well as to tackle long-standing hypothesis regarding basic aspects of species distributions. 
+
+
+ 
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PARAGRAPH 5
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this work, we first....
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%   Stuff to realocate   %%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 There is no general agreement the shape of species distributions. While many ecological textbooks (Begon et al., 1990, Giller, 1984, Krebs, 1994) assume this to be unimodal and symmetric, some have warned that empirical distributions can take many different forms \citep{austin2002spatial}. There is not an easy way to untangle the true shape of species' distributions, as this shape is likely to showcase idiosyncrasies at the species level and across systems. The aim of this work, it is not to answer these questions nor to provide a general approach that accommodates such idiosyncrasies. Instead, we want to use a model that is solely constrained by the empirical information that we truly have regarding a particular system, relaxing as much as possible the structural constrains of the statistical framework. Then, we want to use this model to answer basic aspects regarding the way systems of many species are distributed along an environmental gradient. 
 
