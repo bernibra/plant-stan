@@ -603,21 +603,7 @@ model{
 # Skew 1d
 skew.model.traits.1d <- "
 functions{
-    matrix cov_GPL2(matrix x, matrix y, real a, real b1, real b2, real delta) {
-        int N = dims(x)[1];
-        matrix[N, N] K;
-
-        for (i in 1:(N-1)) {
-          K[i, i] = a + delta;
-          for (j in (i + 1):N) {
-            K[i, j] = a * exp(- b1 * square(x[i,j]) -b2 * square(y[i,j]) );
-            K[j, i] = K[i, j];
-          }
-        }
-        K[N, N] = a + delta;
-        return K;
-    }
-    matrix cov_GPL2_alpha(matrix x, real a, real b, real delta) {
+    matrix cov_GPL2(matrix x, real a, real b, real delta) {
         int N = dims(x)[1];
         matrix[N, N] K;
 
@@ -640,7 +626,6 @@ data{
     row_vector[N] X1;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
-    matrix[L,L] Dmat_t;
 }
 parameters{
     vector[L] zalpha;
@@ -653,17 +638,16 @@ parameters{
     real<lower=0> sigma_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
-    vector<lower=0>[2] rhosq_b;
+    real<lower=0> rhosq_b;
     real<lower=0> sigma_g;
     real<lower=0> etasq_g;
-    vector<lower=0>[2] rhosq_g;
+    real<lower=0> rhosq_g;
 }
 transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
     vector[L] tlambda
-    matrix[L, L] L_SIGMA_a;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
@@ -672,16 +656,14 @@ transformed parameters{
     
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
-    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b, rhosq_b[1], rhosq_b[2], sigma_b));
+    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
     beta = L_SIGMA_b * zbeta + beta_bar;
 
-    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g, rhosq_g[1], rhosq_g[2], sigma_g));
+    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
     gamma = exp(gamma) * sqrt(1 - tlambda);
     
     beta = beta - gamma .* sqrt(tlambda);
-    
-
 }
 model{
     matrix[L,N] p;
@@ -707,6 +689,5 @@ model{
     }
     
     Y ~ binomial(1, to_vector(p'));
-    
 }
 "
