@@ -243,7 +243,7 @@ baseline.traits <- function(d = NULL, recompile = T, simulated=T, min.occurrence
         return(mfit_5.1)
 }
 
-baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
+baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
         # Fixing some of the options
         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
         gp_type <- 2
@@ -308,7 +308,6 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
         # Prepare training data for stan model
         Dis_b <- d$corr
         Dis_g <- d$corr2
-        Dis_t <- d$corr3
         N <- sum(d$dataset$id==1)
         L <- length(unique(d$dataset$id))
         obs <- d$dataset$obs
@@ -323,8 +322,7 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
                         Y=obs,
                         X1=X1,
                         Dmat_b=Dis_b,
-                        Dmat_g=Dis_g,
-                        Dmat_t=Dis_t
+                        Dmat_g=Dis_g
         )
         
         # Set starting values for the parameters
@@ -340,13 +338,13 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
                 rhosq_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
-                rhosq_b = rep(0.1, 2),
+                rhosq_b = 0.1,
                 sigma_g = 0.1,
                 etasq_g = 0.1,
-                rhosq_g = rep(0.1, 2)
+                rhosq_g = 0.1
         )
         
-        model_code=base.model.traits.1d
+        model_code=base.model.1d
         
         # Initialize data structure
         n_chains_5.1 <- 3
@@ -366,7 +364,7 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
         return(mfit_5.1)
 }
 
-categorical.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
+categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
         # Fixing some of the options
         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
         gp_type <- 2
@@ -431,7 +429,6 @@ categorical.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occu
         # Prepare training data for stan model
         Dis_b <- d$corr
         Dis_g <- d$corr2
-        Dis_t <- d$corr3
         N <- sum(d$dataset$id==1)
         L <- length(unique(d$dataset$id))
         obs <- d$dataset$obs
@@ -447,8 +444,7 @@ categorical.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occu
                         Y=obs,
                         X1=X1,
                         Dmat_b=Dis_b,
-                        Dmat_g=Dis_g,
-                        Dmat_t=Dis_t
+                        Dmat_g=Dis_g
         )
         
         # Set starting values for the parameters
@@ -465,13 +461,13 @@ categorical.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occu
                 rhosq_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
-                rhosq_b = rep(0.1, 2),
+                rhosq_b = 0.1,
                 sigma_g = 0.1,
                 etasq_g = 0.1,
-                rhosq_g = rep(0.1, 2)
+                rhosq_g = 0.1
         )
         
-        model_code=categorical.model.traits.1d
+        model_code=categorical.model.1d
         
         # Initialize data structure
         n_chains_5.1 <- 3
@@ -492,5 +488,5 @@ categorical.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occu
 }
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-categorical.traits.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.1d(d=NULL, simulated=T, recompile = T, ofolder="/cluster/scratch/bemora/plant-stan/")
 

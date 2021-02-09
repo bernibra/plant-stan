@@ -138,7 +138,8 @@ simulated.data <- function(simulated.type="linear.corr"){
         Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
         sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
         Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
-        alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        alpha <- exp(rnorm(N, -0.4,1))
 
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
@@ -146,8 +147,6 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$beta1 <- beta1[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
         dataset$sigma_beta1 <- sigma_beta1[dataset$id]
-        
-        
         
         dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
         
@@ -196,7 +195,8 @@ simulated.data.categorical <- function(){
         Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
         sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
         Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
-        alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        alpha <- exp(rnorm(N, -0.4,1))
         
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
