@@ -91,6 +91,9 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         rownames(dtraits) <- 1:nrow(dtraits)
         
         obs.data$obs <- 1*(obs.data$abundance>0)
+        obs.data$abundance <- factor(obs.data$abundance,
+                               levels = sort(unique(obs.data$abundance)),
+                               labels = 1:length(unique(obs.data$abundance)))
 
         # Load environmental data
         files <- list.files(path="../../data/raw/climatic-data/", pattern = "bil$", full.names = TRUE)

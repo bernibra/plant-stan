@@ -364,7 +364,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
         return(mfit_5.1)
 }
 
-categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
+categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofolder="../../results/models/"){
         # Fixing some of the options
         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
         gp_type <- 2
@@ -431,7 +431,11 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         Dis_g <- d$corr2
         N <- sum(d$dataset$id==1)
         L <- length(unique(d$dataset$id))
-        obs <- d$dataset$obs
+        if(simulated){
+                obs <- d$dataset$obs
+        }else{
+                obs <- d$dataset$abundance
+        }
         dat <- d$dataset
         id <- dat$id
         bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
@@ -441,7 +445,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                         L=L,
                         K=length(obs),
                         M=length(unique(obs))-1,
-                        Y=obs,
+                        Y=as.numeric(as.character(obs)),
                         X1=X1,
                         Dmat_b=Dis_b,
                         Dmat_g=Dis_g

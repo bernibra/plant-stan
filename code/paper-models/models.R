@@ -226,8 +226,6 @@ parameters{
     real beta_bar;
     real gamma_bar;
     real<lower=0> sigma_a;
-    real<lower=0> etasq_a;
-    real<lower=0> rhosq_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
     real<lower=0> rhosq_b;
@@ -259,10 +257,8 @@ model{
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
-    etasq_a ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
-    rhosq_a ~ exponential( 0.5 );
     rhosq_b ~ exponential( 0.5 );
     rhosq_g ~ exponential( 0.5 );
     alpha_bar ~ normal( 0 , 1.3 );
