@@ -70,9 +70,15 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              kdx <- kdx+1
         }
         
-        write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed.csv", sep=",")
-        write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed.csv", sep=",")
-        write.table(Tend, "../../data/properties/codes/change-tendency_reindexed.csv", sep=",")
+        if(min.occurrence==10){
+                write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed.csv", sep=",")
+                write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed.csv", sep=",")
+                write.table(Tend, "../../data/properties/codes/change-tendency_reindexed.csv", sep=",")
+        }else{
+                write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed-",as.character(min.occurrence),".csv", sep=",")
+                write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed-",as.character(min.occurrence),".csv", sep=",")
+                write.table(Tend, "../../data/properties/codes/change-tendency_reindexed-",as.character(min.occurrence),".csv", sep=",")
+        }
         
         # reshape correlation matrices
         denvironment <- denvironment[,name.idx]

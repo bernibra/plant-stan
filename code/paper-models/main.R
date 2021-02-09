@@ -360,7 +360,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
                            init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "baseline-model-traits-1d", extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "baseline-model-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 
@@ -381,9 +381,9 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         extension <- paste(extension, as.character(gp_type), sep="")
         
         if(min.occurrence==10){
-                extension2 <- "categorical-"
+                extension2 <- ""
         }else{
-                extension2 <- "categorical-min30-"
+                extension2 <- "min30-"
         }
         
         
@@ -487,7 +487,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                            init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "baseline-model-traits-1d", extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "categorical-model-traits-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 
@@ -575,7 +575,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
         
         # Set starting values for the parameters
         start_5.1 <- list(
-                zalpha = rep(0, dat_5.1$L),
+                lambda = rep(0, dat_5.1$L),
                 zalpha = rep(0, dat_5.1$L),
                 zbeta = rep(0, dat_5.1$L),
                 zgamma = rep(0, dat_5.1$L),
@@ -583,8 +583,6 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
                 beta_bar = 0,
                 gamma_bar = 0,
                 sigma_a = 0.1,
-                etasq_a = 0.1,
-                rhosq_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
                 rhosq_b = 0.1,
@@ -593,7 +591,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
                 rhosq_g = 0.1
         )
         
-        model_code=base.model.1d
+        model_code=skew.model.traits.1d
         
         # Initialize data structure
         n_chains_5.1 <- 3
@@ -609,7 +607,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
                            init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "baseline-model-traits-1d", extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 

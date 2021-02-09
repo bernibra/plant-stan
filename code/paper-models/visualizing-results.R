@@ -503,6 +503,124 @@ plot.actual.data.means <- function(model=NULL){
 }
 
 
+plot.actual.data.means <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/baseline-model.rds")
+  }
+  
+  #indicator values
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tend <- read.table("../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
+  NEO <- read.table("../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  
+  # alphas
+  mu_alpha <- apply( post$alpha , 2 , mean )
+  ci_alpha <- apply( post$alpha , 2 , PI )
+  
+  # betas
+  mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))
+  ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))
+  
+  # gammas
+  mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))
+  ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))
+  
+  mu_beta_dec <- as.vector(post$beta[,1,(Tend$V3+Tend$V4)==1])
+  mu_beta_inc <- as.vector(post$beta[,1,Tend$V5==1])
+  mu_gamma_dec <- as.vector(post$gamma[,1,(Tend$V3+Tend$V4)==1])
+  mu_gamma_inc <- as.vector(post$gamma[,1,Tend$V5==1])
+  
+  plist <- list()
+  df <- data.frame(group=c("other", "increasing")[c(rep(1, length(mu_beta_dec)), rep(2, length(mu_beta_inc)))],
+                   x=c(mu_beta_dec, mu_beta_inc))
+  plist[[1]] <- ggplot(df, aes(x=x, color=group, fill=group)) +
+    geom_boxplot(alpha=0.3)
+  df <- data.frame(group=c("other", "increasing")[c(rep(1, length(mu_gamma_dec)), rep(2, length(mu_gamma_inc)))],
+                   x=c(mu_gamma_dec, mu_gamma_inc))
+  plist[[2]] <- ggplot(df, aes(x=x, color=group, fill=group)) +
+    geom_boxplot(alpha=0.3)
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=1)
+  
+  plist = list()
+  ylab <- expression(beta)
+  for(i in 1:2){
+    idx <- sort(mu_beta[[i]],index.return=T)$ix
+    Tind_ <- as.numeric(as.character(Tind[idx,3]))
+    Tind_ <- Tind_[!(is.na(Tind_))]
+    Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+    Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+    
+    ylim = c(min(mu_beta[[i]]), max(mu_beta[[i]]))
+    xlim = c(min(mu_gamma[[i]]), max(mu_gamma[[i]]))
+    posx = exp((log(xlim[2])-log(xlim[1]))*0.83 + log(xlim[1]))
+    posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
+    posy = c(posy, ylim[2]-(posy-ylim[1]))
+    
+    labels = ifelse(NEO$V3==1, "neophyte", "other")
+    alphas = ifelse(NEO$V3==1, 0.7, 0.6)
+    color <- c("#e7298a",colo[4])
+    xlab=""
+    breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+    
+    p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha = alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+    # Scatter plot
+    p <- p + coord_trans(x="log", clip = "off")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+    
+    if(i==1){
+      p <- p+annotate("text", x = posx, y = posy, label = Tind_, colour = "#525252", size=3)+
+        ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+      title1 <- get_title(p)
+    }else{
+      p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+      title2 <- get_title(p)
+    }
+    legend1 <- get_legend(p)
+    plist[[2*(i-1)+1]] <- p+theme(legend.position = "none", plot.title = element_blank())
+    # 
+    labs <- c("decreasing", "decreasing low", "increasing", "other")
+    labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+    color <- colo
+    alphas <- c(0.7,0.7,0.7,0.6)
+    alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+    xlab=expression(gamma)
+    
+    p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha=alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+    legend2 <- get_legend(p)
+    p <- p + coord_trans(x="log", clip = "off")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+    if(i==1){
+      p <- p+ ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+    }else{
+      p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+    }
+    plist[[2*(i-1)+2]] <- p+theme(legend.position = "none", plot.title = element_blank())
+    ylab <- ""
+  }
+  plist[[5]] <- legend1
+  plist[[6]] <- legend2
+  plist[[7]] <- title1
+  plist[[8]] <- title2
+  
+  hlay <- rbind(c(7,8,NA),
+                c(1,3,5),
+                c(2,4,6))
+  
+  p <- grid.arrange(grobs=plist, ncol=3, nrow=3, heights=c(0.1,1,1), layout_matrix=hlay, widths=c(1,1,0.27)#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  print(p)
+  
+}
+
 plot.actual.data.distribution <- function(model=NULL){
   # Parameters for plots
   extra <- 1
@@ -601,11 +719,7 @@ plot.actual.data.distribution <- function(model=NULL){
   
 }
 
-plot.distribution <- function(eta, sigma, eta_prima, tit=""){
-  df <- data.frame(x=c(sigma, eta, eta_prima),
-                   type=c(rep("sigma", length(sigma)),
-                          rep("indicator values", length(eta)),
-                          rep("traits", length(eta_prima))))
+plot.distribution <- function(df, colors, tit=""){
   
   p <- ggplot(df, aes(x=x, color=type)) +
     stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
@@ -615,7 +729,7 @@ plot.distribution <- function(eta, sigma, eta_prima, tit=""){
     ylab("probability density")+
     xlab("value")+
     # guides(color = guide_legend(override.aes = list(shape=1,linetype = 1))) +
-    scale_color_manual(values=c("#4daf4a", "black", "#e41a1c"))+
+    scale_color_manual(values=colors)+
     theme(text = element_text(size=10),
           axis.title.y=element_blank(),
           panel.grid.major = element_blank(),
@@ -638,27 +752,40 @@ plot.distributions.gp <- function(model=NULL){
   }
   
   # extract samples
-  post <- extract.samples(model, n = 1000, pars=c("etasq_b", "etasq_g", "sigma_b", "sigma_g", "etasq_tb", "etasq_tg")) 
+  post <- extract.samples(model, n = 1000, pars=c("etasq_a","etasq_b", "etasq_g", "rhosq_a", "rhosq_b", "rhosq_g", "sigma_b", "sigma_g", "sigma_a")) 
   
   plist <- list()
-  plist[[1]] <- plot.distribution(post$etasq_b[,1],
-                                  post$sigma_b[,1],
-                                  post$etasq_tb[,1],
+  df <- data.frame(x=c(post$sigma_b[,1], post$etasq_b[,1]),
+                   type=c(rep("sigma", length(post$sigma_b[,1])),
+                          rep("information", length(post$etasq_b[,1]))))
+  plist[[1]] <- plot.distribution(df,c("#4daf4a", "#e41a1c"),
                                   tit = "beta 1")
-  plist[[2]] <- plot.distribution(post$etasq_b[,2],
-                                  post$sigma_b[,2],
-                                  post$etasq_tb[,2],
-                                  tit = "beta 2")
-  plist[[3]] <- plot.distribution(post$etasq_g[,1],
-                                  post$sigma_g[,1],
-                                  post$etasq_tg[,1],
-                                  tit = "gamma 1")
-  plist[[4]] <- plot.distribution(post$etasq_g[,2],
-                                  post$sigma_g[,2],
-                                  post$etasq_tg[,2],
-                                  tit = "gamma 2")
   
-  p <- grid.arrange(grobs=plist, ncol=2, nrow=2, #, vp=viewport(width=1, height=1, clip = TRUE),
+  df <- data.frame(x=c(post$rhosq_b[,1,1], post$rhosq_b[,1,2]),
+                   type=c(rep("indicator values", length(post$sigma_b[,1])),
+                          rep("traits", length(post$etasq_b[,1]))))
+  plist[[2]] <- plot.distribution(df,c("#4daf4a", "#e41a1c"),
+                                  tit = "")
+  
+  df <- data.frame(x=c(post$sigma_g[,1], post$etasq_g[,1]),
+                   type=c(rep("sigma", length(post$sigma_g[,1])),
+                          rep("information", length(post$etasq_g[,1]))))
+  plist[[3]] <- plot.distribution(df,c("#4daf4a", "#e41a1c"),
+                                  tit = "gamma 1")
+  
+  df <- data.frame(x=c(post$rhosq_g[,1,1], post$rhosq_g[,1,2]),
+                   type=c(rep("indicator values", length(post$sigma_b[,1])),
+                          rep("traits", length(post$etasq_b[,1]))))
+  plist[[4]] <- plot.distribution(df,c("#4daf4a", "#e41a1c"),
+                                  tit = "")
+  
+  df <- data.frame(x=c(post$sigma_a, post$etasq_a),
+                   type=c(rep("sigma", length(post$sigma_a)),
+                          rep("information", length(post$etasq_a))))
+  plist[[5]] <- plot.distribution(df,c("#4daf4a", "#e41a1c"),
+                                  tit = "alpha")
+  
+  p <- grid.arrange(grobs=plist, ncol=2, nrow=3, #, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
   print(p)
