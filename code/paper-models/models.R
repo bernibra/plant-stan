@@ -337,12 +337,13 @@ data{
     int K;
     int M;
     int Y[K];
-    row_vector[N] X1;
+    vector[N] X1;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
     matrix[L,L] Dmat_t;
 }
 parameters{
+    ordered[M] phi;
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
@@ -378,11 +379,10 @@ transformed parameters{
     gamma = L_SIGMA_g * zgamma + gamma_bar;
     gamma = exp(gamma);
     
-
 }
 model{
-    matrix[L,N] p;
-    matrix[M,K] prob;
+    vector[K] p;
+    vector[M+1] prob;
 
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
@@ -399,20 +399,20 @@ model{
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-
+    phi ~ std_normal();
+    
     for ( i in 1:L ){
-        p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+        p[(1+(i-1)*N):(i*N)] = - alpha[i] - gamma[i] * rows_dot_self(X1 - beta[i]);
     }
     
-    p = to_vector(p');
-
-    prob[1] = exp(phi[1] - p);
-    for (i in 2:M){
-        prob[i]  = exp(phi[i] - p) - prob[i-1];
+    for ( i in 1:K){
+        prob[1] = 1 - exp(-exp(phi[1]) + p[i]);
+        for (j in 2:M){
+            prob[j]  =  exp(-exp(phi[j-1]) + p[i]) - exp(-exp(phi[j]) + p[i]);
+        }
+        prob[M+1]  = exp(-exp(phi[M]) + p[i]);
+        Y[i] ~ categorical(prob);
     }
-    prob[M+1]  = 1 - prob[M];
-    
-    Y ~ categorical(p);
 }
 "
 

@@ -145,13 +145,96 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$S1 <- e1[dataset$site]
         dataset$beta1 <- beta1[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
-        dataset$sigma_beta1 <- sigma_beta1[dataset$id] 
+        dataset$sigma_beta1 <- sigma_beta1[dataset$id]
+        
+        
+        
         dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
         dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1)                
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
+
+# Generate fake data to test the extent to which the model works
+simulated.data.categorical <- function(){
+        
+        # Define system dimensions
+        N <- 50
+        sites <- 300
+        
+        # Environmental predictors for each site
+        e1 <- rnorm(sites)
+        
+        # uncorrelated coefficients for each species and parameters
+        sigma1 <- 0.3 # sd beta1
+        mean1 <- -1 # mean beta1
+        sigma2 <- 0.4 # sd beta2
+        mean2 <- 1.5 # mean beta2
+        rho <- 0.4 # correlation between betas
+        
+        # Coefficients for generating the variance-covariance matrix
+        nu <- 3
+        s <- 0.5
+        Dis <- (as.matrix(dist(1:N))/N)
+        alpha4 <- 0
+        alpha3 <- -0.01
+        alpha2 <- -0.05
+        alpha1 <- -1
+        
+        # coefficients for each species
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
+        z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
+        
+        # Generate correlations
+        beta1 <- z1
+        
+        vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        
+        Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
+        sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
+        Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+        alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        
+        # Simulate data
+        dataset <- expand.grid(site=1:sites, id=1:N)
+        dataset$S1 <- e1[dataset$site]
+        dataset$beta1 <- beta1[dataset$id] 
+        dataset$alpha <- alpha[dataset$id]
+        dataset$sigma_beta1 <- sigma_beta1[dataset$id]
+        
+        dataset$alpha1 <- rep(alpha1, length(dataset$id))
+        dataset$alpha2 <- rep(alpha2, length(dataset$id))
+        dataset$alpha3 <- rep(alpha3, length(dataset$id))
+        dataset$alpha4 <- rep(alpha4, length(dataset$id))
+        
+        dataset$ppp <- exp(- alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        dataset$prob_2to5 <- exp(-exp(alpha1) - alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)              
+        dataset$prob_3to5 <- exp(-exp(alpha2) - alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        dataset$prob_4to5 <- exp(-exp(alpha3) - alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        dataset$prob_5 <- exp(-exp(alpha4) - alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        dataset$prob_1 <- 1 - dataset$prob_2to5
+        dataset$prob_2 <- dataset$prob_2to5 - dataset$prob_3to5
+        dataset$prob_3 <- dataset$prob_3to5 - dataset$prob_4to5
+        dataset$prob_4 <- dataset$prob_4to5 - dataset$prob_5
+        
+        obs <- c()
+        for (i in 1:length(dataset$prob_4)) {
+                obs[i] <- sample(
+                        x = c(1:5), 
+                        size = 1, 
+                        prob = c(dataset$prob_1[i], dataset$prob_2[i], dataset$prob_3[i], dataset$prob_4[i], dataset$prob_5[i])
+                )
+        }
+        
+        dataset$obs <- obs
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, alpha1=dataset$alpha1, alpha2=dataset$alpha2, alpha3=dataset$alpha3, alpha4=dataset$alpha4,  beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1) 
+        
+        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
+}
+
 
 ####
 # Run species distribution model for a given species
@@ -161,10 +244,14 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                                       simulated=F, simulated.type="linear.corr", min.occurrence=0){
         
         if(simulated){
-                if(!(simulated.type %in% c("linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
+                if(!(simulated.type %in% c("categorical","linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
                         stop(paste("'", simulated.type, "' is not a valid 'simulated.type'", sep=""))
                 }
-                dataset <- simulated.data(simulated.type=simulated.type)
+                if(simulated.type=="categorical"){
+                        dataset <- simulated.data.categorical()
+                }else{
+                        dataset <- simulated.data(simulated.type=simulated.type)
+                }
                 return(dataset)
         }else{
                 if(pca){
