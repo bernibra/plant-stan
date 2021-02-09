@@ -255,7 +255,7 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
         
         # If we are dealing with simulated data
         if(simulated){
-                extension <- "-1d-simulated"
+                extension <- "1d-simulated"
         }
         extension <- paste(extension, as.character(gp_type), sep="")
         

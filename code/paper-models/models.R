@@ -335,6 +335,7 @@ data{
     int N;
     int L;
     int K;
+    int M;
     int Y[K];
     row_vector[N] X1;
     matrix[L,L] Dmat_b;
@@ -381,6 +382,7 @@ transformed parameters{
 }
 model{
     matrix[L,N] p;
+    matrix[M,K] prob;
 
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
@@ -402,8 +404,15 @@ model{
         p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
     }
     
-    Y ~ binomial(1, to_vector(p'));
+    p = to_vector(p');
+
+    prob[1] = exp(phi[1] - p);
+    for (i in 2:M){
+        prob[i]  = exp(phi[i] - p) - prob[i-1];
+    }
+    prob[M+1]  = 1 - prob[M];
     
+    Y ~ categorical(p);
 }
 "
 
