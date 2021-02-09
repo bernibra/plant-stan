@@ -301,7 +301,7 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
                                         variables <- paste("PC", 1:ndim, sep="")
                                 }
                         }
-                        d <- readRDS(file = paste("../../data/processed/jsdm/", paste(variables, collapse = ""), "data.rds", sep = ""))
+                        d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
                 }
         }
         
@@ -346,7 +346,7 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
                 rhosq_g = rep(0.1, 2)
         )
         
-        model_code=base.model.traits.1d.lent
+        model_code=base.model.traits.1d
         
         # Initialize data structure
         n_chains_5.1 <- 3
@@ -367,5 +367,5 @@ baseline.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurre
 }
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-baseline.traits.1d(simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.traits.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 

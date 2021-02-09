@@ -191,113 +191,8 @@ model{
 }
 "
 
-# This is the same as model 3.1 and 3.2 but much faster. 
-# The structure of the model is very different but it helps me vectorize the operations and reduce the size of the objects used
+# Binomial 1d
 base.model.traits.1d <- "
-functions{
-    matrix cov_GPL2(matrix x, matrix y, real a, real b1, real b2, real delta) {
-        int N = dims(x)[1];
-        matrix[N, N] K;
-
-        for (i in 1:(N-1)) {
-          K[i, i] = a + delta;
-          for (j in (i + 1):N) {
-            K[i, j] = a * exp(- b1 * square(x[i,j]) -b2 * square(y[i,j]) );
-            K[j, i] = K[i, j];
-          }
-        }
-        K[N, N] = a + delta;
-        return K;
-    }
-    matrix cov_GPL2_alpha(matrix x, real a, real b, real delta) {
-        int N = dims(x)[1];
-        matrix[N, N] K;
-
-        for (i in 1:(N-1)) {
-          K[i, i] = a + delta;
-          for (j in (i + 1):N) {
-            K[i, j] = a * exp(- b * square(x[i,j]) );
-            K[j, i] = K[i, j];
-          }
-        }
-        K[N, N] = a + delta;
-        return K;
-    }
-}
-data{
-    int N;
-    int L;
-    int Y[L,N];
-    row_vector[N] X1;
-    matrix[L,L] Dmat_b;
-    matrix[L,L] Dmat_g;
-    matrix[L,L] Dmat_t;
-}
-parameters{
-    vector[L] zalpha;
-    vector[L] zbeta;
-    vector[L] zgamma;
-    real alpha_bar;
-    real beta_bar;
-    real gamma_bar;
-    real<lower=0> sigma_a;
-    real<lower=0> etasq_a;
-    real<lower=0> rhosq_a;
-    real<lower=0> sigma_b;
-    real<lower=0> etasq_b;
-    vector<lower=0>[2] rhosq_b;
-    real<lower=0> sigma_g;
-    real<lower=0> etasq_g;
-    vector<lower=0>[2] rhosq_g;
-}
-transformed parameters{
-    vector[L] alpha;
-    vector[L] beta;
-    vector[L] gamma;
-    matrix[L, L] L_SIGMA_a;
-    matrix[L, L] L_SIGMA_b;
-    matrix[L, L] L_SIGMA_g;
-
-    L_SIGMA_a = cholesky_decompose(cov_GPL2_alpha( Dmat_t, etasq_a, rhosq_a, sigma_a));
-    alpha = L_SIGMA_a * zalpha + alpha_bar;
-    alpha = exp(alpha);
-
-    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b, rhosq_b[1], rhosq_b[2], sigma_b));
-    beta = L_SIGMA_b * zbeta + beta_bar;
-
-    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g, rhosq_g[1], rhosq_g[2], sigma_g));
-    gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma);
-    
-
-}
-model{
-
-    sigma_a ~ exponential( 1 );
-    sigma_b ~ exponential( 1 );
-    sigma_g ~ exponential( 1 );
-    etasq_a ~ exponential( 1 );
-    etasq_b ~ exponential( 1 );
-    etasq_g ~ exponential( 1 );
-    rhosq_a ~ exponential( 0.5 );
-    rhosq_b ~ exponential( 0.5 );
-    rhosq_g ~ exponential( 0.5 );
-    alpha_bar ~ normal( 0 , 1.3 );
-    beta_bar ~ std_normal();
-    gamma_bar ~ std_normal();
-    zalpha ~ std_normal();
-    zgamma ~ std_normal();
-    zbeta ~ std_normal();
-
-    for ( i in 1:L ){
-        Y[i] ~ binomial(1, exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])));
-    }
-}
-"
-
-# This is the same as model 3.1 and 3.2 but much faster. 
-# The structure of the model is very different but it helps me vectorize the operations and reduce the size of the objects used
-base.model.traits.1d.lent <- "
 functions{
     matrix cov_GPL2(matrix x, matrix y, real a, real b1, real b2, real delta) {
         int N = dims(x)[1];
@@ -397,6 +292,225 @@ model{
 
     for ( i in 1:L ){
         p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+    }
+    
+    Y ~ binomial(1, to_vector(p'));
+    
+}
+"
+
+# Categorical 1d
+categorical.model.traits.1d <- "
+functions{
+    matrix cov_GPL2(matrix x, matrix y, real a, real b1, real b2, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+
+        for (i in 1:(N-1)) {
+          K[i, i] = a + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = a * exp(- b1 * square(x[i,j]) -b2 * square(y[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = a + delta;
+        return K;
+    }
+    matrix cov_GPL2_alpha(matrix x, real a, real b, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+
+        for (i in 1:(N-1)) {
+          K[i, i] = a + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = a * exp(- b * square(x[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = a + delta;
+        return K;
+    }
+}
+data{
+    int N;
+    int L;
+    int K;
+    int Y[K];
+    row_vector[N] X1;
+    matrix[L,L] Dmat_b;
+    matrix[L,L] Dmat_g;
+    matrix[L,L] Dmat_t;
+}
+parameters{
+    vector[L] zalpha;
+    vector[L] zbeta;
+    vector[L] zgamma;
+    real alpha_bar;
+    real beta_bar;
+    real gamma_bar;
+    real<lower=0> sigma_a;
+    real<lower=0> etasq_a;
+    real<lower=0> rhosq_a;
+    real<lower=0> sigma_b;
+    real<lower=0> etasq_b;
+    vector<lower=0>[2] rhosq_b;
+    real<lower=0> sigma_g;
+    real<lower=0> etasq_g;
+    vector<lower=0>[2] rhosq_g;
+}
+transformed parameters{
+    vector[L] alpha;
+    vector[L] beta;
+    vector[L] gamma;
+    matrix[L, L] L_SIGMA_a;
+    matrix[L, L] L_SIGMA_b;
+    matrix[L, L] L_SIGMA_g;
+
+    L_SIGMA_a = cholesky_decompose(cov_GPL2_alpha( Dmat_t, etasq_a, rhosq_a, sigma_a));
+    alpha = L_SIGMA_a * zalpha + alpha_bar;
+    alpha = exp(alpha);
+
+    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b, rhosq_b[1], rhosq_b[2], sigma_b));
+    beta = L_SIGMA_b * zbeta + beta_bar;
+
+    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g, rhosq_g[1], rhosq_g[2], sigma_g));
+    gamma = L_SIGMA_g * zgamma + gamma_bar;
+    gamma = exp(gamma);
+    
+
+}
+model{
+    matrix[L,N] p;
+
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    etasq_a ~ exponential( 1 );
+    etasq_b ~ exponential( 1 );
+    etasq_g ~ exponential( 1 );
+    rhosq_a ~ exponential( 0.5 );
+    rhosq_b ~ exponential( 0.5 );
+    rhosq_g ~ exponential( 0.5 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    gamma_bar ~ std_normal();
+    zalpha ~ std_normal();
+    zgamma ~ std_normal();
+    zbeta ~ std_normal();
+
+    for ( i in 1:L ){
+        p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+    }
+    
+    Y ~ binomial(1, to_vector(p'));
+    
+}
+"
+
+# Skew 1d
+skew.model.traits.1d <- "
+functions{
+    matrix cov_GPL2(matrix x, matrix y, real a, real b1, real b2, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+
+        for (i in 1:(N-1)) {
+          K[i, i] = a + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = a * exp(- b1 * square(x[i,j]) -b2 * square(y[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = a + delta;
+        return K;
+    }
+    matrix cov_GPL2_alpha(matrix x, real a, real b, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+
+        for (i in 1:(N-1)) {
+          K[i, i] = a + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = a * exp(- b * square(x[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = a + delta;
+        return K;
+    }
+}
+data{
+    int N;
+    int L;
+    int K;
+    int Y[K];
+    row_vector[N] X1;
+    matrix[L,L] Dmat_b;
+    matrix[L,L] Dmat_g;
+    matrix[L,L] Dmat_t;
+}
+parameters{
+    vector[L] zalpha;
+    vector[L] zbeta;
+    vector[L] zgamma;
+    vector[L] lambda;
+    real alpha_bar;
+    real beta_bar;
+    real gamma_bar;
+    real<lower=0> sigma_a;
+    real<lower=0> sigma_b;
+    real<lower=0> etasq_b;
+    vector<lower=0>[2] rhosq_b;
+    real<lower=0> sigma_g;
+    real<lower=0> etasq_g;
+    vector<lower=0>[2] rhosq_g;
+}
+transformed parameters{
+    vector[L] alpha;
+    vector[L] beta;
+    vector[L] gamma;
+    vector[L] tlambda
+    matrix[L, L] L_SIGMA_a;
+    matrix[L, L] L_SIGMA_b;
+    matrix[L, L] L_SIGMA_g;
+
+    tlambda = pow(2,lambda);
+    tlambda = 2*tlambda/(pi()*(1+tlambda));
+    
+    alpha = exp(zalpha * sigma_a + alpha_bar);
+
+    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b, rhosq_b[1], rhosq_b[2], sigma_b));
+    beta = L_SIGMA_b * zbeta + beta_bar;
+
+    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g, rhosq_g[1], rhosq_g[2], sigma_g));
+    gamma = L_SIGMA_g * zgamma + gamma_bar;
+    gamma = exp(gamma) * sqrt(1 - tlambda);
+    
+    beta = beta - gamma .* sqrt(tlambda);
+    
+
+}
+model{
+    matrix[L,N] p;
+
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    etasq_b ~ exponential( 1 );
+    etasq_g ~ exponential( 1 );
+    rhosq_b ~ exponential( 0.5 );
+    rhosq_g ~ exponential( 0.5 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    gamma_bar ~ std_normal();
+    zalpha ~ std_normal();
+    zgamma ~ std_normal();
+    zbeta ~ std_normal();
+    lambda ~ std_normal();
+
+    for ( i in 1:L ){
+        p[i] = (X1 - beta[i]) * gamma[i];
+        p[i] = 0.5 * exp(-alpha[i] - columns_dot_self(p[i])) * (1 + erf(lambda * p[i] / sqrt2()));
     }
     
     Y ~ binomial(1, to_vector(p'));
