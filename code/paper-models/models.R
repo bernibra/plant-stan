@@ -212,8 +212,9 @@ functions{
 data{
     int N;
     int L;
-    int K;
-    int Y[K];
+    # int K;
+    # int Y[K];
+    int Y[L, N];
     row_vector[N] X1;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
@@ -252,7 +253,7 @@ transformed parameters{
 
 }
 model{
-    matrix[L,N] p;
+    # matrix[L,N] p;
 
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
@@ -269,10 +270,11 @@ model{
     zbeta ~ std_normal();
 
     for ( i in 1:L ){
-        p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+        # p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+        Y[i] ~ binomial(1, exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])));
     }
     
-    Y ~ binomial(1, to_vector(p));
+    # Y ~ binomial(1, to_vector(p));
 }
 "
 
