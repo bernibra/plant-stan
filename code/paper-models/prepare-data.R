@@ -146,7 +146,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         
         Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
         sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
-        Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+        # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
         alpha <- exp(rnorm(N, -0.4,1))
 

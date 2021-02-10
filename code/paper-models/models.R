@@ -221,8 +221,8 @@ data{
 }
 parameters{
     vector[L] zalpha;
-    vector[L] zbeta;
-    vector[L] zgamma;
+    row_vector[L] zbeta;
+    row_vector[L] zgamma;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
@@ -236,24 +236,23 @@ parameters{
 }
 transformed parameters{
     vector[L] alpha;
-    vector[L] beta;
-    vector[L] gamma;
+    row_vector[L] beta;
+    row_vector[L] gamma;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
-    beta = L_SIGMA_b * zbeta + beta_bar;
+    beta = zbeta * (L_SIGMA_b') + beta_bar;
 
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
-    gamma = L_SIGMA_g * zgamma + gamma_bar;
+    gamma = zgamma * (L_SIGMA_g') + gamma_bar;
     gamma = exp(gamma);
-    
 
 }
 model{
-    # matrix[L,N] p;
+    // matrix[L,N] p;
 
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
@@ -275,6 +274,18 @@ model{
     }
     // Y ~ binomial(1, to_vector(p));
 }
+//generated quantities{
+//    vector[L*N] log_lik;
+//    real k;
+//    
+//    k = 1;
+//    for ( i in 1:L ){
+//        for (j in 1:N){
+//           log_lik[k] ~ binomial_lpmf(obs[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])));
+//           k = k + 1
+//        }
+//    }
+//}
 "
 
 # Binomial 1d
