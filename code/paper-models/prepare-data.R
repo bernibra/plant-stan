@@ -115,7 +115,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
 simulated.data <- function(simulated.type="linear.corr"){
         
         # Define system dimensions
-        N <- 100
+        N <- 50
         sites <- 300
         
         # Environmental predictors for each site
@@ -148,7 +148,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
-        alpha <- exp(rnorm(N, -0.4,1))
+        alpha <- rnorm(N, 0,1)
 
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
@@ -157,7 +157,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$alpha <- alpha[dataset$id]
         dataset$sigma_beta1 <- sigma_beta1[dataset$id]
         
-        dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
         dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1)                
