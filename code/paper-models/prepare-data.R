@@ -134,8 +134,8 @@ simulated.data <- function(simulated.type="linear.corr"){
         Dis <- (as.matrix(dist(1:N))/N)
         
         # coefficients for each species
-        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1*sigma1
-        z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1
+        z1 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
 
         # Generate correlations
         beta1 <- z1
@@ -148,7 +148,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
-        alpha <- rnorm(N, 0,1)
+        alpha <- exp(rnorm(N, 0,1))
 
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
@@ -157,11 +157,34 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$alpha <- alpha[dataset$id]
         dataset$sigma_beta1 <- sigma_beta1[dataset$id]
         
-        dataset$p <- inv_logit(alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
+        dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
         dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1)                
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
+}
+
+visua <- function(dataset){
+        library(RColorBrewer)
+        id = unique(dataset$id)
+        n <- length(id)
+        qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+        col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+        for(i in 1:n){
+                j <- id[i]
+                dat <- dataset[dataset$id==j,]
+                index <- sort(dat$S1, index.return=T)
+                if(i==1){
+                        plot(dat$S1[index$ix], dat$p[index$ix], type="l", col=col_vector[j], ylim=c(0,1), ylab="density", xlab="variable")
+                }else{
+                        lines(dat$S1[index$ix], dat$p[index$ix], type="l", col=col_vector[j])
+                }
+        }
+        hist(unique(dataset$beta1))
+        hist(unique(dataset$sigma_beta1))
+        hist(unique(dataset$alpha))
+        
+        
 }
 
 # Generate fake data to test the extent to which the model works

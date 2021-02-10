@@ -241,7 +241,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    alpha = zalpha * sigma_a + alpha_bar;
+    alpha = exp(zalpha * sigma_a + alpha_bar);
 
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
     beta = L_SIGMA_b * zbeta + beta_bar;
@@ -271,7 +271,7 @@ model{
 
     for ( i in 1:L ){
         // p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
-        Y[i] ~ binomial_logit(1, alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
+        Y[i] ~ bernoulli(exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])));
     }
     // Y ~ binomial(1, to_vector(p));
 }

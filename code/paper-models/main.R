@@ -304,6 +304,9 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
                         d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
                 }
         }
+
+        print(paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
+        print(paste(ofolder, extension2, "baseline-model-1d", extension,".rds", sep=""))
         
         # Prepare training data for stan model
         Dis_b <- d$corr
@@ -610,5 +613,5 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
 }
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-baseline.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.1d(d=NULL, simulated=T, recompile = F, ofolder="../../results/models/")
 
