@@ -271,7 +271,7 @@ model{
 
     for ( i in 1:L ){
         // p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
-        Y[i] ~ bernoulli(exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])));
+        Y[i] ~ binomial(1, exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])));
     }
     // Y ~ binomial(1, to_vector(p));
 }
