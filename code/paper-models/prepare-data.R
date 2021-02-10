@@ -75,9 +75,9 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
                 write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed.csv", sep=",")
                 write.table(Tend, "../../data/properties/codes/change-tendency_reindexed.csv", sep=",")
         }else{
-                write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed-",as.character(min.occurrence),".csv", sep=",")
-                write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed-",as.character(min.occurrence),".csv", sep=",")
-                write.table(Tend, "../../data/properties/codes/change-tendency_reindexed-",as.character(min.occurrence),".csv", sep=",")
+                write.table(Tind, paste("../../data/properties/codes/temperature_indicator_reindexed-",as.character(min.occurrence),".csv", sep=","))
+                write.table(NEO, paste("../../data/properties/codes/neophytes-list_reindexed-",as.character(min.occurrence),".csv", sep=","))
+                write.table(Tend, paste("../../data/properties/codes/change-tendency_reindexed-",as.character(min.occurrence),".csv", sep=","))
         }
         
         # reshape correlation matrices
@@ -166,29 +166,6 @@ simulated.data <- function(simulated.type="linear.corr"){
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 
-visua <- function(dataset){
-        library(RColorBrewer)
-        id = unique(dataset$id)
-        n <- length(id)
-        qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
-        col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-        for(i in 1:n){
-                j <- id[i]
-                dat <- dataset[dataset$id==j,]
-                index <- sort(dat$S1, index.return=T)
-                if(i==1){
-                        plot(dat$S1[index$ix], dat$p[index$ix], type="l", col=col_vector[j], ylim=c(0,1), ylab="density", xlab="variable")
-                }else{
-                        lines(dat$S1[index$ix], dat$p[index$ix], type="l", col=col_vector[j])
-                }
-        }
-        hist(unique(dataset$beta1))
-        hist(unique(dataset$sigma_beta1))
-        hist(unique(dataset$alpha))
-        
-        
-}
-
 # Generate fake data to test the extent to which the model works
 simulated.data.categorical <- function(){
         
@@ -198,6 +175,7 @@ simulated.data.categorical <- function(){
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
+        e2 <- rnorm(sites)
         
         # uncorrelated coefficients for each species and parameters
         sigma1 <- 0.3 # sd beta1
@@ -235,6 +213,7 @@ simulated.data.categorical <- function(){
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
         dataset$S1 <- e1[dataset$site]
+        dataset$S2 <- e2[dataset$site]
         dataset$beta1 <- beta1[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
         dataset$sigma_beta1 <- sigma_beta1[dataset$id]
@@ -264,11 +243,99 @@ simulated.data.categorical <- function(){
         }
         
         dataset$obs <- obs
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, alpha1=dataset$alpha1, alpha2=dataset$alpha2, alpha3=dataset$alpha3, alpha4=dataset$alpha4,  beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1) 
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, alpha1=dataset$alpha1, alpha2=dataset$alpha2, alpha3=dataset$alpha3, alpha4=dataset$alpha4,  beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1, S2=dataset$S2) 
         
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 
+# Generate fake data to test the extent to which the model works
+simulated.data.skew <- function(simulated.type="linear.corr"){
+        
+        # Define system dimensions
+        N <- 50
+        sites <- 3000
+        
+        # Environmental predictors for each site
+        e1 <- rnorm(sites, 0, 5)
+        e2 <- rnorm(sites, 0, 5)
+        
+        # uncorrelated coefficients for each species and parameters
+        sigma1 <- 0.3 # sd beta1
+        mean1 <- -1 # mean beta1
+        sigma2 <- 0.4 # sd beta2
+        mean2 <- 1.5 # mean beta2
+        rho <- 0.4 # correlation between betas
+        
+        # Coefficients for generating the variance-covariance matrix
+        nu <- 3
+        s <- 0.5
+        Dis <- (as.matrix(dist(1:N))/N)
+        
+        # coefficients for each species
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1
+        z1 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
+        
+        # Generate correlations
+        beta1 <- z1
+        
+        vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        
+        Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
+        sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
+        # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+        # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        alpha <- exp(rnorm(N, 0,1))
+        lambda <- rnorm(N, 5,1.3)
+        
+        lambda_hat <- lambda/sqrt(1+lambda**2)
+        sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
+        beta_hat <- beta1 - sqrt(1/(2*sigma_hat)) * lambda_hat * sqrt(2/pi)
+        
+        # Simulate data
+        dataset <- expand.grid(site=1:sites, id=1:N)
+        dataset$S1 <- e1[dataset$site]
+        dataset$S2 <- e2[dataset$site]
+        dataset$beta1 <- beta1[dataset$id]
+        dataset$beta_hat <- beta_hat[dataset$id] 
+        dataset$alpha <- alpha[dataset$id]
+        dataset$lambda <- lambda[dataset$id]
+        
+        dataset$sigma_beta1 <- sigma_beta1[dataset$id]
+        dataset$sigma_hat <- sigma_hat[dataset$id]
+        
+        dataset$p <- 0.5 * exp(-alpha[dataset$id] - sigma_hat[dataset$id]*(beta_hat[dataset$id] - dataset$S1)**2) * (1 + pracma::erf(lambda[dataset$id] * (dataset$S1-beta_hat[dataset$id]) * sqrt(sigma_hat[dataset$id])))
+        
+        dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1, S2=dataset$S2)                
+        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
+}
+
+
+visua <- function(dataset){
+        library(RColorBrewer)
+        id = unique(dataset$id)
+        n <- length(id)
+        qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+        col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+        for(i in 1:1){
+                j <- id[i]
+                dat <- dataset[dataset$id==j,]
+                index <- sort(dat$S1, index.return=T)
+                if(i==1){
+                        plot(dat$S1[index$ix], dat$p[index$ix], type="l", col=col_vector[j], ylim=c(0,1), ylab="density", xlab="variable")
+                }else{
+                        lines(dat$S1[index$ix], dat$p[index$ix], type="l", col=col_vector[j])
+                }
+                abline(v=dat$beta1[1], col=col_vector[j])
+        }
+        hist(unique(dataset$beta_hat))
+        hist(unique(dataset$sigma_beta1))
+        hist(unique(dataset$alpha))
+        
+        
+}
 
 ####
 # Run species distribution model for a given species

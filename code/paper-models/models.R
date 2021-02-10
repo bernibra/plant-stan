@@ -275,18 +275,18 @@ model{
     }
     // Y ~ binomial(1, to_vector(p));
 }
-//generated quantities{
-//    vector[L*N] log_lik;
-//    real k;
-//    
-//    k = 1;
-//    for ( i in 1:L ){
-//        for (j in 1:N){
-//           log_lik[k] ~ binomial_lpmf(obs[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])));
-//           k = k + 1
-//        }
-//    }
-//}
+generated quantities{
+    vector[L*N] log_lik;
+    real k;
+    
+    k = 1;
+    for ( i in 1:L ){
+        for (j in 1:N){
+           log_lik[k] ~ binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])));
+           k = k + 1;
+        }
+    }
+}
 "
 
 # Binomial 1d
@@ -673,7 +673,7 @@ transformed parameters{
 
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma) * sqrt(1 - tlambda);
+    gamma = exp(gamma) .* sqrt(1 - tlambda);
     
     beta = beta - gamma .* sqrt(tlambda);
 }
