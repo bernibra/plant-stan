@@ -120,7 +120,8 @@ simulated.data <- function(simulated.type="linear.corr"){
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
-
+        e2 <- rnorm(sites)
+        
         # uncorrelated coefficients for each species and parameters
         sigma1 <- 0.3 # sd beta1
         mean1 <- -1 # mean beta1
@@ -153,6 +154,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
         dataset$S1 <- e1[dataset$site]
+        dataset$S2 <- e2[dataset$site]
         dataset$beta1 <- beta1[dataset$id] 
         dataset$alpha <- alpha[dataset$id]
         dataset$sigma_beta1 <- sigma_beta1[dataset$id]
@@ -160,7 +162,7 @@ simulated.data <- function(simulated.type="linear.corr"){
         dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*(beta1[dataset$id] - dataset$S1)**2)
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1)                
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1, S2=dataset$S2)                
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 
