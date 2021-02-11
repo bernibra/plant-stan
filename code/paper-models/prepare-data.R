@@ -308,7 +308,10 @@ simulated.data.skew <- function(){
         dataset$p <- 0.5 * exp(-alpha[dataset$id] - sigma_hat[dataset$id]*(beta_hat[dataset$id] - dataset$S1)**2) * (1 + pracma::erf(lambda[dataset$id] * (dataset$S1-beta_hat[dataset$id]) * sqrt(sigma_hat[dataset$id])))
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1, S2=dataset$S2)                
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs,
+                              alpha=dataset$alpha, beta1=dataset$beta1, beta_hat=dataset$beta_hat,
+                              sigma_beta1=dataset$sigma_beta1, sigma_hat=dataset$sigma_hat,
+                              lambda = dataset$lambda, S1=dataset$S1, S2=dataset$S2)                
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 

@@ -21,7 +21,7 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   alphas <- precis(model_r, pars = "alpha", depth=2)
   betas <- precis(model_r, pars = "beta", depth=3)
   sigmas <- precis(model_r, pars = "gamma", depth=3)
-  lambdas <- precis(model_r, pars = "lambda", depth=3)
+  # lambdas <- precis(model_r, pars = "lambda", depth=3)
     
   # Extract true values
   N <- length(unique(d$dataset$id))

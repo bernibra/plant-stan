@@ -573,12 +573,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         
         # Set starting values for the parameters
         start_5.1 <- list(
+                zlambda = rep(0, dat_5.1$L),
                 zalpha = rep(0, dat_5.1$L),
                 zbeta = rep(0, dat_5.1$L),
                 zgamma = rep(0, dat_5.1$L),
+                lambda_bar = 0,
                 alpha_bar = 0,
                 beta_bar = 0,
                 gamma_bar = 0,
+                sigma_l = 0.1,
                 sigma_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
@@ -617,4 +620,20 @@ skew.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-
 
 
 # skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
-
+# 
+# x <- seq(-3, 3, length.out = 2000)
+# lambda=-10
+# sigma_beta1=2
+# beta1=1
+# lambda_hat <- lambda/sqrt(1+lambda**2)
+# sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
+# beta_hat <- beta1 - sqrt(1/(2*sigma_hat)) * lambda_hat * sqrt(2/pi)
+# y <- dsn(x, xi=beta_hat, omega=sqrt(1/(2*sigma_hat)), alpha=lambda)
+# y_r <- rsn(n=6000, xi=beta_hat, omega=sqrt(1/(2*sigma_hat)), alpha=lambda)
+# plot(x, y, type="l")
+# abline(v=beta_hat, col="red")
+# abline(v=mean(y_r), col="blue")
+# lines(c(beta1-sqrt(1/(2*sigma_beta1)), beta1+sqrt(1/(2*sigma_beta1))), c(max(y)*0.5,max(y)*0.5), col="blue")
+# lines(c(beta_hat-sqrt(1/(2*sigma_hat)), beta_hat+sqrt(1/(2*sigma_hat))), c(max(y)*0.4,max(y)*0.4), col="red")
+# lines(c(beta1-sd(y_r), beta1+sd(y_r)), c(max(y)*0.45,max(y)*0.45), col="black")
+# 
