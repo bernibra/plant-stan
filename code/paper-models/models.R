@@ -643,7 +643,7 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector<lower=-3, upper=3>[L] lambda;
+    //vector<lower=-3, upper=3>[L] lambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
@@ -697,14 +697,14 @@ model{
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    lambda ~ std_normal();
+    //lambda ~ std_normal();
 
     for ( i in 1:L ){
         // delta = lambda[i] / ( sqrt( 1 + (pow(2,lambda[i])) ));
         // gamma_hat = gamma[i] * (1 - (2 * pow(2, delta))/pi());
         // beta_hat = beta[i] - sqrt( 1 / (2 * gamma_hat) ) * (delta * sqrt(2/pi()));
 
-        Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
+        Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((0.1 * (X1 - beta[i])) * sqrt(gamma[i]) )));
     }
 }
 // generated quantities{
