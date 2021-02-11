@@ -689,10 +689,10 @@ transformed parameters{
     
     for (i in 1:L){
         delta = lambda[i] / ( sqrt( 1 + (pow(2,lambda[i])) ));
-        gamma[i] = gamma[i] * (1 - (2 * pow(2, delta[i]))/pi());
-        beta[i] = beta[i] - sqrt( 1 / (2 * gamma[i]) ) * (delta[i] * sqrt(2/pi()));
-        maxy = 0.5 * ( 4 - pi() ) * pow(3, delta[i] * sqrt(2/pi())) / pow(3 / 2.0, 1 - 2 * pow(2,delta[i]) / pi() );
-        muz = sqrt( 2 / pi() ) * delta[i];
+        gamma[i] = gamma[i] * (1 - (2 * pow(2, delta))/pi());
+        beta[i] = beta[i] - sqrt( 1 / (2 * gamma[i]) ) * (delta * sqrt(2/pi()));
+        maxy = 0.5 * ( 4 - pi() ) * pow(3, delta * sqrt(2/pi())) / pow(3 / 2.0, 1 - 2 * pow(2,delta) / pi() );
+        muz = sqrt( 2 / pi() ) * delta;
         maxy = beta[i] + (1 / sqrt( 2 * gamma[i])) * (muz - maxy * sqrt( 1 - muz * muz ) * 0.5 - 0.5 * sgn(lambda[i]) * exp(- 2 * pi() / fabs(lambda[i]) ));
         maxy = exp(- gamma[i] * pow(2, maxy - beta[i])) * (1 + erf((lambda[i] * ( maxy - beta[i] )) * sqrt( gamma[i] ) ));
         alpha[i] = log(maxy) + alpha[i];
