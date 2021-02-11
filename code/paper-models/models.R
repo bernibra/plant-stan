@@ -667,7 +667,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_g;
 
     lambda = zlambda * sigma_l + lambda_bar;
-    delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
+    // delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -676,9 +676,10 @@ transformed parameters{
 
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma) .* (1 - (2 * (delta .* delta))/pi());
+    // gamma = exp(gamma) .* (1 - (2 * (delta .* delta))/pi());
+    gamma = exp(gamma);
     
-    beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
+    // beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
 }
 model{
     // real delta;
@@ -708,6 +709,18 @@ model{
         // beta_hat = beta[i] - sqrt( 1 / (2 * gamma_hat) ) * (delta * sqrt(2/pi()));
 
         Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
+    }
+}
+generated quantities{
+    vector[L*N] log_lik;
+    int k;
+    
+    k = 1;
+    for ( i in 1:L ){
+        for (j in 1:N){
+           log_lik[k] ~ binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
+           k = k + 1;
+        }
     }
 }
 "

@@ -613,5 +613,11 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
 # baseline.1d(d=NULL, simulated=F, recompile = F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
-skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
+skew.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+
+# skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
