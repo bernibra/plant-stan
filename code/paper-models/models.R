@@ -643,10 +643,12 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector[L] lambda;
+    vector[L] zlambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
+    real lambda_bar;
+    real<lower=0> sigma_l;
     real<lower=0> sigma_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
@@ -659,13 +661,14 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    vector[L] tlambda
+    vector[L] lambda
+    vector[L] delta
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    tlambda = pow(2,lambda);
-    tlambda = 2*tlambda/(pi()*(1+tlambda));
-    
+    lambda = zlambda * sigma_l + lambda_bar;
+    delta = lambda/sqrt(1+pow(2,lambda));
+
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
@@ -673,16 +676,16 @@ transformed parameters{
 
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma) .* sqrt(1 - tlambda);
+    gamma = exp(gamma) .* (1 - (2 * pow(2,delta))/pi());
     
-    beta = beta - gamma .* sqrt(tlambda);
+    beta = beta - sqrt(1/(2*gamma)) .* (delta * sqrt(2/pi()));
 }
 model{
-    matrix[L,N] p;
 
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
+    sigma_l ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
     rhosq_b ~ exponential( 0.5 );
@@ -690,14 +693,14 @@ model{
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
+    lambda_bar ~ std_normal();
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    lambda ~ std_normal();
+    zlambda ~ std_normal();
 
     for ( i in 1:L ){
-        p[i] = (X1 - beta[i]) * gamma[i];
-        Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - columns_dot_self(p[i])) * (1 + erf(lambda * p[i] / sqrt2())));
+        Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) * (1 + erf((lambda .* (X1 - beta[i])) .* sqrt(gamma[i]) )));
     }
 }
 "

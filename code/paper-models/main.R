@@ -502,7 +502,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
         
         # If we are dealing with simulated data
         if(simulated){
-                extension <- "1d-simulated"
+                extension <- "skew-simulated"
         }
         extension <- paste(extension, as.character(gp_type), sep="")
         
@@ -516,7 +516,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
         # Load the data
         if(is.null(d)){
                 if(recompile){
-                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
+                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="skew", min.occurrence=min.occurrence)
                         # rename variables
                         if(simulated){
                                 variables <- c("S1", "S2")
@@ -573,13 +573,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
         
         # Set starting values for the parameters
         start_5.1 <- list(
-                lambda = rep(0, dat_5.1$L),
+                zlambda = rep(0, dat_5.1$L),
                 zalpha = rep(0, dat_5.1$L),
                 zbeta = rep(0, dat_5.1$L),
                 zgamma = rep(0, dat_5.1$L),
+                lambda_bar = 0,
                 alpha_bar = 0,
                 beta_bar = 0,
                 gamma_bar = 0,
+                sigma_l = 0.1,
                 sigma_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
@@ -610,5 +612,6 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofo
 }
 
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
-baseline.1d(d=NULL, simulated=F, recompile = F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
+# baseline.1d(d=NULL, simulated=F, recompile = F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
+skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 

@@ -249,7 +249,7 @@ simulated.data.categorical <- function(){
 }
 
 # Generate fake data to test the extent to which the model works
-simulated.data.skew <- function(simulated.type="linear.corr"){
+simulated.data.skew <- function(){
         
         # Define system dimensions
         N <- 50
@@ -273,7 +273,7 @@ simulated.data.skew <- function(simulated.type="linear.corr"){
         
         # coefficients for each species
         Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1
-        z1 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
+        z1 <- mvrnorm(mu = rep(mean1, times = N), Sigma = Sigma)
         
         # Generate correlations
         beta1 <- z1
@@ -287,7 +287,7 @@ simulated.data.skew <- function(simulated.type="linear.corr"){
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
         alpha <- exp(rnorm(N, 0,1))
-        lambda <- rnorm(N, 5,1.3)
+        lambda <- rnorm(N, 0,5)
         
         lambda_hat <- lambda/sqrt(1+lambda**2)
         sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
@@ -345,11 +345,13 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                                       simulated=F, simulated.type="linear.corr", min.occurrence=0){
         
         if(simulated){
-                if(!(simulated.type %in% c("categorical","linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
+                if(!(simulated.type %in% c("skew","categorical","linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
                         stop(paste("'", simulated.type, "' is not a valid 'simulated.type'", sep=""))
                 }
                 if(simulated.type=="categorical"){
                         dataset <- simulated.data.categorical()
+                }else if (simulated.type=="skew"){
+                        dataset <- simulated.data.skew()
                 }else{
                         dataset <- simulated.data(simulated.type=simulated.type)
                 }
