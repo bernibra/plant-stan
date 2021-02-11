@@ -718,7 +718,7 @@ generated quantities{
     k = 1;
     for ( i in 1:L ){
         for (j in 1:N){
-           log_lik[k] ~ binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
+           log_lik[k] ~ binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) )));
            k = k + 1;
         }
     }
