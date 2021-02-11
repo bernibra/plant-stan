@@ -661,8 +661,8 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    vector[L] lambda
-    vector[L] delta
+    vector[L] lambda;
+    vector[L] delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
