@@ -643,12 +643,10 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector[L] zlambda;
+    vector<lower=-3, upper=3>[L] lambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
-    real lambda_bar;
-    real<lower=0> sigma_l;
     real<lower=0> sigma_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
@@ -661,12 +659,12 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    vector[L] lambda;
+    // vector[L] lambda;
     // vector[L] delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    lambda = zlambda * sigma_l + lambda_bar;
+    // lambda = zlambda * sigma_l + lambda_bar;
     // delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
@@ -689,7 +687,6 @@ model{
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
-    sigma_l ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
     rhosq_b ~ exponential( 0.5 );
@@ -697,11 +694,10 @@ model{
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
-    lambda_bar ~ std_normal();
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    zlambda ~ std_normal();
+    lambda ~ std_normal();
 
     for ( i in 1:L ){
         // delta = lambda[i] / ( sqrt( 1 + (pow(2,lambda[i])) ));
@@ -711,16 +707,16 @@ model{
         Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
     }
 }
-generated quantities{
-    vector[L*N] log_lik;
-    int k;
-    
-    k = 1;
-    for ( i in 1:L ){
-        for (j in 1:N){
-           log_lik[k] = binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) )));
-           k = k + 1;
-        }
-    }
-}
+// generated quantities{
+//     vector[L*N] log_lik;
+//     int k;
+//     
+//     k = 1;
+//     for ( i in 1:L ){
+//         for (j in 1:N){
+//            log_lik[k] = binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) )));
+//            k = k + 1;
+//         }
+//     }
+//}
 "
