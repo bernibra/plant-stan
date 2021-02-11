@@ -667,7 +667,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_g;
 
     lambda = zlambda * sigma_l + lambda_bar;
-    delta = lambda/sqrt(1+pow(2,lambda));
+    delta = lambda./(sqrt(1+(lambda .* lambda)));
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -676,7 +676,7 @@ transformed parameters{
 
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma) .* (1 - (2 * pow(2,delta))/pi());
+    gamma = exp(gamma) .* (1 - (2 * (delta .* delta))/pi());
     
     beta = beta - sqrt(1/(2*gamma)) .* (delta * sqrt(2/pi()));
 }
