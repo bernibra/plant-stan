@@ -277,7 +277,7 @@ model{
 }
 generated quantities{
     vector[L*N] log_lik;
-    real k;
+    int k;
     
     k = 1;
     for ( i in 1:L ){
