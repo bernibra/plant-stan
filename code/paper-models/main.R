@@ -604,7 +604,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                            chains=n_chains_5.1 ,
                            cores= n_chains_5.1 ,
                            warmup=1000, iter=2000,
-                           init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+                           init=init_5.1 , control = list(adapt_delta = 0.98, max_treedepth = 15))
         
         
         saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
@@ -623,19 +623,19 @@ skew.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-
 # 
 # 
 # skn <- function(x, alpha, sigma, beta, lambda){
-#         
-#         
+# 
+# 
 #         delta <- lambda/sqrt(1+lambda**2)
 #         # skewness <- 0.5*(4-pi)*(delta*sqrt(2/pi))**3/(1-2*delta**2/pi)**(3/2)
 #         mu_z <- sqrt(2/pi)*delta
 #         # sigma_z <- sqrt(1-mu_z**2)
 #         # mode_x <- beta + 1/sqrt(2*sigma)*(mu_z- skewness*sigma_z*0.5-0.5*sign(lambda)*exp(-2*pi/abs(lambda)))
 #         # maxy_ <- dsn(mode_x, xi=beta, omega=sqrt(1/(2*sigma)), alpha=lambda)
-#         
+# 
 #         maxy = 0.5 * ( 4 - pi ) * (delta * sqrt(2/pi))**3 / (1 - 2 * delta**2 / pi )**(3 / 2.0);
 #         maxy = beta + 1 / sqrt( 2 * sigma) * (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))
 #         maxy = exp(- sigma * (maxy - beta)**2) * (1 + pracma::erf((lambda * (maxy - beta)) * sqrt(sigma) ))
-#         
+# 
 #         y <- 1/maxy * exp(-alpha - sigma * (beta - x)**2) * (1 + pracma::erf(lambda * (x-beta) * sqrt(sigma)))
 #         # y <- exp(-alpha - sigma * (beta - x)**2) / (1 + lambda * (x-beta) * sqrt(2) * sqrt(sigma))
 #         y
@@ -644,9 +644,9 @@ skew.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-
 # 
 # x <- seq(-3, 3, length.out = 2000)
 # alpha=0.5
-# lambda=100
-# sigma_beta1=0.1
-# beta1=2
+# lambda=10
+# sigma_beta1=0.5
+# beta1=0
 # lambda_hat <- lambda/sqrt(1+lambda**2)
 # sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
 # alpha_hat <- 1
