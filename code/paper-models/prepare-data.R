@@ -253,7 +253,7 @@ simulated.data.skew <- function(){
         
         # Define system dimensions
         N <- 50
-        sites <- 3000
+        sites <- 300
         
         # Environmental predictors for each site
         e1 <- rnorm(sites, 0, 5)
