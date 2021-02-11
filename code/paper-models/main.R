@@ -267,40 +267,40 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
         
         
         # Load the data
-        if(is.null(d)){
-                if(recompile){
-                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
-                        # rename variables
-                        if(simulated){
-                                variables <- c("S1", "S2")
-                        }else{
-                                if(pca){
-                                        variables <- paste("PC", 1:ndim, sep="")
-                                }
-                        }
-                        filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
-                        
-                        if (file.exists(filename)){
-                                question <- askYesNo("Do you want to overwrite the file?", default = F, 
-                                                     prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
-                                if(is.na(question)){question <- F}
-                                if(question){
-                                        saveRDS(d, file=filename)
-                                }else{
-                                        stop("you should add 'recompile=T'")
-                                }                                
-                        }else{
-                                saveRDS(d, file=filename)
-                        }
+        if(recompile){
+                d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
+                # rename variables
+                if(simulated){
+                        variables <- c("S1", "S2")
                 }else{
-                        # rename variables
-                        if(simulated){
-                                variables <- c("S1", "S2")
-                        }else{
-                                if(pca){
-                                        variables <- paste("PC", 1:ndim, sep="")
-                                }
+                        if(pca){
+                                variables <- paste("PC", 1:ndim, sep="")
                         }
+                }
+                filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+                
+                if (file.exists(filename)){
+                        question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                             prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                        if(is.na(question)){question <- F}
+                        if(question){
+                                saveRDS(d, file=filename)
+                        }else{
+                                stop("you should add 'recompile=T'")
+                        }                                
+                }else{
+                        saveRDS(d, file=filename)
+                }
+        }else{
+                # rename variables
+                if(simulated){
+                        variables <- c("S1", "S2")
+                }else{
+                        if(pca){
+                                variables <- paste("PC", 1:ndim, sep="")
+                        }
+                }
+                if(is.null(d)){
                         d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
                 }
         }
@@ -514,40 +514,40 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         
         
         # Load the data
-        if(is.null(d)){
-                if(recompile){
-                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="skew", min.occurrence=min.occurrence)
-                        # rename variables
-                        if(simulated){
-                                variables <- c("S1", "S2")
-                        }else{
-                                if(pca){
-                                        variables <- paste("PC", 1:ndim, sep="")
-                                }
-                        }
-                        filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
-                        
-                        if (file.exists(filename)){
-                                question <- askYesNo("Do you want to overwrite the file?", default = F, 
-                                                     prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
-                                if(is.na(question)){question <- F}
-                                if(question){
-                                        saveRDS(d, file=filename)
-                                }else{
-                                        stop("you should add 'recompile=T'")
-                                }                                
-                        }else{
-                                saveRDS(d, file=filename)
-                        }
+        if(recompile){
+                d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="skew", min.occurrence=min.occurrence)
+                # rename variables
+                if(simulated){
+                        variables <- c("S1", "S2")
                 }else{
-                        # rename variables
-                        if(simulated){
-                                variables <- c("S1", "S2")
-                        }else{
-                                if(pca){
-                                        variables <- paste("PC", 1:ndim, sep="")
-                                }
+                        if(pca){
+                                variables <- paste("PC", 1:ndim, sep="")
                         }
+                }
+                filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+                
+                if (file.exists(filename)){
+                        question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                             prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                        if(is.na(question)){question <- F}
+                        if(question){
+                                saveRDS(d, file=filename)
+                        }else{
+                                stop("you should add 'recompile=T'")
+                        }                                
+                }else{
+                        saveRDS(d, file=filename)
+                }
+        }else{
+                # rename variables
+                if(simulated){
+                        variables <- c("S1", "S2")
+                }else{
+                        if(pca){
+                                variables <- paste("PC", 1:ndim, sep="")
+                        }
+                }
+                if(is.null(d)){
                         d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
                 }
         }
