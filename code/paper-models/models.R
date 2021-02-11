@@ -662,12 +662,12 @@ transformed parameters{
     vector[L] beta;
     vector[L] gamma;
     vector[L] lambda;
-    // vector[L] delta;
+    vector[L] delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
     lambda = zlambda * sigma_l + lambda_bar;
-    // delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
+    delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -676,15 +676,14 @@ transformed parameters{
 
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma);
-    // gamma = exp(gamma) .* (1 - (2 * (delta .* delta))/pi());
+    gamma = exp(gamma) .* (1 - (2 * (delta .* delta))/pi());
     
-    // beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
+    beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
 }
 model{
-    real delta;
-    real gamma_hat;
-    real beta_hat;
+    // real delta;
+    // real gamma_hat;
+    // real beta_hat;
         
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
@@ -704,11 +703,11 @@ model{
     zlambda ~ std_normal();
 
     for ( i in 1:L ){
-        delta = lambda[i] / ( sqrt( 1 + (pow(2,lambda[i])) ));
-        gamma_hat = gamma[i] * (1 - (2 * pow(2, delta))/pi());
-        beta_hat = beta[i] - sqrt( 1 / (2 * gamma_hat) ) * (delta * sqrt(2/pi()));
+        // delta = lambda[i] / ( sqrt( 1 + (pow(2,lambda[i])) ));
+        // gamma_hat = gamma[i] * (1 - (2 * pow(2, delta))/pi());
+        // beta_hat = beta[i] - sqrt( 1 / (2 * gamma_hat) ) * (delta * sqrt(2/pi()));
 
-        Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma_hat * columns_dot_self(X1 - beta_hat)) .* (1 + erf((lambda[i] * (X1 - beta_hat)) * sqrt(gamma_hat) )));
+        Y[i] ~ binomial(1, 0.5 * exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
     }
 }
 "

@@ -490,7 +490,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         return(mfit_5.1)
 }
 
-skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofolder="../../results/models/"){
+skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
         # Fixing some of the options
         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
         gp_type <- 2
