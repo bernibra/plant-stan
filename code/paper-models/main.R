@@ -637,7 +637,10 @@ skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/
 #         maxy = 0.5 * ( 4 - pi ) * (delta * sqrt(2/pi))**3 / (1 - 2 * delta**2 / pi )**(3 / 2.0);
 # 
 #         maxy = beta + 1 / sqrt( 2 * sigma) * (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))
-# 
+#         print(c(maxy, 1 / sqrt( 2 * sigma), mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5,
+#                                              0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ),
+#                 (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))))
+#         
 #         maxy = exp(- sigma * (maxy - beta)**2) * (1 + pracma::erf((lambda * (maxy - beta)) * sqrt(sigma) ))
 #         print(c(maxy,findmax(delta, beta, sigma, lambda)))
 #         y <- exp(-log(findmax(delta, beta, sigma, lambda)+0.0001) - alpha - sigma * (beta - x)**2) * (1 + pracma::erf(lambda * (x-beta) * sqrt(sigma)))
@@ -646,11 +649,11 @@ skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/
 # }
 # 
 # 
-# x <- seq(-3, 3, length.out = 2000)
+# x <- seq(-10, 10, length.out = 2000)
 # alpha=0
-# lambda=-1
-# sigma_beta1=0.01
-# beta1=0
+# lambda=15
+# sigma_beta1=0.001
+# beta1=-0
 # lambda_hat <- lambda/sqrt(1+lambda**2)
 # sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
 # alpha_hat <- 1
