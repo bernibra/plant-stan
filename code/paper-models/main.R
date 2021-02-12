@@ -573,15 +573,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         
         # Set starting values for the parameters
         start_5.1 <- list(
-                # lambda = rep(0, dat_5.1$L),
+                zlambda = rep(0, dat_5.1$L),
                 zalpha = rep(0, dat_5.1$L),
                 zbeta = rep(0, dat_5.1$L),
                 zgamma = rep(0, dat_5.1$L),
-                # lambda_bar = 0,
+                lambda_bar = 0,
                 alpha_bar = -1,
                 beta_bar = 0,
                 gamma_bar = 0,
-                # sigma_l = 0.1,
+                sigma_l = 0.1,
                 sigma_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
@@ -594,7 +594,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         model_code=skew.model.traits.1d
         
         # Initialize data structure
-        n_chains_5.1 <- 3
+        n_chains_5.1 <- 1
         init_5.1 <- list()
         for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
         
@@ -605,8 +605,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                            cores= n_chains_5.1 ,
                            warmup=1000, iter=2000,
                            init=init_5.1 , control = list(adapt_delta=0.95, max_treedepth = 15))
-        
-        
+
         saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
@@ -615,15 +614,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 # baseline.1d(d=NULL, simulated=F, recompile = F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 # d <- readRDS(file = "../../data/processed/jsdm/2PC1PC2min50-data.rds")
-d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
-skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
-# # baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+# d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
+mod <- skew.1d(d=d, simulated=T, recompile = T, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
+# baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 # # 
-# expose_stan_functions(model_r)
-# 
-# skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
-#
-#
+# expose_stan_functions(mod)
+# # 
+# # skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+# #
+# #
 # skn <- function(x, alpha, sigma, beta, lambda){
 # 
 # 
@@ -637,12 +636,12 @@ skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/
 #         maxy = 0.5 * ( 4 - pi ) * (delta * sqrt(2/pi))**3 / (1 - 2 * delta**2 / pi )**(3 / 2.0);
 # 
 #         maxy = beta + 1 / sqrt( 2 * sigma) * (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))
-#         print(c(maxy, 1 / sqrt( 2 * sigma), mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5,
-#                                              0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ),
-#                 (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))))
-#         
+#         # print(c(maxy, 1 / sqrt( 2 * sigma), mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5,
+#         #                                      0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ),
+#         #         (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))))
+# 
 #         maxy = exp(- sigma * (maxy - beta)**2) * (1 + pracma::erf((lambda * (maxy - beta)) * sqrt(sigma) ))
-#         print(c(maxy,findmax(delta, beta, sigma, lambda)))
+#         # print(c(maxy,findmax(delta, beta, sigma, lambda)))
 #         y <- exp(-log(findmax(delta, beta, sigma, lambda)+0.0001) - alpha - sigma * (beta - x)**2) * (1 + pracma::erf(lambda * (x-beta) * sqrt(sigma)))
 #         # y <- exp(-alpha - sigma * (beta - x)**2) / (1 + lambda * (x-beta) * sqrt(2) * sqrt(sigma))
 #         y
@@ -650,20 +649,25 @@ skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/
 # 
 # 
 # x <- seq(-10, 10, length.out = 2000)
-# alpha=0
-# lambda=15
-# sigma_beta1=0.001
-# beta1=-0
+# alpha=1
+# lambda=-4
+# sigma_beta1=0.05
+# beta1=1
 # lambda_hat <- lambda/sqrt(1+lambda**2)
 # sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
-# alpha_hat <- 1
 # beta_hat <- beta1 - sqrt(1/(2*sigma_hat)) * lambda_hat * sqrt(2/pi)
-# y <- skn(x, alpha=alpha, beta=beta_hat, sigma=sigma_hat, lambda=lambda)
-# y_r <- rsn(n=6000, xi=beta_hat, omega=sqrt(1/(2*sigma_hat)), alpha=lambda)
-# plot(x, y, type="l", ylim=c(0,1))
-# abline(v=beta_hat, col="red")
-# abline(v=mean(y_r), col="blue")
-# lines(c(beta1-sqrt(1/(2*sigma_beta1)), beta1+sqrt(1/(2*sigma_beta1))), c(max(y)*0.5,max(y)*0.5), col="blue")
-# lines(c(beta_hat-sqrt(1/(2*sigma_hat)), beta_hat+sqrt(1/(2*sigma_hat))), c(max(y)*0.4,max(y)*0.4), col="red")
-# lines(c(beta1-sd(y_r), beta1+sd(y_r)), c(max(y)*0.45,max(y)*0.45), col="black")
-# print(max(y))
+# alpha_hat <- log(findmax(lambda_hat, beta_hat, sigma_hat, lambda))+exp(alpha)
+# print(findmax2(beta1, alpha, beta1, sigma_beta1, lambda))
+# z <- sapply(x, function(ha) findmax2(ha, alpha, beta1, sigma_beta1, lambda)[6])
+# plot(x, z)
+# 
+# # y <- skn(x, alpha=alpha, beta=beta_hat, sigma=sigma_hat, lambda=lambda)
+# # y_r <- rsn(n=6000, xi=beta_hat, omega=sqrt(1/(2*sigma_hat)), alpha=lambda)
+# # plot(x, y, type="l", ylim=c(0,1))
+# # abline(v=beta_hat, col="red")
+# # abline(v=mean(y_r), col="blue")
+# # lines(c(beta1-sqrt(1/(2*sigma_beta1)), beta1+sqrt(1/(2*sigma_beta1))), c(max(y)*0.5,max(y)*0.5), col="blue")
+# # lines(c(beta_hat-sqrt(1/(2*sigma_hat)), beta_hat+sqrt(1/(2*sigma_hat))), c(max(y)*0.4,max(y)*0.4), col="red")
+# # lines(c(beta1-sd(y_r), beta1+sd(y_r)), c(max(y)*0.45,max(y)*0.45), col="black")
+# # # print(max(y))
+# 

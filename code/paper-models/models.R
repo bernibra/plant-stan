@@ -655,12 +655,12 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    //real<lower=-10, upper=10> lambda;
+    real<lower=-10, upper=10> zlambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
-    //real lambda_bar;
-    //real<lower=0> sigma_l;
+    real lambda_bar;
+    real<lower=0> sigma_l;
     real<lower=0> sigma_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
@@ -673,12 +673,11 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    real lambda;
+    vector[L] lambda;
     real delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
-    lambda = 5;
-    //lambda = zlambda * sigma_l + lambda_bar;
+    lambda = zlambda * sigma_l + lambda_bar;
     
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -690,10 +689,10 @@ transformed parameters{
     gamma = exp(gamma);
 
     for (i in 1:L){
-        delta = lambda / ( sqrt( 1.0 + (pow(lambda,2)) ));
+        delta = lambda[i] / ( sqrt( 1.0 + (pow(lambda[i],2)) ));
         gamma[i] = gamma[i] * (1.0 - (2 * pow(delta,2))/pi());
         beta[i] = beta[i] - sqrt( 1.0 / (2 * gamma[i]) ) * (delta * sqrt(2/pi()));
-        alpha[i] = log(findmax(delta, beta[i], gamma[i], lambda)) + alpha[i];
+        alpha[i] = log(findmax(delta, beta[i], gamma[i], lambda[i])) + alpha[i];
     }
     
 }
@@ -701,7 +700,7 @@ model{
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
-    //sigma_l ~ exponential( 1 );
+    sigma_l ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
     rhosq_b ~ exponential( 0.5 );
@@ -709,14 +708,14 @@ model{
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
-    //lambda_bar ~ std_normal();
+    lambda_bar ~ std_normal();
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    //lambda ~ std_normal();
+    zlambda ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ binomial(1, exp(- alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda * (X1 - beta[i])) * sqrt(gamma[i]) )));
+        Y[i] ~ binomial(1, exp(- alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1.0 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) ))+0.000000001);
     }
 }
 // generated quantities{

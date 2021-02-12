@@ -287,8 +287,8 @@ simulated.data.skew <- function(){
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
         alpha <- exp(rnorm(N, -1.5,0.4))
-        # lambda <- rnorm(N, 0,5)
-        lambda <- rep(5, N)
+        lambda <- rnorm(N, 0,5)
+        # lambda <- rep(5, N)
                 
         lambda_hat <- lambda/sqrt(1+lambda**2)
         sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
