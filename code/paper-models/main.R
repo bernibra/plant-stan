@@ -603,10 +603,10 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                            data=dat_5.1 ,
                            chains=n_chains_5.1 ,
                            cores= n_chains_5.1 ,
-                           warmup=1, iter=2,
+                           warmup=1000, iter=2000,
                            init=init_5.1 , control = list(adapt_delta=0.95, max_treedepth = 15))
 
-        # saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 
