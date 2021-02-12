@@ -633,6 +633,15 @@ functions{
     int sgn(real x) {
         return x < 0 ? -1 : x > 0;
     }
+    real findmax(real delta, real beta, real gamma, real lambda) {
+        real maxy;
+        real muz;
+        maxy = 0.5 * ( 4.0 - pi() ) * pow(3, delta * sqrt( 2.0 / pi() )) / pow(1.5, 1.0 - 2.0 * pow(2,delta) / pi() );
+        muz = sqrt( 2 / pi() ) * delta;
+        maxy = beta + (1.0 / sqrt( 2.0 * gamma)) * (muz - maxy * sqrt( 1.0 - muz * muz ) * 0.5 - 0.5 * sgn(lambda) * exp(- 2.0 * pi() / fabs(lambda) ));
+        maxy = exp(- gamma * pow(2, maxy - beta)) * (1.0 + erf((lambda * ( maxy - beta )) * sqrt( gamma ) ));
+        return maxy+0.0001
+    }
 }
 data{
     int N;
@@ -646,12 +655,12 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector[L] lambda;
+    vector[L] zlambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
-    //real lambda_bar;
-    //real<lower=0> sigma_l;
+    real lambda_bar;
+    real<lower=0> sigma_l;
     real<lower=0> sigma_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
@@ -664,14 +673,12 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    //vector[L] lambda;
+    vector[L] lambda;
     real delta;
-    real maxy;
-    real muz;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    //lambda = zlambda * sigma_l + lambda_bar;
+    lambda = zlambda * sigma_l + lambda_bar;
     
     // delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
 
@@ -688,26 +695,18 @@ transformed parameters{
     //beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
     
     for (i in 1:L){
-        delta = lambda[i] / ( sqrt( 1 + (pow(2,lambda[i])) ));
-        gamma[i] = gamma[i] * (1 - (2 * pow(2, delta))/pi());
-        beta[i] = beta[i] - sqrt( 1 / (2 * gamma[i]) ) * (delta * sqrt(2/pi()));
-        maxy = 0.5 * ( 4 - pi() ) * pow(3, delta * sqrt(2/pi())) / pow(3 / 2.0, 1 - 2 * pow(2,delta) / pi() );
-        muz = sqrt( 2 / pi() ) * delta;
-        maxy = beta[i] + (1 / sqrt( 2 * gamma[i])) * (muz - maxy * sqrt( 1 - muz * muz ) * 0.5 - 0.5 * sgn(lambda[i]) * exp(- 2 * pi() / fabs(lambda[i]) ));
-        maxy = exp(- gamma[i] * pow(2, maxy - beta[i])) * (1 + erf((lambda[i] * ( maxy - beta[i] )) * sqrt( gamma[i] ) ));
-        alpha[i] = log(maxy) + alpha[i];
+        delta = lambda[i] / ( sqrt( 1.0 + (pow(2,lambda[i])) ));
+        gamma[i] = gamma[i] * (1.0 - (2 * pow(2, delta))/pi());
+        beta[i] = beta[i] - sqrt( 1.0 / (2 * gamma[i]) ) * (delta * sqrt(2/pi()));
+        alpha[i] = log(findmax(delta, beta[i], gamma[i], lambda[i])) + alpha[i];
     }
     
 }
 model{
-    // real delta;
-    // real gamma_hat;
-    // real beta_hat;
-        
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
-    //sigma_l ~ exponential( 1 );
+    sigma_l ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
     rhosq_b ~ exponential( 0.5 );
@@ -715,18 +714,14 @@ model{
     alpha_bar ~ normal( -1 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
-    //lambda_bar ~ std_normal();
+    lambda_bar ~ std_normal();
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    lambda ~ std_normal();
+    zlambda ~ std_normal();
 
     for ( i in 1:L ){
-        //maxy = 0.5 * ( 4 - pi() ) * pow(3, delta[i] * sqrt(2/pi())) / pow(1.5, 1 - 2 * pow(2,delta[i]) / pi() );
-        //muz = sqrt( 2 / pi() ) * delta[i];
-        //maxy = beta[i] + (1 / sqrt( 2 * gamma[i])) * (muz - maxy * sqrt( 1 - muz * muz ) * 0.5 - 0.5 * sgn(lambda[i]) * exp(- 2 * pi() / fabs(lambda[i]) ));
-        //maxy = exp(- gamma[i] * pow(2, maxy - beta[i])) * (1 + erf((lambda[i] * ( maxy - beta[i] )) * sqrt( gamma[i] ) ));
-        Y[i] ~ binomial(1, exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
+        Y[i] ~ binomial(1, exp(- alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )));
     }
 }
 // generated quantities{

@@ -573,15 +573,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         
         # Set starting values for the parameters
         start_5.1 <- list(
-                lambda = rep(0, dat_5.1$L),
+                zlambda = rep(0, dat_5.1$L),
                 zalpha = rep(0, dat_5.1$L),
                 zbeta = rep(0, dat_5.1$L),
                 zgamma = rep(0, dat_5.1$L),
-                # lambda_bar = 0,
+                lambda_bar = 0,
                 alpha_bar = -1,
                 beta_bar = 0,
                 gamma_bar = 0,
-                # sigma_l = 0.1,
+                sigma_l = 0.1,
                 sigma_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
@@ -604,7 +604,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                            chains=n_chains_5.1 ,
                            cores= n_chains_5.1 ,
                            warmup=1000, iter=2000,
-                           init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+                           init=init_5.1 , control = list(stepsize=0.01, adapt_delta=0.99, max_treedepth = 15))
         
         
         saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
