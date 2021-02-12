@@ -573,15 +573,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         
         # Set starting values for the parameters
         start_5.1 <- list(
-                zlambda = rep(0, dat_5.1$L),
+                lambda = 0,
                 zalpha = rep(0, dat_5.1$L),
                 zbeta = rep(0, dat_5.1$L),
                 zgamma = rep(0, dat_5.1$L),
-                lambda_bar = 0,
+                # lambda_bar = 0,
                 alpha_bar = -1,
                 beta_bar = 0,
                 gamma_bar = 0,
-                sigma_l = 0.1,
+                # sigma_l = 0.1,
                 sigma_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
