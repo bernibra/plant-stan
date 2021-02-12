@@ -671,7 +671,7 @@ parameters{
 }
 transformed parameters{
     vector[L] alpha;
-    vector[L] alpha_hat;
+    //vector[L] alpha_hat;
     vector[L] beta;
     vector[L] beta_hat;
     vector[L] gamma;
@@ -696,7 +696,7 @@ transformed parameters{
         delta = lambda[i] / ( sqrt( 1.0 + (pow(lambda[i],2)) ));
         gamma_hat[i] = gamma[i] * (1.0 - (2 * pow(delta,2))/pi());
         beta_hat[i] = beta[i] - sqrt( 1.0 / (2 * gamma_hat[i]) ) * (delta * sqrt(2/pi()));
-        alpha_hat[i] = log(findmax(delta, beta_hat[i], gamma_hat[i], lambda[i])) + alpha[i];
+        //alpha_hat[i] = log(findmax(delta, beta_hat[i], gamma_hat[i], lambda[i])) + alpha[i];
     }
     
 }
@@ -719,7 +719,7 @@ model{
     zlambda ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ binomial(1, exp(- alpha_hat[i] - gamma_hat[i] * columns_dot_self(X1 - beta_hat[i])) .* (1.0 + erf((lambda[i] * (X1 - beta_hat[i])) * sqrt(gamma_hat[i]) ))+0.000000001);
+        Y[i] ~ binomial(1, 0.5*exp(- alpha[i] - gamma_hat[i] * columns_dot_self(X1 - beta_hat[i])) .* (1.0 + erf((lambda[i] * (X1 - beta_hat[i])) * sqrt(gamma_hat[i]) ))+0.000000001);
     }
 }
 // generated quantities{
