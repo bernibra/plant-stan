@@ -655,7 +655,7 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    real<lower=-10, upper=10> lambda;
+    //real<lower=-10, upper=10> lambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
@@ -673,15 +673,13 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    //vector[L] lambda;
+    real lambda;
     real delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
-
+    lambda = 5;
     //lambda = zlambda * sigma_l + lambda_bar;
     
-    // delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
-
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
@@ -690,10 +688,7 @@ transformed parameters{
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
     gamma = exp(gamma);
-    //gamma = exp(gamma) .* (1 - (2 * (delta .* delta))/pi());
 
-    //beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
-    
     for (i in 1:L){
         delta = lambda / ( sqrt( 1.0 + (pow(lambda,2)) ));
         gamma[i] = gamma[i] * (1.0 - (2 * pow(delta,2))/pi());
@@ -718,7 +713,7 @@ model{
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    lambda ~ std_normal();
+    //lambda ~ std_normal();
 
     for ( i in 1:L ){
         Y[i] ~ binomial(1, exp(- alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1 + erf((lambda * (X1 - beta[i])) * sqrt(gamma[i]) )));
