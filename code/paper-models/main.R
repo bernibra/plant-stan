@@ -509,7 +509,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         if(min.occurrence==10){
                 extension2 <- ""
         }else{
-                extension2 <- "min30-"
+                extension2 <- paste("min", as.character(min.occurrence),"-",sep="")
         }
         
         
@@ -604,7 +604,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                            chains=n_chains_5.1 ,
                            cores= n_chains_5.1 ,
                            warmup=1000, iter=2000,
-                           init=init_5.1 , control = list(adapt_delta = 0.98, max_treedepth = 15))
+                           init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
         saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
@@ -614,8 +614,9 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
 # baseline.1d(d=NULL, simulated=F, recompile = F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
 
+# d <- readRDS(file = "../../data/processed/jsdm/2PC1PC2min50-data.rds")
 d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
-skew.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 

@@ -22,10 +22,14 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   betas <- precis(model_r, pars = "beta", depth=3)
   sigmas <- precis(model_r, pars = "gamma", depth=3)
   lambdas <- precis(model_r, pars = "lambda", depth=3)
+  precis(model_r, pars = "lambda_bar", depth=3)
+  precis(model_r, pars = "sigma_l", depth=3)
+  
     
   # Extract true values
   N <- length(unique(d$dataset$id))
   alpha_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$alpha[1])
+  lambda_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$lambda[1])
   beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
   sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
   sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
@@ -34,7 +38,9 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , sd=c(rep(0,length(alpha_r)),alphas$sd))
   d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , sd=c(rep(0,length(beta1_r)),betas[1:N,]$sd))
   d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , sd=c(rep(0,length(sigma1_r)),sigmas[1:N,]$sd))
-
+  d_lambda <- data.frame(N=1:N, id= c(rep("real", length(lambda_r)), rep("estimated", length(lambdas$mean))),value=c(lambda_r,lambdas$mean) , sd=c(rep(0,length(lambda_r)),lambdas$sd))
+  
+  
   # Generate plot
   p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + 
     geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.title = element_blank())
@@ -44,8 +50,11 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
     geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
   p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1") + 
     geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
-
-  figure <- grid.arrange(p1, p2, p3, leg,
+  p4 <- ggplot(d_lambda, aes(x=N, y=value, group=id, color=id))  + ggtitle("lambda") + 
+    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
+  
+  
+  figure <- grid.arrange(p1, p2, p3, p4,
                          ncol = 2, nrow = 2)
   print(figure)
   return(figure)
