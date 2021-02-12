@@ -640,7 +640,7 @@ functions{
         muz = sqrt( 2 / pi() ) * delta;
         maxy = beta + (1.0 / sqrt( 2.0 * gamma)) * (muz - maxy * sqrt( 1.0 - muz * muz ) * 0.5 - 0.5 * sgn(lambda) * exp(- 2.0 * pi() / fabs(lambda) ));
         maxy = exp(- gamma * pow(2, maxy - beta)) * (1.0 + erf((lambda * ( maxy - beta )) * sqrt( gamma ) ));
-        return maxy+0.0001
+        return maxy+0.0001;
     }
 }
 data{
