@@ -594,7 +594,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         model_code=skew.model.traits.1d
         
         # Initialize data structure
-        n_chains_5.1 <- 1
+        n_chains_5.1 <- 3
         init_5.1 <- list()
         for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
         
