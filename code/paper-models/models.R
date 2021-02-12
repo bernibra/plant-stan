@@ -722,16 +722,16 @@ model{
         Y[i] ~ binomial(1, exp(- alpha_hat[i] - gamma_hat[i] * columns_dot_self(X1 - beta_hat[i])) .* (1.0 + erf((lambda[i] * (X1 - beta_hat[i])) * sqrt(gamma_hat[i]) ))+0.000000001);
     }
 }
-// generated quantities{
-//      vector[L*N] log_lik;
-//      int k;
-//      
-//      k = 1;
-//      for ( i in 1:L ){
-//          for (j in 1:N){
-//             log_lik[k] = binomial_lpmf(Y[i, j] | 1,  exp(- alpha_hat[i] - gamma_hat[i] * pow(X1[j] - beta_hat[i],2)) * (1 + erf((lambda[i] * (X1[j] - beta_hat[i])) * sqrt(gamma_hat[i]) )) + 0.000000001);
-//             k = k + 1;
-//          }
-//      }
-// }
+generated quantities{
+     vector[L*N] log_lik;
+     int k;
+     
+     k = 1;
+     for ( i in 1:L ){
+         for (j in 1:N){
+            log_lik[k] = binomial_lpmf(Y[i, j] | 1,  exp(- alpha_hat[i] - gamma_hat[i] * pow(X1[j] - beta_hat[i],2)) * (1 + erf((lambda[i] * (X1[j] - beta_hat[i])) * sqrt(gamma_hat[i]) )) + 0.000000001);
+            k = k + 1;
+         }
+     }
+}
 "
