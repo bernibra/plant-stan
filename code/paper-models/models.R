@@ -655,7 +655,7 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    real<lower=-10, upper=10> zlambda;
+    vector<lower=-10, upper=10>[L] zlambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
@@ -677,6 +677,7 @@ transformed parameters{
     real delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
+    
     lambda = zlambda * sigma_l + lambda_bar;
     
     alpha = exp(zalpha * sigma_a + alpha_bar);
