@@ -640,7 +640,7 @@ functions{
         muz = sqrt( 2.0 / pi() ) * delta;
         maxy = beta + (1.0 / sqrt( 2.0 * gamma)) * (muz - maxy * sqrt( 1.0 - muz * muz ) * 0.5 - 0.5 * sgn(lambda) * exp(- 2.0 * pi() / fabs(lambda) ));
         maxy = exp(- gamma * pow(maxy - beta,2)) * (1.0 + erf((lambda * ( maxy - beta )) * sqrt( gamma ) ));
-        return maxy;
+        return maxy+0.0001;
     }
 }
 data{
@@ -655,7 +655,7 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector[L] zlambda;
+    vector<lower=-10, upper=10>[L] zlambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
@@ -672,7 +672,7 @@ parameters{
 transformed parameters{
     vector[L] alpha;
     vector[L] beta;
-    vector[L] gamma;
+    vector<lower=0.05>[L] gamma;
     vector[L] lambda;
     real delta;
     matrix[L, L] L_SIGMA_b;
