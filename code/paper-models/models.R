@@ -646,12 +646,12 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector[L] zlambda;
+    vector[L] lambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
-    real lambda_bar;
-    real<lower=0> sigma_l;
+    //real lambda_bar;
+    //real<lower=0> sigma_l;
     real<lower=0> sigma_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
@@ -664,14 +664,14 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    vector[L] lambda;
+    //vector[L] lambda;
     real delta;
     real maxy;
     real muz;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    lambda = zlambda * sigma_l + lambda_bar;
+    //lambda = zlambda * sigma_l + lambda_bar;
     
     // delta = lambda ./ ( sqrt( 1 + (lambda .* lambda) ));
 
@@ -707,19 +707,19 @@ model{
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
-    sigma_l ~ exponential( 1 );
+    //sigma_l ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
     rhosq_b ~ exponential( 0.5 );
     rhosq_g ~ exponential( 0.5 );
-    alpha_bar ~ normal( 0 , 1.3 );
+    alpha_bar ~ normal( -1 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
-    lambda_bar ~ std_normal();
+    //lambda_bar ~ std_normal();
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    zlambda ~ std_normal();
+    lambda ~ std_normal();
 
     for ( i in 1:L ){
         //maxy = 0.5 * ( 4 - pi() ) * pow(3, delta[i] * sqrt(2/pi())) / pow(1.5, 1 - 2 * pow(2,delta[i]) / pi() );
