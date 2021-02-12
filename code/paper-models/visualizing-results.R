@@ -14,8 +14,8 @@ library(cowplot)
 
 plot.simulated.data <- function(beta=T, gp_type = 2){
   # load data
-  d <- readRDS(file = paste("../../data/processed/jsdm/skew-simulated2S1S2", "data.rds", sep = ""))
-  model_r <- readRDS(paste("../../results/models/skew-model-traits-1dskew-simulated2.rds", sep=""))
+  d <- readRDS(file = paste("../../data/processed/jsdm/skew-simulated-workingexample-S1S2", "data.rds", sep = ""))
+  model_r <- readRDS(paste("../../results/models/skew-workingexample-simulated.rds", sep=""))
 
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)

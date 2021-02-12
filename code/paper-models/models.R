@@ -282,7 +282,7 @@ generated quantities{
     k = 1;
     for ( i in 1:L ){
         for (j in 1:N){
-           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)) + 0.000000001);
+           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)));
            k = k + 1;
         }
     }
@@ -671,11 +671,8 @@ parameters{
 }
 transformed parameters{
     vector[L] alpha;
-    vector[L] alpha_hat;
     vector[L] beta;
-    vector[L] beta_hat;
     vector[L] gamma;
-    vector[L] gamma_hat;
     vector[L] lambda;
     real delta;
     matrix[L, L] L_SIGMA_b;
@@ -694,9 +691,9 @@ transformed parameters{
 
     for (i in 1:L){
         delta = lambda[i] / ( sqrt( 1.0 + (pow(lambda[i],2)) ));
-        gamma_hat[i] = gamma[i] * (1.0 - (2 * pow(delta,2))/pi());
-        beta_hat[i] = beta[i] - sqrt( 1.0 / (2 * gamma_hat[i]) ) * (delta * sqrt(2/pi()));
-        alpha_hat[i] = log(findmax(delta, beta_hat[i], gamma_hat[i], lambda[i])) + alpha[i];
+        gamma[i] = gamma[i] * (1.0 - (2 * pow(delta,2))/pi());
+        beta[i] = beta[i] - sqrt( 1.0 / (2 * gamma[i]) ) * (delta * sqrt(2/pi()));
+        alpha[i] = log(findmax(delta, beta[i], gamma[i], lambda[i])) + alpha[i];
     }
     
 }
@@ -719,7 +716,7 @@ model{
     zlambda ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ binomial(1, exp(- alpha_hat[i] - gamma_hat[i] * columns_dot_self(X1 - beta_hat[i])) .* (1.0 + erf((lambda[i] * (X1 - beta_hat[i])) * sqrt(gamma_hat[i]) ))+0.000000001);
+        Y[i] ~ binomial(1, exp(- alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1.0 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) ))+0.000000001);
     }
 }
 generated quantities{
@@ -729,7 +726,7 @@ generated quantities{
      k = 1;
      for ( i in 1:L ){
          for (j in 1:N){
-            log_lik[k] = binomial_lpmf(Y[i, j] | 1,  exp(- alpha_hat[i] - gamma_hat[i] * pow(X1[j] - beta_hat[i],2)) * (1 + erf((lambda[i] * (X1[j] - beta_hat[i])) * sqrt(gamma_hat[i]) )) + 0.000000001);
+            log_lik[k] = binomial_lpmf(Y[i, j] | 1,  exp(- alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) )) + 0.000000001);
             k = k + 1;
          }
      }
