@@ -282,7 +282,7 @@ generated quantities{
     k = 1;
     for ( i in 1:L ){
         for (j in 1:N){
-           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])));
+           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)));
            k = k + 1;
         }
     }
@@ -636,11 +636,11 @@ functions{
     real findmax(real delta, real beta, real gamma, real lambda) {
         real maxy;
         real muz;
-        maxy = 0.5 * ( 4.0 - pi() ) * pow(3, delta * sqrt( 2.0 / pi() )) / pow(1.5, 1.0 - 2.0 * pow(2,delta) / pi() );
-        muz = sqrt( 2 / pi() ) * delta;
+        maxy = 0.5 * ( 4.0 - pi() ) * pow((delta * sqrt( 2.0 / pi() )),3) / pow(1.0 - 2.0 * pow(delta,2) / pi() ,1.5);
+        muz = sqrt( 2.0 / pi() ) * delta;
         maxy = beta + (1.0 / sqrt( 2.0 * gamma)) * (muz - maxy * sqrt( 1.0 - muz * muz ) * 0.5 - 0.5 * sgn(lambda) * exp(- 2.0 * pi() / fabs(lambda) ));
-        maxy = exp(- gamma * pow(2, maxy - beta)) * (1.0 + erf((lambda * ( maxy - beta )) * sqrt( gamma ) ));
-        return maxy+0.0001;
+        maxy = exp(- gamma * pow(maxy - beta,2)) * (1.0 + erf((lambda * ( maxy - beta )) * sqrt( gamma ) ));
+        return maxy;
     }
 }
 data{
@@ -695,8 +695,8 @@ transformed parameters{
     //beta = beta - sqrt( 1 ./ (2 * gamma) ) .* (delta * sqrt(2/pi()));
     
     for (i in 1:L){
-        delta = lambda[i] / ( sqrt( 1.0 + (pow(2,lambda[i])) ));
-        gamma[i] = gamma[i] * (1.0 - (2 * pow(2, delta))/pi());
+        delta = lambda[i] / ( sqrt( 1.0 + (pow(lambda[i],2)) ));
+        gamma[i] = gamma[i] * (1.0 - (2 * pow(delta,2))/pi());
         beta[i] = beta[i] - sqrt( 1.0 / (2 * gamma[i]) ) * (delta * sqrt(2/pi()));
         alpha[i] = log(findmax(delta, beta[i], gamma[i], lambda[i])) + alpha[i];
     }
@@ -711,7 +711,7 @@ model{
     etasq_g ~ exponential( 1 );
     rhosq_b ~ exponential( 0.5 );
     rhosq_g ~ exponential( 0.5 );
-    alpha_bar ~ normal( -1 , 1.3 );
+    alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
     lambda_bar ~ std_normal();
@@ -731,7 +731,7 @@ model{
 //     k = 1;
 //     for ( i in 1:L ){
 //         for (j in 1:N){
-//            log_lik[k] = binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * pow(2, X1[j] - beta[i])) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) )));
+//            log_lik[k] = binomial_lpmf(Y[i, j] | 1,  0.5 * exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) )));
 //            k = k + 1;
 //         }
 //     }

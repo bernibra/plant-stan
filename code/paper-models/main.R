@@ -603,11 +603,11 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                            data=dat_5.1 ,
                            chains=n_chains_5.1 ,
                            cores= n_chains_5.1 ,
-                           warmup=1000, iter=2000,
-                           init=init_5.1 , control = list(stepsize=0.01, adapt_delta=0.99, max_treedepth = 15))
+                           warmup=1, iter=2,
+                           init=init_5.1 , control = list(adapt_delta=0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
+        # saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 
@@ -618,11 +618,12 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
 skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
-
-
-# skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
 # 
+# expose_stan_functions(mod)
 # 
+# # skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+# # 
+# # 
 # skn <- function(x, alpha, sigma, beta, lambda){
 # 
 # 
@@ -634,17 +635,21 @@ skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/
 #         # maxy_ <- dsn(mode_x, xi=beta, omega=sqrt(1/(2*sigma)), alpha=lambda)
 # 
 #         maxy = 0.5 * ( 4 - pi ) * (delta * sqrt(2/pi))**3 / (1 - 2 * delta**2 / pi )**(3 / 2.0);
+#         print(c(maxy,findmax3(delta, beta, sigma, lambda)))
+#         
 #         maxy = beta + 1 / sqrt( 2 * sigma) * (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))
+#         print(c(maxy,findmax2(delta, beta, sigma, lambda)))
+#         
 #         maxy = exp(- sigma * (maxy - beta)**2) * (1 + pracma::erf((lambda * (maxy - beta)) * sqrt(sigma) ))
-# 
-#         y <- 1/maxy * exp(-alpha - sigma * (beta - x)**2) * (1 + pracma::erf(lambda * (x-beta) * sqrt(sigma)))
+#         print(c(maxy,findmax(delta, beta, sigma, lambda)))
+#         y <- exp(-log(maxy) - alpha - sigma * (beta - x)**2) * (1 + pracma::erf(lambda * (x-beta) * sqrt(sigma)))
 #         # y <- exp(-alpha - sigma * (beta - x)**2) / (1 + lambda * (x-beta) * sqrt(2) * sqrt(sigma))
 #         y
 # }
 # 
 # 
 # x <- seq(-3, 3, length.out = 2000)
-# alpha=0.5
+# alpha=0
 # lambda=10
 # sigma_beta1=0.5
 # beta1=0
