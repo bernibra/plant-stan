@@ -12,6 +12,98 @@ library(cowplot)
 # Visualizing the results of some of the models
 ####
 
+transform.skew <- function(post){
+  delta <- post$lambda/sqrt(1+post$lambda**2)
+  beta_hat <- post$beta + sqrt(1/(2*post$gamma)) * delta * sqrt(2/pi)
+  sigma_hat <- post$gamma * (1 - (2*(delta**2))/pi)^(-1)
+  
+  mu_z <- sqrt(2/pi)*delta
+  maxy = 0.5 * ( 4 - pi ) * (delta * sqrt(2/pi))**3 / (1 - 2 * delta**2 / pi )**(3 / 2.0);
+  maxy = post$beta + 1 / sqrt( 2 * sigma_hat) * (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(post$lambda) * exp(- 2 * pi / abs(post$lambda) ))
+  maxy = exp(- post$gamma * (maxy - post$beta)**2) * (1 + pracma::erf((post$lambda * (maxy - post$beta)) * sqrt(post$gamma) ))
+  
+  alpha_hat <- -log((maxy+0.0001)) + post$alpha
+  return(list(beta=beta_hat, sigma=sigma_hat, alpha=alpha_hat))
+}
+
+plot.simulated.compare <- function(){
+  m1 <- readRDS(paste("../../results/models/skew-model-traits-1dskew-simulated2.rds", sep=""))
+  m2 <- readRDS(paste("../../results/models/baseline-model-1d1d-simulated2.rds", sep=""))
+  rethinking::compare(m1, m2)
+  
+  d <- readRDS(file = paste("../../data/processed/jsdm/skew-simulated2S1S2", "data.rds", sep = ""))
+
+  for (i in 1:2){
+    if (i==1){
+      model_r <- m1
+      post <- extract.samples(model_r, pars=c("alpha", "beta", "gamma", "lambda"))
+
+      post <- transform.skew(post)
+      
+      # Extract variables from the model
+      alphas <- precis(model_r, pars = "alpha", depth=2, )
+      betas <- precis(model_r, pars = "beta", depth=3)
+      sigmas <- precis(model_r, pars = "gamma", depth=3)
+      lambdas <- precis(model_r, pars = "lambda", depth=3)
+      
+      betas$mean <- sapply(1:dim(post$beta)[2], function(x) mean(post$beta[,x]), USE.NAMES = F)
+      betas$`5.5%` <- sapply(1:dim(post$beta)[2], function(x) PI(post$beta[,x], prob = c(0.890))[1], USE.NAMES = F)
+      betas$`94.5%` <- sapply(1:dim(post$beta)[2], function(x) PI(post$beta[,x], prob = c(0.890))[2], USE.NAMES = F)
+      sigmas$mean <- sapply(1:dim(post$sigma)[2], function(x) mean(post$sigma[,x]), USE.NAMES = F)
+      sigmas$`5.5%` <- sapply(1:dim(post$sigma)[2], function(x) PI(post$sigma[,x], prob = c(0.890))[1], USE.NAMES = F)
+      sigmas$`94.5%` <- sapply(1:dim(post$sigma)[2], function(x) PI(post$sigma[,x], prob = c(0.890))[2], USE.NAMES = F)
+      alphas$mean <- sapply(1:dim(post$alpha)[2], function(x) mean(post$alpha[,x]), USE.NAMES = F)
+      alphas$`5.5%` <- sapply(1:dim(post$alpha)[2], function(x) PI(post$alpha[,x], prob = c(0.890))[1], USE.NAMES = F)
+      alphas$`94.5%` <- sapply(1:dim(post$alpha)[2], function(x) PI(post$alpha[,x], prob = c(0.890))[2], USE.NAMES = F)
+      
+      
+    }else{
+      model_r <- m2
+      
+      # Extract variables from the model
+      alphas <- precis(model_r, pars = "alpha", depth=2)
+      betas <- precis(model_r, pars = "beta", depth=3)
+      sigmas <- precis(model_r, pars = "gamma", depth=3)
+    }
+
+
+  # Extract true values
+  N <- length(unique(d$dataset$id))
+  alpha_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$alpha[1])
+  beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
+  sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
+  sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
+  
+  # Build data.frames for the plots
+  d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , ymin=c(alpha_r,alphas$`5.5%`) , ymax=c(alpha_r,alphas$`94.5%`))
+  d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , ymin=c(beta1_r,betas$`5.5%`), ymax=c(beta1_r,betas$`94.5%`))
+  d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , ymin=c(sigma1_r,sigmas$`5.5%`), ymax=c(sigma1_r,sigmas$`94.5%`))
+  
+  # Generate plot
+  p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + 
+    geom_pointrange(aes(ymin=ymin, ymax=ymax)) + theme_linedraw() + theme(legend.title = element_blank())
+  if(i==1){
+    lambda_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$lambda[1])
+    d_lambda <- data.frame(N=1:N, id= c(rep("real", length(lambda_r)), rep("estimated", length(lambdas$mean))),value=c(lambda_r,lambdas$mean) , ymin=c(lambda_r,lambdas$`5.5%`), ymax=c(lambda_r,lambdas$`94.5%`))
+    p4 <- ggplot(d_lambda, aes(x=N, y=value, group=id, color=id))  + ggtitle("lambda") + 
+      geom_pointrange(aes(ymin=ymin, ymax=ymax)) + theme_linedraw() + theme(legend.position = "none")
+  }else{
+    p4 <- get_legend(p1)
+    
+  }
+  p1 <-  p1 + theme(legend.position = "none")
+  p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id)) + ggtitle("beta 1") + 
+    geom_pointrange(aes(ymin=ymin, ymax=ymax)) + theme_linedraw() + theme(legend.position = "none")
+  p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1") + 
+    geom_pointrange(aes(ymin=ymin, ymax=ymax)) + theme_linedraw() + theme(legend.position = "none")
+
+  figure <- grid.arrange(p1, p2, p3, p4,
+                         ncol = 2, nrow = 2)
+  print(figure)
+ }
+  
+}
+
 plot.simulated.data <- function(beta=T, gp_type = 2){
   # load data
   d <- readRDS(file = paste("../../data/processed/jsdm/skew-simulated-workingexample-S1S2", "data.rds", sep = ""))
@@ -58,6 +150,73 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
                          ncol = 2, nrow = 2)
   print(figure)
   return(figure)
+}
+
+compare.models <- function(){
+  m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
+  m2 <- readRDS(paste("../../results/models/min30-baseline-model-1d2.rds", sep=""))
+  # comp <- rethinking::compare(m1, m2, refresh = 1)
+  
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#1b9e77", "#d95f02", "#7570b3")
+  
+  #indicator values
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed-,30,.csv", sep = " ", header=T)
+  Tinvasive <- read.table("../../data/properties/codes/neophytes-list_reindexed-,30,.csv", sep = " ", header=T)
+  
+  # extract samples
+  post <- extract.samples(m1, n = 1000, pars=c("lambda", "beta")) 
+  
+  # alphas
+  mu_lambda <- apply( post$lambda , 2 , mean )
+  ci_lambda <- apply( post$lambda , 2 , PI )
+  
+  # betas
+  mu_beta <- apply(post$beta,2,mean)
+  ci_beta <- apply(post$beta,2,PI)
+  
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,], post$lambda[x,]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(sort(c(as.vector(PI(corPI)),meanPI)), 2)
+  
+  plist <- list()
+  
+  # Generate empty list of plots
+  idx <- sort(mu_beta,index.return=T)$ix
+  Tind_ <- as.numeric(as.character(Tind[idx,3]))
+  Tind_ <- Tind_[!(is.na(Tind_))]
+  Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+  Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+  
+  ylim = c(min(ci_beta), max(ci_beta))
+  xlim = c(-1, length(mu_beta)+1)
+  posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
+  posx = (xlim[2]-xlim[1])*0.8 + xlim[1]
+    
+  mu_order <- sort(mu_beta,index.return=T)$ix
+  
+  # Beta
+  plist[[1]] <- plot.ranking.x(mu_beta, ci_beta, color=colo[1], mu_order = mu_order, xlabel="species", ylabel=expression(beta), ylims=ylim, xlims=xlim, mar=margin(5.5,5.5,5.5,5.5), additional_label = Tind_, posx=posx, posy=c(posy, ylim[2]-(posy-ylim[1])))+
+      coord_trans(x="identity")
+  
+  ylim = c(min(ci_lambda), max(ci_lambda))
+  xlim = c(-1, length(mu_lambda)+1)
+  posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
+  posx = (xlim[2]-xlim[1])*0.8 + xlim[1]
+  
+  invasive <- Tinvasive$V3
+  plist[[2]] <- plot.ranking.x(mu_lambda, ci_lambda, color=colo[2], mu_order = mu_order, xlabel="species", ylabel=expression(lambda), ylims=ylim, xlims=xlim, mar=margin(5.5,5.5,5.5,5.5), posx=posx, posy=c(posy, ylim[2]-(posy-ylim[1])), colorpoints=invasive)+
+    coord_trans(x="identity")+ geom_hline(yintercept=0, linetype="dashed", color = "gray")
+  
+  grobs <- list()
+  for (k in 1:length(plist)){
+    grobs[[k]] <- ggplotGrob(plist[[k]])
+  }   
+  p <- grid.arrange(grobs=grobs, ncol=1, nrow=2#, vp=viewport(width=1, height=1, clip = TRUE),
+                      # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
 }
 
 plot.common.to.all <- function(p, fontsize=10, mar=margin(5.5,5.5,5.5,5.5)){
@@ -127,14 +286,18 @@ plot.scatter2 <- function(mu, variance, label, color="black", alpha=NULL, xlabel
   return(p)
 }
 
-plot.ranking.x <- function(mu, ci, color="black", xlabel="-", ylabel="-", mu_order=NULL, additional_label=c("", ""), xlims=NA, ylims=NA,mar=margin(5.5,5.5,5.5,5.5), posx=NULL, posy=NULL){
+plot.ranking.x <- function(mu, ci, color="black", xlabel="-", ylabel="-", mu_order=NULL, additional_label=c("", ""), xlims=NA, ylims=NA,mar=margin(5.5,5.5,5.5,5.5), posx=NULL, posy=NULL, colorpoints=NULL){
   # Sort data
   if(is.null(mu_order)){
     mu_order <- sort(mu,index.return=T)$ix
   }
 
+  if(is.null(colorpoints)){
+    colorpoints <- rep(0,length(mu_order))
+  }
+  
   # Generate data.frame  
-  df <- data.frame(sp=1:length(mu), mean=mu[mu_order], low=ci[1,mu_order], high=ci[2,mu_order])
+  df <- data.frame(sp=1:length(mu), mean=mu[mu_order], low=ci[1,mu_order], high=ci[2,mu_order], color=colorpoints[mu_order])
   
   p <- ggplot(df, aes(x=sp, y=mean)) + 
     geom_segment(aes(x=sp, xend=sp, y=low, yend=high), data=df, color=color, alpha=0.5) +
