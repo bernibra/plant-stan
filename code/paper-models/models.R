@@ -418,15 +418,14 @@ functions{
 data{
     int N;
     int L;
-    int K;
     int M;
-    int Y[K];
+    int Y[N,L];
     vector[N] X1;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
 }
 parameters{
-    ordered[M] phi;
+    ordered[M] zphi;
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
@@ -434,8 +433,6 @@ parameters{
     real beta_bar;
     real gamma_bar;
     real<lower=0> sigma_a;
-    real<lower=0> etasq_a;
-    real<lower=0> rhosq_a;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
     real<lower=0> rhosq_b;
@@ -449,6 +446,7 @@ transformed parameters{
     vector[L] gamma;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
+    vector<lower=0>[M] phi;
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -459,18 +457,19 @@ transformed parameters{
     gamma = L_SIGMA_g * zgamma + gamma_bar;
     gamma = exp(gamma);
     
+    for(i in 1:M){
+        phi[i] = exp(-exp(zphi[i]));
+    }
 }
 model{
-    vector[K] p;
+    real p;
     vector[M+1] prob;
 
     sigma_a ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
-    etasq_a ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
     etasq_g ~ exponential( 1 );
-    rhosq_a ~ exponential( 0.5 );
     rhosq_b ~ exponential( 0.5 );
     rhosq_g ~ exponential( 0.5 );
     alpha_bar ~ normal( 0 , 1.3 );
@@ -479,136 +478,23 @@ model{
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    phi ~ std_normal();
+    zphi ~ std_normal();
     
     for ( i in 1:L ){
-        p[(1+(i-1)*N):(i*N)] = - alpha[i] - gamma[i] * rows_dot_self(X1 - beta[i]);
-    }
-    
-    for ( i in 1:K){
-        prob[1] = 1 - exp(-exp(phi[1]) + p[i]);
-        for (j in 2:M){
-            prob[j]  =  exp(-exp(phi[j-1]) + p[i]) - exp(-exp(phi[j]) + p[i]);
+        for (j in 1:N){
+           p = exp(- alpha[i] - gamma[i] * pow(X1[j] - beta[i],2));
+
+           prob[1] = 1 - phi[1]*p - 0.0000000001*(M+1);
+           
+           for (k in 2:M){
+               prob[k]  =  phi[k-1]*p - phi[k]*p + 0.0000000001;
+           }
+           
+           prob[M+1]  = phi[M]*p + 0.0000000001;
+           //print(prob);
+
+           Y[j,i] ~ categorical(prob);
         }
-        prob[M+1]  = exp(-exp(phi[M]) + p[i]);
-        Y[i] ~ categorical(prob);
-    }
-}
-"
-
-# Categorical 1d
-categorical.model.traits.1d <- "
-functions{
-    matrix cov_GPL2(matrix x, matrix y, real a, real b1, real b2, real delta) {
-        int N = dims(x)[1];
-        matrix[N, N] K;
-
-        for (i in 1:(N-1)) {
-          K[i, i] = a + delta;
-          for (j in (i + 1):N) {
-            K[i, j] = a * exp(- b1 * square(x[i,j]) -b2 * square(y[i,j]) );
-            K[j, i] = K[i, j];
-          }
-        }
-        K[N, N] = a + delta;
-        return K;
-    }
-    matrix cov_GPL2_alpha(matrix x, real a, real b, real delta) {
-        int N = dims(x)[1];
-        matrix[N, N] K;
-
-        for (i in 1:(N-1)) {
-          K[i, i] = a + delta;
-          for (j in (i + 1):N) {
-            K[i, j] = a * exp(- b * square(x[i,j]) );
-            K[j, i] = K[i, j];
-          }
-        }
-        K[N, N] = a + delta;
-        return K;
-    }
-}
-data{
-    int N;
-    int L;
-    int K;
-    int M;
-    int Y[K];
-    vector[N] X1;
-    matrix[L,L] Dmat_b;
-    matrix[L,L] Dmat_g;
-    matrix[L,L] Dmat_t;
-}
-parameters{
-    ordered[M] phi;
-    vector[L] zalpha;
-    vector[L] zbeta;
-    vector[L] zgamma;
-    real alpha_bar;
-    real beta_bar;
-    real gamma_bar;
-    real<lower=0> sigma_a;
-    real<lower=0> etasq_a;
-    real<lower=0> rhosq_a;
-    real<lower=0> sigma_b;
-    real<lower=0> etasq_b;
-    vector<lower=0>[2] rhosq_b;
-    real<lower=0> sigma_g;
-    real<lower=0> etasq_g;
-    vector<lower=0>[2] rhosq_g;
-}
-transformed parameters{
-    vector[L] alpha;
-    vector[L] beta;
-    vector[L] gamma;
-    matrix[L, L] L_SIGMA_a;
-    matrix[L, L] L_SIGMA_b;
-    matrix[L, L] L_SIGMA_g;
-
-    L_SIGMA_a = cholesky_decompose(cov_GPL2_alpha( Dmat_t, etasq_a, rhosq_a, sigma_a));
-    alpha = L_SIGMA_a * zalpha + alpha_bar;
-    alpha = exp(alpha);
-
-    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, Dmat_t, etasq_b, rhosq_b[1], rhosq_b[2], sigma_b));
-    beta = L_SIGMA_b * zbeta + beta_bar;
-
-    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, Dmat_t, etasq_g, rhosq_g[1], rhosq_g[2], sigma_g));
-    gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma);
-    
-}
-model{
-    vector[K] p;
-    vector[M+1] prob;
-
-    sigma_a ~ exponential( 1 );
-    sigma_b ~ exponential( 1 );
-    sigma_g ~ exponential( 1 );
-    etasq_a ~ exponential( 1 );
-    etasq_b ~ exponential( 1 );
-    etasq_g ~ exponential( 1 );
-    rhosq_a ~ exponential( 0.5 );
-    rhosq_b ~ exponential( 0.5 );
-    rhosq_g ~ exponential( 0.5 );
-    alpha_bar ~ normal( 0 , 1.3 );
-    beta_bar ~ std_normal();
-    gamma_bar ~ std_normal();
-    zalpha ~ std_normal();
-    zgamma ~ std_normal();
-    zbeta ~ std_normal();
-    phi ~ std_normal();
-    
-    for ( i in 1:L ){
-        p[(1+(i-1)*N):(i*N)] = - alpha[i] - gamma[i] * rows_dot_self(X1 - beta[i]);
-    }
-    
-    for ( i in 1:K){
-        prob[1] = 1 - exp(-exp(phi[1]) + p[i]);
-        for (j in 2:M){
-            prob[j]  =  exp(-exp(phi[j-1]) + p[i]) - exp(-exp(phi[j]) + p[i]);
-        }
-        prob[M+1]  = exp(-exp(phi[M]) + p[i]);
-        Y[i] ~ categorical(prob);
     }
 }
 "

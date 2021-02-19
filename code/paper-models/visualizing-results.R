@@ -153,8 +153,8 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
 }
 
 compare.models <- function(){
-  m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
-  m2 <- readRDS(paste("../../results/models/min30-baseline-model-1d2.rds", sep=""))
+  # m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
+  # m2 <- readRDS(paste("../../results/models/min30-baseline-model-1d2.rds", sep=""))
   # comp <- rethinking::compare(m1, m2, refresh = 1)
   
   # Parameters for plots
@@ -162,12 +162,12 @@ compare.models <- function(){
   colo <- c("#1b9e77", "#d95f02", "#7570b3")
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed-,30,.csv", sep = " ", header=T)
-  Tinvasive <- read.table("../../data/properties/codes/neophytes-list_reindexed-,30,.csv", sep = " ", header=T)
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed-30.csv", sep = " ", header=T)
+  Tinvasive <- read.table("../../data/properties/codes/neophytes-list_reindexed-30.csv", sep = " ", header=T)
   
   # extract samples
-  post <- extract.samples(m1, n = 1000, pars=c("lambda", "beta")) 
-  
+  post <- extract.samples(m1, n = 1000, pars=c("lambda", "beta", "lambda_bar")) 
+
   # alphas
   mu_lambda <- apply( post$lambda , 2 , mean )
   ci_lambda <- apply( post$lambda , 2 , PI )
@@ -217,6 +217,32 @@ compare.models <- function(){
   p <- grid.arrange(grobs=grobs, ncol=1, nrow=2#, vp=viewport(width=1, height=1, clip = TRUE),
                       # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
+  print(p)
+  
+  
+  g <- ggplot(data.frame(x=post$lambda_bar), aes(x=x))+
+    stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+    theme_bw() +
+    geom_vline(xintercept = 0, colour = "red", linetype="dashed") +
+    ggtitle("average skewness of distributions")+
+    # scale_fill_grey() +
+    ylab("probability density")+
+    xlab(expression(lambda))+
+    scale_x_continuous(limits = c(-2.5, 0.1))+
+    theme(text = element_text(size=10),
+          axis.title.y=element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(colour = "black"),
+          legend.title = element_blank(),
+          legend.spacing.x = unit(3, "pt"),
+          legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
+          # legend.position="none",
+          legend.position=c(0.70,.80),
+          legend.background = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          plot.title = element_text(size=10))
+  print(g)
 }
 
 plot.common.to.all <- function(p, fontsize=10, mar=margin(5.5,5.5,5.5,5.5)){

@@ -75,9 +75,9 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
                 write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed.csv", sep=",")
                 write.table(Tend, "../../data/properties/codes/change-tendency_reindexed.csv", sep=",")
         }else{
-                write.table(Tind, paste("../../data/properties/codes/temperature_indicator_reindexed-",as.character(min.occurrence),".csv", sep=","))
-                write.table(NEO, paste("../../data/properties/codes/neophytes-list_reindexed-",as.character(min.occurrence),".csv", sep=","))
-                write.table(Tend, paste("../../data/properties/codes/change-tendency_reindexed-",as.character(min.occurrence),".csv", sep=","))
+                write.table(Tind, paste("../../data/properties/codes/temperature_indicator_reindexed-",as.character(min.occurrence),".csv", sep=""))
+                write.table(NEO, paste("../../data/properties/codes/neophytes-list_reindexed-",as.character(min.occurrence),".csv", sep=""))
+                write.table(Tend, paste("../../data/properties/codes/change-tendency_reindexed-",as.character(min.occurrence),".csv", sep=""))
         }
         
         # reshape correlation matrices

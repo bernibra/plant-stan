@@ -1,4 +1,4 @@
-# source("./prepare-data.R")
+source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -363,7 +363,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
         return(mfit_5.1)
 }
 
-categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=30, ofolder="../../results/models/"){
+categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
         # Fixing some of the options
         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
         gp_type <- 2
@@ -387,44 +387,44 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         
         
         # Load the data
-        if(is.null(d)){
-                if(recompile){
-                        d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="categorical", min.occurrence=min.occurrence)
-                        # rename variables
-                        if(simulated){
-                                variables <- c("S1", "S2")
-                        }else{
-                                if(pca){
-                                        variables <- paste("PC", 1:ndim, sep="")
-                                }
-                        }
-                        filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
-                        
-                        if (file.exists(filename)){
-                                question <- askYesNo("Do you want to overwrite the file?", default = F, 
-                                                     prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
-                                if(is.na(question)){question <- F}
-                                if(question){
-                                        saveRDS(d, file=filename)
-                                }else{
-                                        stop("you should add 'recompile=T'")
-                                }                                
-                        }else{
-                                saveRDS(d, file=filename)
-                        }
+        if(recompile){
+                d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="categorical", min.occurrence=min.occurrence)
+                # rename variables
+                if(simulated){
+                        variables <- c("S1", "S2")
                 }else{
-                        # rename variables
-                        if(simulated){
-                                variables <- c("S1", "S2")
-                        }else{
-                                if(pca){
-                                        variables <- paste("PC", 1:ndim, sep="")
-                                }
+                        if(pca){
+                                variables <- paste("PC", 1:ndim, sep="")
                         }
-                        d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
+                }
+                filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+                
+                if (file.exists(filename)){
+                        question <- askYesNo("Do you want to overwrite the file?", default = F, 
+                                             prompts = getOption("askYesNo", gettext(c("Yes", "No", "Cancel"))))
+                        if(is.na(question)){question <- F}
+                        if(question){
+                                saveRDS(d, file=filename)
+                        }else{
+                                stop("you should add 'recompile=T'")
+                        }                                
+                }else{
+                        saveRDS(d, file=filename)
+                }
+        }else{
+                # rename variables
+                if(simulated){
+                        variables <- c("S1", "S2")
+                }else{
+                        if(pca){
+                                variables <- paste("PC", 1:ndim, sep="")
+                        }
+                }
+                if(is.null(d)){
+                    d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
                 }
         }
-        
+
         # Prepare training data for stan model
         Dis_b <- d$corr
         Dis_g <- d$corr2
@@ -435,6 +435,8 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         }else{
                 obs <- d$dataset$abundance
         }
+        obs <- as.numeric(as.character(obs))
+        obs <- matrix(obs, N, L)
         dat <- d$dataset
         id <- dat$id
         bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
@@ -442,9 +444,8 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         
         dat_5.1 <- list(N=N,
                         L=L,
-                        K=length(obs),
-                        M=length(unique(obs))-1,
-                        Y=as.numeric(as.character(obs)),
+                        M=length(unique(as.vector(obs)))-1,
+                        Y=obs,
                         X1=X1,
                         Dmat_b=Dis_b,
                         Dmat_g=Dis_g
@@ -460,8 +461,6 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                 beta_bar = 0,
                 gamma_bar = 0,
                 sigma_a = 0.1,
-                etasq_a = 0.1,
-                rhosq_a = 0.1,
                 sigma_b = 0.1,
                 etasq_b = 0.1,
                 rhosq_b = 0.1,
@@ -486,7 +485,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                            init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
         
         
-        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "categorical-model-traits-1d", extension,".rds", sep=""))
+        saveRDS(mfit_5.1, file = paste(ofolder, extension2, "categorical-model-1d", extension,".rds", sep=""))
         return(mfit_5.1)
 }
 
@@ -613,10 +612,12 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 # model1 <- binomial.stan.gauss.RBFs(simulated=T, recompile = T, gp_type = 2, ofolder="~/Desktop/")
 # baseline.1d(d=NULL, simulated=F, recompile = F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
 
-# d <- readRDS(file = "../../data/processed/jsdm/2PC1PC2min30-data.rds")
-d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
-skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
+# d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
+# skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+categorical.1d(d=NULL, simulated=F, recompile=T, min.occurrence = 30)
+
 # # 
 # expose_stan_functions(mod)
 # # 
