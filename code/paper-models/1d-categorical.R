@@ -264,6 +264,6 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
   return(mfit_5.1)
 }
 
-d <- readRDS(file = "../../data/processed/jsdm/1d-simulated2S1S2categorical-data.rds")
+d <- readRDS(file = "../../data/processed/jsdm/simulated-categorical2S1S2data.rds")
 categorical.1d(d=d, simulated=T, recompile=F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
 # categorical.skew.1d(d=d, simulated=T, recompile=F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")

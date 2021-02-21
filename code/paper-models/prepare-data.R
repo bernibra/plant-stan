@@ -188,8 +188,8 @@ simulated.data.categorical <- function(){
         nu <- 3
         s <- 0.5
         Dis <- (as.matrix(dist(1:N))/N)
-        alpha4 <- 0
-        alpha3 <- -0.01
+        alpha4 <- 1
+        alpha3 <- 0.5
         alpha2 <- -0.05
         alpha1 <- -1
         
