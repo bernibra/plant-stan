@@ -500,9 +500,11 @@ model{
 }
 generated quantities{
      vector[L*N] log_lik;
-     int k;
+     int l;
+     real p;
+     vector[M+1] prob;
      
-     k = 1;
+     l = 1;
      
      for ( i in 1:L ){
         for (j in 1:N){
@@ -517,8 +519,8 @@ generated quantities{
            prob[M+1]  = phi[M]*p + minp;
            //print(prob);
 
-           log_lik[k] = categorical_lpmf(Y[j,i] | prob);
-           k = k + 1;
+           log_lik[l] = categorical_lpmf(Y[j,i] | prob);
+           l = l + 1;
         }
     }
 }
@@ -657,9 +659,11 @@ model{
 }
 generated quantities{
      vector[L*N] log_lik;
-     int k;
+     int l;
+     real p;
+     vector[M+1] prob;
      
-     k = 1;
+     l = 1;
      
      for ( i in 1:L ){
         for (j in 1:N){
@@ -674,8 +678,8 @@ generated quantities{
            prob[M+1]  = phi[M]*p + minp;
            //print(prob);
 
-           log_lik[k] = categorical_lpmf(Y[j,i] | prob);
-           k = k + 1;
+           log_lik[l] = categorical_lpmf(Y[j,i] | prob);
+           l = l + 1;
         }
     }
 }
