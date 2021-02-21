@@ -23,7 +23,7 @@ transform.skew <- function(post){
   maxy = exp(- post$gamma * (maxy - post$beta)**2) * (1 + pracma::erf((post$lambda * (maxy - post$beta)) * sqrt(post$gamma) ))
   
   alpha_hat <- -log((maxy+0.0001)) + post$alpha
-  return(list(beta=beta_hat, sigma=sigma_hat, alpha=alpha_hat))
+  return(list(beta=beta_hat, sigma=sigma_hat, alpha=alpha_hat, lambda=post$lambda))
 }
 
 plot.simulated.compare <- function(){
@@ -124,8 +124,7 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   lambda_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$lambda[1])
   beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
   sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
-  sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
-  
+
   # Build data.frames for the plots
   d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , sd=c(rep(0,length(alpha_r)),alphas$sd))
   d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , sd=c(rep(0,length(beta1_r)),betas[1:N,]$sd))
@@ -166,8 +165,9 @@ compare.models <- function(){
   Tinvasive <- read.table("../../data/properties/codes/neophytes-list_reindexed-30.csv", sep = " ", header=T)
   
   # extract samples
-  post <- extract.samples(m1, n = 1000, pars=c("lambda", "beta", "lambda_bar")) 
-
+  post <- extract.samples(m1, pars=c("alpha", "beta", "gamma", "lambda"))
+  post <- transform.skew(post)
+  
   # alphas
   mu_lambda <- apply( post$lambda , 2 , mean )
   ci_lambda <- apply( post$lambda , 2 , PI )
@@ -180,7 +180,7 @@ compare.models <- function(){
   meanPI <- mean(corPI)
   sdPI <- sd(corPI)
   corPIci <- round(sort(c(as.vector(PI(corPI)),meanPI)), 2)
-  
+  print(c(meanPI, corPIci))
   plist <- list()
   
   # Generate empty list of plots
@@ -219,6 +219,7 @@ compare.models <- function(){
   )
   print(p)
   
+  post <- extract.samples(m1, n = 1000, pars=c("lambda_bar")) 
   
   g <- ggplot(data.frame(x=post$lambda_bar), aes(x=x))+
     stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
