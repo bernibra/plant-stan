@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -126,7 +126,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                      data=dat_5.1 ,
                      chains=n_chains_5.1 ,
                      cores= n_chains_5.1 ,
-                     warmup=1000, iter=1200,
+                     warmup=1000, iter=1600,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
   
   
@@ -256,7 +256,7 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
                      data=dat_5.1 ,
                      chains=n_chains_5.1 ,
                      cores= n_chains_5.1 ,
-                     warmup=1000, iter=1200,
+                     warmup=1000, iter=1600,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
   
   
@@ -264,6 +264,6 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
   return(mfit_5.1)
 }
 
-d <- readRDS(file = "../../data/processed/jsdm/simulated-categorical2S1S2data.rds")
-categorical.1d(d=d, simulated=T, recompile=F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
-# categorical.skew.1d(d=d, simulated=T, recompile=F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
+d <- readRDS(file = "../../data/processed/jsdm/2PC1PC2categorical-min30-data.rds")
+categorical.1d(d=d, simulated=F, recompile=F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
+# categorical.skew.1d(d=d, simulated=F, recompile=F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")

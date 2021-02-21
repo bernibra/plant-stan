@@ -498,6 +498,30 @@ model{
         }
     }
 }
+generated quantities{
+     vector[L*N] log_lik;
+     int k;
+     
+     k = 1;
+     
+     for ( i in 1:L ){
+        for (j in 1:N){
+           p = exp(- alpha[i] - gamma[i] * pow(X1[j] - beta[i],2));
+
+           prob[1] = 1 - phi[1]*p - minp*(M+1);
+           
+           for (k in 2:M){
+               prob[k]  =  phi[k-1]*p - phi[k]*p + minp;
+           }
+           
+           prob[M+1]  = phi[M]*p + minp;
+           //print(prob);
+
+           log_lik[k] = categorical_lpmf(Y[j,i] | prob);
+           k = k + 1;
+        }
+    }
+}
 "
 
 # Categorical 1d
@@ -628,6 +652,30 @@ model{
            //print(prob);
 
            Y[j,i] ~ categorical(prob);
+        }
+    }
+}
+generated quantities{
+     vector[L*N] log_lik;
+     int k;
+     
+     k = 1;
+     
+     for ( i in 1:L ){
+        for (j in 1:N){
+           p = exp(- alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)) * (1 + erf((lambda[i] * (X1[j] - beta[i])) * sqrt(gamma[i]) ));
+
+           prob[1] = 1 - phi[1]*p - minp*(M+1);
+           
+           for (k in 2:M){
+               prob[k]  =  phi[k-1]*p - phi[k]*p + minp;
+           }
+           
+           prob[M+1]  = phi[M]*p + minp;
+           //print(prob);
+
+           log_lik[k] = categorical_lpmf(Y[j,i] | prob);
+           k = k + 1;
         }
     }
 }

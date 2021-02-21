@@ -61,9 +61,9 @@ plot.simulated.compare <- function(){
       model_r <- m2
       
       # Extract variables from the model
-      alphas <- precis(model_r, pars = "alpha", depth=2)
-      betas <- precis(model_r, pars = "beta", depth=3)
-      sigmas <- precis(model_r, pars = "gamma", depth=3)
+      alphas <- precis(model_r, pars = "alpha", depth=2, prob = 0.99)
+      betas <- precis(model_r, pars = "beta", depth=3, prob = 0.99)
+      sigmas <- precis(model_r, pars = "gamma", depth=3, prob = 0.99)
     }
 
 
@@ -75,16 +75,16 @@ plot.simulated.compare <- function(){
   sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
   
   # Build data.frames for the plots
-  d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , ymin=c(alpha_r,alphas$`5.5%`) , ymax=c(alpha_r,alphas$`94.5%`))
-  d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , ymin=c(beta1_r,betas$`5.5%`), ymax=c(beta1_r,betas$`94.5%`))
-  d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , ymin=c(sigma1_r,sigmas$`5.5%`), ymax=c(sigma1_r,sigmas$`94.5%`))
+  d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , ymin=c(alpha_r,alphas[,3]) , ymax=c(alpha_r,alphas[,4]))
+  d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , ymin=c(beta1_r,betas[,3]), ymax=c(beta1_r,betas[,4]))
+  d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , ymin=c(sigma1_r,sigmas[,3]), ymax=c(sigma1_r,sigmas[,4]))
   
   # Generate plot
   p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + 
     geom_pointrange(aes(ymin=ymin, ymax=ymax)) + theme_linedraw() + theme(legend.title = element_blank())
   if(i==1){
     lambda_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$lambda[1])
-    d_lambda <- data.frame(N=1:N, id= c(rep("real", length(lambda_r)), rep("estimated", length(lambdas$mean))),value=c(lambda_r,lambdas$mean) , ymin=c(lambda_r,lambdas$`5.5%`), ymax=c(lambda_r,lambdas$`94.5%`))
+    d_lambda <- data.frame(N=1:N, id= c(rep("real", length(lambda_r)), rep("estimated", length(lambdas$mean))),value=c(lambda_r,lambdas$mean) , ymin=c(lambda_r,lambdas[,3]), ymax=c(lambda_r,lambdas[,4]))
     p4 <- ggplot(d_lambda, aes(x=N, y=value, group=id, color=id))  + ggtitle("lambda") + 
       geom_pointrange(aes(ymin=ymin, ymax=ymax)) + theme_linedraw() + theme(legend.position = "none")
   }else{
