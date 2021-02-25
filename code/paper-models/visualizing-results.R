@@ -704,6 +704,135 @@ plot.actual.data.means <- function(model=NULL){
   
 }
 
+plot.actual.data.means.pairwise <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../results/models/min30-skew-model-traits-1d2.rds")
+  }
+  
+  #indicator values
+  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tend <- read.table("../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
+  NEO <- read.table("../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta", "lambda")) 
+  post <- transform.skew(post)
+  
+  # lambda
+  mu_lambda <- apply( post$lambda , 2 , mean )
+  ci_lambda <- apply( post$lambda , 2 , PI )
+  
+  # betas
+  mu_beta <- apply(post$beta,2,mean)
+  ci_beta <- apply(post$beta,2,PI)
+  
+  # gamma
+  mu_gamma <- apply( post$sigma , 2 , mean )
+  ci_gamma <- apply( post$sigma , 2 , PI )
+  
+  # alpha
+  mu_alpha <- apply(post$alpha,2,mean)
+  ci_alpha <- apply(post$alpha,2,PI)
+  
+  parameters_mu <- list(beta=mu_beta, gamma=mu_gamma, alpha=mu_alpha, lambda=mu_lambda)
+  parameters_ci <- list(beta=ci_beta, gamma=ci_gamma, alpha=ci_alpha, lambda=ci_lambda)
+
+  transformation <- c("identity", "log", "log", "identity")
+  label <- c(expression(beta), expression(gamma), expression(alpha), expression(lambda))
+    
+  plist = list()
+  k <- 1
+  for(i in 1:4){
+    for(j in 1:4){
+      ylim = c(min(parameters_mu[[i]]), max(parameters_mu[[i]]))
+      xlim = c(min(parameters_mu[[j]]), max(parameters_mu[[j]]))
+
+      p <- plot.scatter(mu=parameters_mu[[i]], variance=parameters_mu[[j]], color=colo[i], xlabel=label[i], ylabel=label[j], xlims = xlim, ylims = ylim)
+      # p <- p + coord_trans(x=transformation[i], y=transformation[j], clip = "off")
+      plist[[k]] <- p
+      k <- k+1
+    }
+  }
+  p <- grid.arrange(grobs=plist, ncol=4, nrow=4 #, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  print(p)
+  
+  for(i in 1:2){
+    idx <- sort(mu_beta[[i]],index.return=T)$ix
+    Tind_ <- as.numeric(as.character(Tind[idx,3]))
+    Tind_ <- Tind_[!(is.na(Tind_))]
+    Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+    Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+    
+    ylim = c(min(mu_beta[[i]]), max(mu_beta[[i]]))
+    xlim = c(min(mu_gamma[[i]]), max(mu_gamma[[i]]))
+    posx = exp((log(xlim[2])-log(xlim[1]))*0.83 + log(xlim[1]))
+    posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
+    posy = c(posy, ylim[2]-(posy-ylim[1]))
+    
+    labels = ifelse(NEO$V3==1, "neophyte", "other")
+    alphas = ifelse(NEO$V3==1, 0.7, 0.6)
+    color <- c("#e7298a",colo[4])
+    xlab=""
+    breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+    
+    p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha = alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+    # Scatter plot
+    p <- p + coord_trans(x="log", clip = "off")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+    
+    if(i==1){
+      p <- p+annotate("text", x = posx, y = posy, label = Tind_, colour = "#525252", size=3)+
+        ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+      title1 <- get_title(p)
+    }else{
+      p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+      title2 <- get_title(p)
+    }
+    legend1 <- get_legend(p)
+    plist[[2*(i-1)+1]] <- p+theme(legend.position = "none", plot.title = element_blank())
+    # 
+    labs <- c("decreasing", "decreasing low", "increasing", "other")
+    labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+    color <- colo
+    alphas <- c(0.7,0.7,0.7,0.6)
+    alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+    xlab=expression(gamma)
+    
+    p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha=alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+    legend2 <- get_legend(p)
+    p <- p + coord_trans(x="log", clip = "off")+
+      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+    if(i==1){
+      p <- p+ ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+    }else{
+      p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+    }
+    plist[[2*(i-1)+2]] <- p+theme(legend.position = "none", plot.title = element_blank())
+    ylab <- ""
+  }
+  plist[[5]] <- legend1
+  plist[[6]] <- legend2
+  plist[[7]] <- title1
+  plist[[8]] <- title2
+  
+  hlay <- rbind(c(7,8,NA),
+                c(1,3,5),
+                c(2,4,6))
+  
+  p <- grid.arrange(grobs=plist, ncol=3, nrow=3, heights=c(0.1,1,1), layout_matrix=hlay, widths=c(1,1,0.4)#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  print(p)
+  
+}
+
 plot.actual.data.distribution <- function(model=NULL){
   # Parameters for plots
   extra <- 1

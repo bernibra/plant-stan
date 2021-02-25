@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.10)  10 FEB 2021 07:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.10)  25 FEB 2021 17:06
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -557,57 +557,122 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 97.
 
 (/usr/local/texlive/2019/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1
+)
 
-{/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
- [4]
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 219.
+Package natbib Warning: Citation `guisanPredictiveHabitatDistribution2000' on p
+age 1 undefined on input line 104.
 
 
-(/usr/local/texlive/2019/texmf-dist/tex/latex/base/omscmr.fd
+Package natbib Warning: Citation `more' on page 1 undefined on input line 104.
+
+
+Package natbib Warning: Citation `Guisan' on page 1 undefined on input line 104
+.
+
+[1
+
+{/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+
+Package natbib Warning: Citation `pollockUnderstandingCooccurrenceModelling2014
+' on page 2 undefined on input line 107.
+
+
+Package natbib Warning: Citation `more in Rapoport' on page 2 undefined on inpu
+t line 107.
+
+
+Package natbib Warning: Citation `AASL' on page 2 undefined on input line 107.
+
+
+Package natbib Warning: Citation `austin2002spatial' on page 2 undefined on inp
+ut line 109.
+
+
+Package natbib Warning: Citation `frankCommonPatternsNature2009' on page 2 unde
+fined on input line 109.
+
+
+Package natbib Warning: Citation `austinNonlinearSpeciesResponse1976' on page 2
+ undefined on input line 109.
+
+
+Package natbib Warning: Citation `minchinEvaluationRelativeRobustness1987' on p
+age 2 undefined on input line 109.
+
+[2]
+
+Package natbib Warning: Citation `ribasRapoportEffectWidespread2006' on page 3 
+undefined on input line 113.
+
+
+Package natbib Warning: Citation `bhattaraiCanRapoportRule2006' on page 3 undef
+ined on input line 113.
+
+
+Package natbib Warning: Citation `normandImportanceAbioticStress2009' on page 3
+ undefined on input line 113.
+
+[3] [4] [5] [6]
+
+Package natbib Warning: Citation `austin2002spatial' on page 7 undefined on inp
+ut line 254.
+
+[7] [8] [9]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 322.
+
+ (/usr/local/texlive/2019/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 219.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 322.
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 219.
- [5] [6] [7]
-<figures/figure1.pdf, id=96, 560.0925pt x 386.44376pt>
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 322.
+
+[10]
+
+Package natbib Warning: Citation `rstan' on page 11 undefined on input line 330
+.
+
+[11] [12]
+<figures/figure1.pdf, id=184, 505.89pt x 361.35pt>
 File: figures/figure1.pdf Graphic file (type pdf)
 <use figures/figure1.pdf>
-Package pdftex.def Info: figures/figure1.pdf  used on input line 256.
-(pdftex.def)             Requested size: 389.23137pt x 268.56879pt.
-<figures/invasive.pdf, id=97, 560.0925pt x 386.44376pt>
+Package pdftex.def Info: figures/figure1.pdf  used on input line 359.
+(pdftex.def)             Requested size: 389.23137pt x 278.02533pt.
+<figures/invasive.pdf, id=185, 505.89pt x 361.35pt>
 File: figures/invasive.pdf Graphic file (type pdf)
 <use figures/invasive.pdf>
-Package pdftex.def Info: figures/invasive.pdf  used on input line 265.
-(pdftex.def)             Requested size: 389.23137pt x 268.56879pt.
+Package pdftex.def Info: figures/invasive.pdf  used on input line 368.
+(pdftex.def)             Requested size: 389.23137pt x 278.02533pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[8] [9 <./figures/figure1.pdf> <./figures/invasive.pdf>] (./manuscript.bbl)
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 275.
+[13] [14 <./figures/figure1.pdf>] [15 <./figures/invasive.pdf>]
+(./manuscript.bbl [16
 
-[10
+] [17])
 
-]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 275.
+Package natbib Warning: There were undefined citations.
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 378.
+[18]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 378.
  (./manuscript.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 275.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 275.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 378.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 378.
 Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 275.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 378.
  ) 
 Here is how much of TeX's memory you used:
- 9755 strings out of 492616
- 144500 string characters out of 6129481
- 262568 words of memory out of 5000000
- 13484 multiletter control sequences out of 15000+600000
+ 9830 strings out of 492616
+ 147352 string characters out of 6129481
+ 264944 words of memory out of 5000000
+ 13535 multiletter control sequences out of 15000+600000
  13601 words of font info for 51 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 42i,19n,39p,1641b,373s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 42i,19n,39p,2948b,481s stack positions out of 5000i,500n,10000p,200000b,80000s
 pdfTeX warning (dest): name{Hfootnote.2} has been referenced but does not exi
 st, replaced by a fixed one
 
@@ -632,10 +697,10 @@ exmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2019/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2019/texmf-
 dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on manuscript.pdf (10 pages, 460523 bytes).
+Output written on manuscript.pdf (18 pages, 477254 bytes).
 PDF statistics:
- 216 PDF objects out of 1000 (max. 8388607)
- 173 compressed objects within 2 object streams
- 25 named destinations out of 1000 (max. 500000)
+ 330 PDF objects out of 1000 (max. 8388607)
+ 276 compressed objects within 3 object streams
+ 49 named destinations out of 1000 (max. 500000)
  11 words of extra memory for PDF output out of 10000 (max. 10000000)
 

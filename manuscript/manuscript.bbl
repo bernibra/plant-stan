@@ -1,21 +1,58 @@
-\begin{thebibliography}{6}
+\begin{thebibliography}{22}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
 
-\bibitem[{Austin(2002)}]{austin2002spatial}
-Austin, M. (2002).
-\newblock Spatial prediction of species distribution: an interface between
-  ecological theory and statistical modelling.
-\newblock \emph{Ecological modelling}, 157, 101--118.
+\bibitem[{Austin(1987)}]{austinModelsAnalysisSpecies1987}
+Austin, M.~P. (1987).
+\newblock Models for the analysis of species' response to environmental
+  gradients.
+\newblock \emph{Vegetatio}, 69, 35--45.
+
+\bibitem[{Blanchet \emph{et~al.}(2020)Blanchet, Cazelles \&
+  Gravel}]{blanchetCooccurrenceNotEvidence2020}
+Blanchet, F.~G., Cazelles, K. \& Gravel, D. (2020).
+\newblock Co-occurrence is not evidence of ecological interactions.
+\newblock \emph{Ecology Letters}, 23, 1050--1063.
 
 \bibitem[{{Godoy-Lorite} \emph{et~al.}(2016){Godoy-Lorite}, Guimer{\`a}, Moore
   \& {Sales-Pardo}}]{godoy-loriteAccurateScalableSocial2016}
 {Godoy-Lorite}, A., Guimer{\`a}, R., Moore, C. \& {Sales-Pardo}, M. (2016).
 \newblock Accurate and scalable social recommendation using mixed-membership
   stochastic block models.
-\newblock \emph{PNAS}, 113, 14207--14212.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 113,
+  14207--14212.
+
+\bibitem[{Gotelli \& Ulrich(2010)}]{gotelliEmpiricalBayesApproach2010}
+Gotelli, N.~J. \& Ulrich, W. (2010).
+\newblock The empirical {{Bayes}} approach as a tool to identify non-random
+  species associations.
+\newblock \emph{Oecologia}, 162, 463--477.
+
+\bibitem[{Harris(2016)}]{harrisInferringSpeciesInteractions2016}
+Harris, D.~J. (2016).
+\newblock Inferring species interactions from co-occurrence data with
+  {{Markov}} networks.
+\newblock \emph{Ecology}, 97, 3308--3314.
+
+\bibitem[{Huisman \emph{et~al.}(1993)Huisman, Olff \&
+  Fresco}]{huismanHierarchicalSetModels1993}
+Huisman, J., Olff, H. \& Fresco, L. F.~M. (1993).
+\newblock A hierarchical set of models for species response analysis.
+\newblock \emph{Journal of Vegetation Science}, 4, 37--46.
+
+\bibitem[{Ives \& Helmus(2011)}]{ivesGeneralizedLinearMixed2011}
+Ives, A.~R. \& Helmus, M.~R. (2011).
+\newblock Generalized linear mixed models for phylogenetic analyses of
+  community structure.
+\newblock \emph{Ecological Monographs}, 81, 511--525.
+
+\bibitem[{Jamil \& ter Braak(2013)}]{jamilGeneralizedLinearMixed2013}
+Jamil, T. \& ter Braak, C. J.~F. (2013).
+\newblock Generalized linear mixed models can detect unimodal
+  species-environment relationships.
+\newblock \emph{PeerJ}, 1, e95.
 
 \bibitem[{Landolt \emph{et~al.}(2010)Landolt, B{\"a}umler, Ehrhardt, Hegg,
   Kl{\"o}tzli, L{\"a}mmler, Nobis, {Rudmann-Maurer}, Schweingruber, Theurillat,
@@ -28,11 +65,68 @@ Landolt, E., B{\"a}umler, B., Ehrhardt, A., Hegg, O., Kl{\"o}tzli, F.,
 \newblock {Haupt}, {Bern}.
 \newblock ISBN 978-3-258-07461-0.
 
+\bibitem[{McCain \& Knight(2013)}]{mccainElevationalRapoportRule2013}
+McCain, C.~M. \& Knight, K.~B. (2013).
+\newblock Elevational {{Rapoport}}'s rule is not pervasive on mountains.
+\newblock \emph{Global Ecology and Biogeography}, 22, 750--759.
+
+\bibitem[{Neuschulz \emph{et~al.}(2018)Neuschulz, Merges, Bollmann, Gugerli \&
+  B{\"o}hning-Gaese}]{neuschulzBioticInteractionsSeed2018}
+Neuschulz, E.~L., Merges, D., Bollmann, K., Gugerli, F. \& B{\"o}hning-Gaese,
+  K. (2018).
+\newblock Biotic interactions and seed deposition rather than abiotic factors
+  determine recruitment at elevational range limits of an alpine tree.
+\newblock \emph{Journal of Ecology}, 106, 948--959.
+
+\bibitem[{Norberg \emph{et~al.}(2019)Norberg, Abrego, Blanchet, Adler,
+  Anderson, Anttila, Ara{\'u}jo, Dallas, Dunson, Elith, Foster, Fox, Franklin,
+  Godsoe, Guisan, O'Hara, Hill, Holt, Hui, Husby, K{\aa}l{\aa}s, Lehikoinen,
+  Luoto, Mod, Newell, Renner, Roslin, Soininen, Thuiller, Vanhatalo, Warton,
+  White, Zimmermann, Gravel \&
+  Ovaskainen}]{norbergComprehensiveEvaluationPredictive2019}
+Norberg, A., Abrego, N., Blanchet, F.~G., Adler, F.~R., Anderson, B.~J.,
+  Anttila, J., Ara{\'u}jo, M.~B., Dallas, T., Dunson, D., Elith, J., Foster,
+  S.~D., Fox, R., Franklin, J., Godsoe, W., Guisan, A., O'Hara, B., Hill,
+  N.~A., Holt, R.~D., Hui, F. K.~C., Husby, M., K{\aa}l{\aa}s, J.~A.,
+  Lehikoinen, A., Luoto, M., Mod, H.~K., Newell, G., Renner, I., Roslin, T.,
+  Soininen, J., Thuiller, W., Vanhatalo, J., Warton, D., White, M., Zimmermann,
+  N.~E., Gravel, D. \& Ovaskainen, O. (2019).
+\newblock A comprehensive evaluation of predictive performance of 33 species
+  distribution models at species and community levels.
+\newblock \emph{Ecological Monographs}, 89, e01370.
+
+\bibitem[{Ovaskainen \emph{et~al.}(2017)Ovaskainen, Tikhonov, Norberg,
+  Blanchet, Duan, Dunson, Roslin \& Abrego}]{ovaskainenHowMakeMore2017}
+Ovaskainen, O., Tikhonov, G., Norberg, A., Blanchet, F.~G., Duan, L., Dunson,
+  D., Roslin, T. \& Abrego, N. (2017).
+\newblock How to make more out of community data? {{A}} conceptual framework
+  and its implementation as models and software.
+\newblock \emph{Ecology Letters}, 20, 561--576.
+
+\bibitem[{Pollock \emph{et~al.}(2012)Pollock, Morris \&
+  Vesk}]{pollockRoleFunctionalTraits2012}
+Pollock, L.~J., Morris, W.~K. \& Vesk, P.~A. (2012).
+\newblock The role of functional traits in species distributions revealed
+  through a hierarchical model.
+\newblock \emph{Ecography}, 35, 716--725.
+
+\bibitem[{Rohde(1992)}]{rohdeLatitudinalGradientsSpecies1992}
+Rohde, K. (1992).
+\newblock Latitudinal {{Gradients}} in {{Species Diversity}}: {{The Search}}
+  for the {{Primary Cause}}.
+\newblock \emph{Oikos}, 65, 514--527.
+
 \bibitem[{Scherrer \& Guisan(2019)}]{scherrerEcologicalIndicatorValues2019}
 Scherrer, D. \& Guisan, A. (2019).
 \newblock Ecological indicator values reveal missing predictors of species
   distributions.
 \newblock \emph{Scientific Reports}, 9, 1--8.
+
+\bibitem[{Stevens(1992)}]{stevensElevationalGradientAltitudinal1992}
+Stevens, G.~C. (1992).
+\newblock The {{Elevational Gradient}} in {{Altitudinal Range}}: {{An
+  Extension}} of {{Rapoport}}'s {{Latitudinal Rule}} to {{Altitude}}.
+\newblock \emph{The American Naturalist}, 140, 893--911.
 
 \bibitem[{{Tarr{\'e}s-Deulofeu} \emph{et~al.}(2019){Tarr{\'e}s-Deulofeu},
   {Godoy-Lorite}, Guimer{\`a} \&
@@ -41,11 +135,40 @@ Scherrer, D. \& Guisan, A. (2019).
   {Sales-Pardo}, M. (2019).
 \newblock Tensorial and bipartite block models for link prediction in layered
   networks and temporal networks.
-\newblock \emph{Phys. Rev. E}, 99, 032307.
+\newblock \emph{Physical Review E}, 99, 032307.
 
-\bibitem[{Team \emph{et~al.}(2019)}]{rstan}
-Team, S.~D. \emph{et~al.} (2019).
-\newblock {RStan}: the {R} interface to {Stan}.
-\newblock R package version 2.19.1.
+\bibitem[{{ter Braak} \& Looman(1986)}]{terbraakWeightedAveragingLogistic1986}
+{ter Braak}, C. J.~F. \& Looman, C. W.~N. (1986).
+\newblock Weighted averaging, logistic regression and the {{Gaussian}} response
+  model.
+\newblock \emph{Vegetatio}, 65, 3--11.
+
+\bibitem[{Thurman \emph{et~al.}(2019)Thurman, Barner, Garcia \&
+  Chestnut}]{thurmanTestingLinkSpecies2019}
+Thurman, L.~L., Barner, A.~K., Garcia, T.~S. \& Chestnut, T. (2019).
+\newblock Testing the link between species interactions and species
+  co-occurrence in a trophic network.
+\newblock \emph{Ecography}, 42, 1658--1670.
+
+\bibitem[{Warton \emph{et~al.}(2015)Warton, Blanchet, O'Hara, Ovaskainen,
+  Taskinen, Walker \& Hui}]{wartonManyVariablesJoint2015}
+Warton, D.~I., Blanchet, F.~G., O'Hara, R.~B., Ovaskainen, O., Taskinen, S.,
+  Walker, S.~C. \& Hui, F. K.~C. (2015).
+\newblock So {{Many Variables}}: {{Joint Modeling}} in {{Community Ecology}}.
+\newblock \emph{Trends in Ecology \& Evolution}, 30, 766--779.
+
+\bibitem[{Wisz \emph{et~al.}(2013)Wisz, Pottier, Kissling, Pellissier, Lenoir,
+  Damgaard, Dormann, Forchhammer, Grytnes, Guisan, Heikkinen, H{\o}ye,
+  K{\"u}hn, Luoto, Maiorano, Nilsson, Normand, {\"O}ckinger, Schmidt,
+  Termansen, Timmermann, Wardle, Aastrup \&
+  Svenning}]{wiszRoleBioticInteractions2013}
+Wisz, M.~S., Pottier, J., Kissling, W.~D., Pellissier, L., Lenoir, J.,
+  Damgaard, C.~F., Dormann, C.~F., Forchhammer, M.~C., Grytnes, J.-A., Guisan,
+  A., Heikkinen, R.~K., H{\o}ye, T.~T., K{\"u}hn, I., Luoto, M., Maiorano, L.,
+  Nilsson, M.-C., Normand, S., {\"O}ckinger, E., Schmidt, N.~M., Termansen, M.,
+  Timmermann, A., Wardle, D.~A., Aastrup, P. \& Svenning, J.-C. (2013).
+\newblock The role of biotic interactions in shaping distributions and realised
+  assemblages of species: Implications for species distribution modelling.
+\newblock \emph{Biological Reviews}, 88, 15--30.
 
 \end{thebibliography}

@@ -2,45 +2,57 @@ This is BibTeX, Version 0.99d (TeX Live 2019)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: manuscript.aux
 The style file: ecology_letters2.bst.bst
-Database file #1: references.bib
-You've used 6 entries,
+White space in argument---line 30 of file manuscript.aux
+ : \citation{rohdeLatitudinalGradientsSpecies1992,more
+ :                                                     in Rapoport}
+I'm skipping whatever remains of this command
+Database file #1: references2.bib
+Warning--I didn't find a database entry for "guisanPredictiveHabitatDistribution2000"
+Warning--I didn't find a database entry for "more"
+Warning--I didn't find a database entry for "Guisan"
+Warning--I didn't find a database entry for "pollockUnderstandingCooccurrenceModelling2014"
+Warning--I didn't find a database entry for "AASL"
+Warning--I didn't find a database entry for "austin2002spatial"
+Warning--I didn't find a database entry for "rstan"
+You've used 22 entries,
             2860 wiz_defined-function locations,
-            684 strings with 6461 characters,
-and the built_in function-call counts, 3341 in all, are:
-= -- 298
-> -- 220
-< -- 3
-+ -- 84
-- -- 78
-* -- 316
-:= -- 633
-add.period$ -- 19
-call.type$ -- 6
-change.case$ -- 55
-chr.to.int$ -- 6
-cite$ -- 6
-duplicate$ -- 125
-empty$ -- 188
-format.name$ -- 97
-if$ -- 613
+            836 strings with 12128 characters,
+and the built_in function-call counts, 13999 in all, are:
+= -- 1208
+> -- 1076
+< -- 10
++ -- 421
+- -- 387
+* -- 1407
+:= -- 2647
+add.period$ -- 67
+call.type$ -- 22
+change.case$ -- 238
+chr.to.int$ -- 22
+cite$ -- 22
+duplicate$ -- 446
+empty$ -- 691
+format.name$ -- 457
+if$ -- 2519
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 6
-newline$ -- 38
-num.names$ -- 24
-pop$ -- 54
+missing$ -- 23
+newline$ -- 118
+num.names$ -- 88
+pop$ -- 216
 preamble$ -- 1
-purify$ -- 49
+purify$ -- 217
 quote$ -- 0
-skip$ -- 74
+skip$ -- 269
 stack$ -- 0
-substring$ -- 161
-swap$ -- 25
+substring$ -- 740
+swap$ -- 92
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 51
+type$ -- 195
 warning$ -- 0
-while$ -- 25
+while$ -- 105
 width$ -- 0
-write$ -- 84
+write$ -- 293
+(There was 1 error message)
