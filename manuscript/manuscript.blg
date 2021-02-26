@@ -6,53 +6,53 @@ White space in argument---line 30 of file manuscript.aux
  : \citation{rohdeLatitudinalGradientsSpecies1992,more
  :                                                     in Rapoport}
 I'm skipping whatever remains of this command
+White space in argument---line 36 of file manuscript.aux
+ : \citation{entropy
+ :                   stuff}
+I'm skipping whatever remains of this command
 Database file #1: references2.bib
-Warning--I didn't find a database entry for "guisanPredictiveHabitatDistribution2000"
-Warning--I didn't find a database entry for "more"
 Warning--I didn't find a database entry for "Guisan"
-Warning--I didn't find a database entry for "pollockUnderstandingCooccurrenceModelling2014"
-Warning--I didn't find a database entry for "AASL"
 Warning--I didn't find a database entry for "austin2002spatial"
 Warning--I didn't find a database entry for "rstan"
-You've used 22 entries,
+You've used 35 entries,
             2860 wiz_defined-function locations,
-            836 strings with 12128 characters,
-and the built_in function-call counts, 13999 in all, are:
-= -- 1208
-> -- 1076
-< -- 10
-+ -- 421
-- -- 387
-* -- 1407
-:= -- 2647
-add.period$ -- 67
-call.type$ -- 22
-change.case$ -- 238
-chr.to.int$ -- 22
-cite$ -- 22
-duplicate$ -- 446
-empty$ -- 691
-format.name$ -- 457
-if$ -- 2519
+            918 strings with 14871 characters,
+and the built_in function-call counts, 20039 in all, are:
+= -- 1806
+> -- 1351
+< -- 21
++ -- 531
+- -- 480
+* -- 1905
+:= -- 3783
+add.period$ -- 105
+call.type$ -- 35
+change.case$ -- 335
+chr.to.int$ -- 38
+cite$ -- 35
+duplicate$ -- 696
+empty$ -- 1086
+format.name$ -- 581
+if$ -- 3660
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 23
-newline$ -- 118
-num.names$ -- 88
-pop$ -- 216
+missing$ -- 35
+newline$ -- 181
+num.names$ -- 140
+pop$ -- 300
 preamble$ -- 1
-purify$ -- 217
+purify$ -- 300
 quote$ -- 0
-skip$ -- 269
+skip$ -- 434
 stack$ -- 0
-substring$ -- 740
-swap$ -- 92
+substring$ -- 1136
+swap$ -- 132
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 195
+type$ -- 309
 warning$ -- 0
-while$ -- 105
+while$ -- 165
 width$ -- 0
-write$ -- 293
-(There was 1 error message)
+write$ -- 456
+(There were 2 error messages)

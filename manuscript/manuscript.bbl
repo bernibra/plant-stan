@@ -1,8 +1,13 @@
-\begin{thebibliography}{22}
+\begin{thebibliography}{35}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Austin(1976)}]{austinNonlinearSpeciesResponse1976}
+Austin, M. (1976).
+\newblock On non-linear species response models in ordination.
+\newblock \emph{Vegetatio}, 33, 33--41.
 
 \bibitem[{Austin(1987)}]{austinModelsAnalysisSpecies1987}
 Austin, M.~P. (1987).
@@ -10,11 +15,29 @@ Austin, M.~P. (1987).
   gradients.
 \newblock \emph{Vegetatio}, 69, 35--45.
 
+\bibitem[{Bhattarai \& Vetaas(2006)}]{bhattaraiCanRapoportRule2006}
+Bhattarai, K.~R. \& Vetaas, O.~R. (2006).
+\newblock Can {{Rapoport}}'s rule explain tree species richness along the
+  {{Himalayan}} elevation gradient, {{Nepal}}?
+\newblock \emph{Diversity and Distributions}, 12, 373--378.
+
 \bibitem[{Blanchet \emph{et~al.}(2020)Blanchet, Cazelles \&
   Gravel}]{blanchetCooccurrenceNotEvidence2020}
 Blanchet, F.~G., Cazelles, K. \& Gravel, D. (2020).
 \newblock Co-occurrence is not evidence of ecological interactions.
 \newblock \emph{Ecology Letters}, 23, 1050--1063.
+
+\bibitem[{D'Amen \emph{et~al.}(2017)D'Amen, Rahbek, Zimmermann \&
+  Guisan}]{damenSpatialPredictionsCommunity2017}
+D'Amen, M., Rahbek, C., Zimmermann, N.~E. \& Guisan, A. (2017).
+\newblock Spatial predictions at the community level: From current approaches
+  to future frameworks.
+\newblock \emph{Biological Reviews}, 92, 169--187.
+
+\bibitem[{Frank(2009)}]{frankCommonPatternsNature2009}
+Frank, S.~A. (2009).
+\newblock The {{Common Patterns}} of {{Nature}}.
+\newblock \emph{Journal of evolutionary biology}, 22, 1563--1585.
 
 \bibitem[{{Godoy-Lorite} \emph{et~al.}(2016){Godoy-Lorite}, Guimer{\`a}, Moore
   \& {Sales-Pardo}}]{godoy-loriteAccurateScalableSocial2016}
@@ -29,6 +52,11 @@ Gotelli, N.~J. \& Ulrich, W. (2010).
 \newblock The empirical {{Bayes}} approach as a tool to identify non-random
   species associations.
 \newblock \emph{Oecologia}, 162, 463--477.
+
+\bibitem[{Guisan \& Zimmermann(2000)}]{guisanPredictiveHabitatDistribution2000}
+Guisan, A. \& Zimmermann, N.~E. (2000).
+\newblock Predictive habitat distribution models in ecology.
+\newblock \emph{Ecological Modelling}, 135, 147--186.
 
 \bibitem[{Harris(2016)}]{harrisInferringSpeciesInteractions2016}
 Harris, D.~J. (2016).
@@ -54,6 +82,18 @@ Jamil, T. \& ter Braak, C. J.~F. (2013).
   species-environment relationships.
 \newblock \emph{PeerJ}, 1, e95.
 
+\bibitem[{Kaufman(1995)}]{kaufmanDiversityNewWorld1995}
+Kaufman, D.~M. (1995).
+\newblock Diversity of {{New World Mammals}}: {{Universality}} of the
+  {{Latitudinal Gradients}} of {{Species}} and {{Bauplans}}.
+\newblock \emph{Journal of Mammalogy}, 76, 322--334.
+
+\bibitem[{Krebs(1972)}]{krebsEcologyExperimentalAnalysis1972}
+Krebs, C.~J. (1972).
+\newblock \emph{Ecology: The Experimental Analysis of Distribution and
+  Abundance/by {{Charles J}}. {{Krebs}}.}
+\newblock 4th edn. {Harper \& Row}, {New York}.
+
 \bibitem[{Landolt \emph{et~al.}(2010)Landolt, B{\"a}umler, Ehrhardt, Hegg,
   Kl{\"o}tzli, L{\"a}mmler, Nobis, {Rudmann-Maurer}, Schweingruber, Theurillat,
   Urmi, Vust \& Wohlgemuth}]{landoltFloraIndicativaOkologische2010}
@@ -69,6 +109,12 @@ Landolt, E., B{\"a}umler, B., Ehrhardt, A., Hegg, O., Kl{\"o}tzli, F.,
 McCain, C.~M. \& Knight, K.~B. (2013).
 \newblock Elevational {{Rapoport}}'s rule is not pervasive on mountains.
 \newblock \emph{Global Ecology and Biogeography}, 22, 750--759.
+
+\bibitem[{Minchin(1987)}]{minchinEvaluationRelativeRobustness1987}
+Minchin, P.~R. (1987).
+\newblock An evaluation of the relative robustness of techniques for ecological
+  ordination.
+\newblock \emph{Vegetatio}, 69, 89--107.
 
 \bibitem[{Neuschulz \emph{et~al.}(2018)Neuschulz, Merges, Bollmann, Gugerli \&
   B{\"o}hning-Gaese}]{neuschulzBioticInteractionsSeed2018}
@@ -95,6 +141,14 @@ Norberg, A., Abrego, N., Blanchet, F.~G., Adler, F.~R., Anderson, B.~J.,
   distribution models at species and community levels.
 \newblock \emph{Ecological Monographs}, 89, e01370.
 
+\bibitem[{Normand \emph{et~al.}(2009)Normand, Treier, Randin, Vittoz, Guisan \&
+  Svenning}]{normandImportanceAbioticStress2009}
+Normand, S., Treier, U.~A., Randin, C., Vittoz, P., Guisan, A. \& Svenning,
+  J.-C. (2009).
+\newblock Importance of abiotic stress as a range-limit determinant for
+  {{European}} plants: Insights from species responses to climatic gradients.
+\newblock \emph{Global Ecology and Biogeography}, 18, 437--449.
+
 \bibitem[{Ovaskainen \emph{et~al.}(2017)Ovaskainen, Tikhonov, Norberg,
   Blanchet, Duan, Dunson, Roslin \& Abrego}]{ovaskainenHowMakeMore2017}
 Ovaskainen, O., Tikhonov, G., Norberg, A., Blanchet, F.~G., Duan, L., Dunson,
@@ -110,6 +164,19 @@ Pollock, L.~J., Morris, W.~K. \& Vesk, P.~A. (2012).
   through a hierarchical model.
 \newblock \emph{Ecography}, 35, 716--725.
 
+\bibitem[{Pollock \emph{et~al.}(2014)Pollock, Tingley, Morris, Golding, O'Hara,
+  Parris, Vesk \& McCarthy}]{pollockUnderstandingCooccurrenceModelling2014}
+Pollock, L.~J., Tingley, R., Morris, W.~K., Golding, N., O'Hara, R.~B., Parris,
+  K.~M., Vesk, P.~A. \& McCarthy, M.~A. (2014).
+\newblock Understanding co-occurrence by modelling species simultaneously with
+  a {{Joint Species Distribution Model}} ({{JSDM}}).
+\newblock \emph{Methods in Ecology and Evolution}, 5, 397--406.
+
+\bibitem[{Ribas \& Schoereder(2006)}]{ribasRapoportEffectWidespread2006}
+Ribas, C.~R. \& Schoereder, J.~H. (2006).
+\newblock Is the {{Rapoport}} effect widespread? {{Null}} models revisited.
+\newblock \emph{Global Ecology and Biogeography}, 15, 614--624.
+
 \bibitem[{Rohde(1992)}]{rohdeLatitudinalGradientsSpecies1992}
 Rohde, K. (1992).
 \newblock Latitudinal {{Gradients}} in {{Species Diversity}}: {{The Search}}
@@ -121,6 +188,16 @@ Scherrer, D. \& Guisan, A. (2019).
 \newblock Ecological indicator values reveal missing predictors of species
   distributions.
 \newblock \emph{Scientific Reports}, 9, 1--8.
+
+\bibitem[{{Stan Developent
+  Team}(2021)}]{standevelopentteamRStanInterfaceStan2021}
+{Stan Developent Team} (2021).
+\newblock {{RStan}}: The {{R}} interface to {{Stan}}.
+
+\bibitem[{{Stan Development
+  Team}(2021)}]{standevelopmentteamStanModelingLanguage2021}
+{Stan Development Team} (2021).
+\newblock Stan {{Modeling Language Users Guide}} and {{Reference Manual}}.
 
 \bibitem[{Stevens(1992)}]{stevensElevationalGradientAltitudinal1992}
 Stevens, G.~C. (1992).

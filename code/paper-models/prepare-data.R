@@ -34,6 +34,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         indicator <- read.table("../../data/properties/codes/temperature_indicator.csv", sep=",")
         neophytes <- read.table("../../data/properties/codes/neophytes-list.csv", sep=",")
         tendency <- read.table("../../data/properties/codes/change-tendency.csv", sep=",")
+        competitive <- read.table("../../data/properties/codes/competitive_indicator.csv", sep=",")
         
         # Check that there aren't unnexpected files
         if(!all(sort(files)==1:length(files))){
@@ -47,6 +48,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
         Tind <- c()
         NEO <- c()
         Tend <- c()
+        compet <- c()
         
         # Read observations
         for(idx in 1:length(files)){
@@ -60,6 +62,7 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              Tind <- rbind(Tind, c(kdx, new.name, as.character(indicator$nflor.T[new.name==indicator$nflor.spnames])))
              NEO <- rbind(NEO, c(kdx, new.name, neophytes$neo[new.name==neophytes$names]))
              Tend <- rbind(Tend, c(kdx, new.name, tendency$decrease[new.name==tendency$names], tendency$decrease.low[new.name==tendency$names], tendency$increase[new.name==tendency$names], tendency$other[new.name==tendency$names]))
+             compet <- rbind(compet, c(kdx, new.name, as.character(competitive$nflor.KS[new.name==competitive$nflor.spnames])))
              
              name.idx <- c(name.idx,correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name])
              ###
@@ -74,10 +77,12 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
                 write.table(Tind, "../../data/properties/codes/temperature_indicator_reindexed.csv", sep=",")
                 write.table(NEO, "../../data/properties/codes/neophytes-list_reindexed.csv", sep=",")
                 write.table(Tend, "../../data/properties/codes/change-tendency_reindexed.csv", sep=",")
+                write.table(compet, "../../data/properties/codes/competitive_reindexed.csv", sep=",")
         }else{
                 write.table(Tind, paste("../../data/properties/codes/temperature_indicator_reindexed-",as.character(min.occurrence),".csv", sep=""))
                 write.table(NEO, paste("../../data/properties/codes/neophytes-list_reindexed-",as.character(min.occurrence),".csv", sep=""))
                 write.table(Tend, paste("../../data/properties/codes/change-tendency_reindexed-",as.character(min.occurrence),".csv", sep=""))
+                write.table(compet, paste("../../data/properties/codes/competitive_reindexed-",as.character(min.occurrence),".csv", sep=""))
         }
         
         # reshape correlation matrices

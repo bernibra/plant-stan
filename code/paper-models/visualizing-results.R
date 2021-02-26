@@ -163,6 +163,7 @@ compare.models <- function(){
   #indicator values
   Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed-30.csv", sep = " ", header=T)
   Tinvasive <- read.table("../../data/properties/codes/neophytes-list_reindexed-30.csv", sep = " ", header=T)
+  competitive <- read.table("../../data/properties/codes/competitive_reindexed-30.csv", sep = " ", header=T)
   
   # extract samples
   post <- extract.samples(m1, pars=c("alpha", "beta", "gamma", "lambda"))
@@ -739,6 +740,7 @@ plot.actual.data.means.pairwise <- function(model=NULL){
   mu_alpha <- apply(post$alpha,2,mean)
   ci_alpha <- apply(post$alpha,2,PI)
   
+  parameters_post <- list(beta=post$beta, gamma=post$sigma, alpha=post$alpha, lambda=post$lambda)
   parameters_mu <- list(beta=mu_beta, gamma=mu_gamma, alpha=mu_alpha, lambda=mu_lambda)
   parameters_ci <- list(beta=ci_beta, gamma=ci_gamma, alpha=ci_alpha, lambda=ci_lambda)
 
@@ -749,6 +751,11 @@ plot.actual.data.means.pairwise <- function(model=NULL){
   k <- 1
   for(i in 1:4){
     for(j in 1:4){
+      # correlation
+      corPI <- sapply(1:dim(parameters_post[[i]])[1], function(x) cor(parameters_post[[i]][x,], parameters_post[[j]][x,]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(sort(c(as.vector(PI(corPI)),meanPI)), 2)
       ylim = c(min(parameters_mu[[i]]), max(parameters_mu[[i]]))
       xlim = c(min(parameters_mu[[j]]), max(parameters_mu[[j]]))
 
