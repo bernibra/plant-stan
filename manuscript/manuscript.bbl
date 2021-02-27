@@ -1,4 +1,4 @@
-\begin{thebibliography}{35}
+\begin{thebibliography}{37}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
@@ -105,6 +105,13 @@ Landolt, E., B{\"a}umler, B., Ehrhardt, A., Hegg, O., Kl{\"o}tzli, F.,
 \newblock {Haupt}, {Bern}.
 \newblock ISBN 978-3-258-07461-0.
 
+\bibitem[{Malmgren \emph{et~al.}(2008)Malmgren, Stouffer, Motter \&
+  Amaral}]{malmgrenPoissonianExplanationHeavy2008}
+Malmgren, R.~D., Stouffer, D.~B., Motter, A.~E. \& Amaral, L. A.~N. (2008).
+\newblock A {{Poissonian}} explanation for heavy tails in e-mail communication.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 105,
+  18153--18158.
+
 \bibitem[{McCain \& Knight(2013)}]{mccainElevationalRapoportRule2013}
 McCain, C.~M. \& Knight, K.~B. (2013).
 \newblock Elevational {{Rapoport}}'s rule is not pervasive on mountains.
@@ -157,6 +164,13 @@ Ovaskainen, O., Tikhonov, G., Norberg, A., Blanchet, F.~G., Duan, L., Dunson,
   and its implementation as models and software.
 \newblock \emph{Ecology Letters}, 20, 561--576.
 
+\bibitem[{Petrovskii \emph{et~al.}(2009)Petrovskii, Morozov, Taylor \&
+  DeAngelis}]{petrovskiiDispersalStatisticallyStructured2009}
+Petrovskii, S., Morozov, A., Taylor, A. E. P.~D. \& DeAngelis, E. D.~L. (2009).
+\newblock Dispersal in a {{Statistically Structured Population}}: {{Fat Tails
+  Revisited}}.
+\newblock \emph{The American Naturalist}, 173, 278--289.
+
 \bibitem[{Pollock \emph{et~al.}(2012)Pollock, Morris \&
   Vesk}]{pollockRoleFunctionalTraits2012}
 Pollock, L.~J., Morris, W.~K. \& Vesk, P.~A. (2012).
@@ -205,15 +219,6 @@ Stevens, G.~C. (1992).
   Extension}} of {{Rapoport}}'s {{Latitudinal Rule}} to {{Altitude}}.
 \newblock \emph{The American Naturalist}, 140, 893--911.
 
-\bibitem[{{Tarr{\'e}s-Deulofeu} \emph{et~al.}(2019){Tarr{\'e}s-Deulofeu},
-  {Godoy-Lorite}, Guimer{\`a} \&
-  {Sales-Pardo}}]{tarres-deulofeuTensorialBipartiteBlock2019}
-{Tarr{\'e}s-Deulofeu}, M., {Godoy-Lorite}, A., Guimer{\`a}, R. \&
-  {Sales-Pardo}, M. (2019).
-\newblock Tensorial and bipartite block models for link prediction in layered
-  networks and temporal networks.
-\newblock \emph{Physical Review E}, 99, 032307.
-
 \bibitem[{{ter Braak} \& Looman(1986)}]{terbraakWeightedAveragingLogistic1986}
 {ter Braak}, C. J.~F. \& Looman, C. W.~N. (1986).
 \newblock Weighted averaging, logistic regression and the {{Gaussian}} response
@@ -247,5 +252,11 @@ Wisz, M.~S., Pottier, J., Kissling, W.~D., Pellissier, L., Lenoir, J.,
 \newblock The role of biotic interactions in shaping distributions and realised
   assemblages of species: Implications for species distribution modelling.
 \newblock \emph{Biological Reviews}, 88, 15--30.
+
+\bibitem[{Wong \& Collins(2020)}]{wongEvidenceThatCoronavirus2020}
+Wong, F. \& Collins, J.~J. (2020).
+\newblock Evidence that coronavirus superspreading is fat-tailed.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 117,
+  29416--29418.
 
 \end{thebibliography}
