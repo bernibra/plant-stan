@@ -152,7 +152,7 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
 }
 
 compare.models <- function(){
-  # m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
+  m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
   # m2 <- readRDS(paste("../../results/models/min30-baseline-model-1d2.rds", sep=""))
   # comp <- rethinking::compare(m1, m2, refresh = 1)
   
@@ -425,6 +425,7 @@ plot.actual.data <- function(model=NULL){
     meanPI <- mean(corPI)
     sdPI <- sd(corPI)
     corPIci <- round(sort(c(as.vector(PI(corPI)),meanPI)), 2)
+    print(corPIci)
     
     # Generate empty list of plots
     plist = list()
@@ -513,8 +514,8 @@ plot.actual.data.alpha <- function(model=NULL){
   for(i in 1:2){
     if(i==1){
       target <- post$beta[,i,]      
-      mu_target <- mu_beta[[1]]
-      ci_target <- ci_beta[[1]]
+      mu_target <- mu_alpha[[1]]
+      ci_target <- ci_alpha[[1]]
     }else{
       target <- post$gamma[,i,]
       mu_target <- mu_gamma[[1]]
@@ -654,6 +655,20 @@ plot.actual.data.means <- function(model=NULL){
     xlab=""
     breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
     
+    if(i==1){
+      correlations <- c()
+      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,i,NEO$V3==1], post$gamma[x,1,NEO$V3==1]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(c(meanPI, sdPI), 2)
+      correlations <- rbind(correlations, c("neophytes", corPIci))
+      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,i,NEO$V3!=1], post$gamma[x,1,NEO$V3!=1]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(c(meanPI, sdPI), 2)
+      correlations <- rbind(correlations, c("native", corPIci))
+    }
+    
     p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha = alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
     # Scatter plot
     p <- p + coord_trans(x="log", clip = "off")+
@@ -677,6 +692,29 @@ plot.actual.data.means <- function(model=NULL){
     alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
     xlab=expression(gamma)
     
+    if(i==1){
+      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,i,Tend$V3==1], post$gamma[x,1,Tend$V3==1]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(c(meanPI, sdPI), 2)
+      correlations <- rbind(correlations, c("decreasing", corPIci))
+      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,i,Tend$V4==1], post$gamma[x,1,Tend$V4==1]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(c(meanPI, sdPI), 2)
+      correlations <- rbind(correlations, c("decreasing low", corPIci))
+      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,i,Tend$V5==1], post$gamma[x,1,Tend$V5==1]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(c(meanPI, sdPI), 2)
+      correlations <- rbind(correlations, c("increasing", corPIci))
+      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,i,Tend$V6==1], post$gamma[x,1,Tend$V6==1]))
+      meanPI <- mean(corPI)
+      sdPI <- sd(corPI)
+      corPIci <- round(c(meanPI, sdPI), 2)
+      correlations <- rbind(correlations, c("stable", corPIci))
+    }
+    
     p <- plot.scatter2(mu=mu_beta[[i]], variance=mu_gamma[[i]], label = labels, color=color, alpha=alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
     legend2 <- get_legend(p)
     p <- p + coord_trans(x="log", clip = "off")+
@@ -699,6 +737,23 @@ plot.actual.data.means <- function(model=NULL){
                 c(2,4,6))
 
   p <- grid.arrange(grobs=plist, ncol=3, nrow=3, heights=c(0.1,1,1), layout_matrix=hlay, widths=c(1,1,0.4)#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  
+  plist <- list()
+  plist[[1]] <- ggtexttable(correlations, rows = NULL,cols = c("", "mean", "sd"),
+                            theme = ttheme("light",  base_size = 10))
+  plist[[2]] <- ggtexttable(correlations, rows = NULL,cols = c("", "mean", "sd"),
+                            theme = ttheme("light",  base_size = 10))
+  plist[[3]] <- ggtexttable(correlations, rows = NULL,cols = c("", "mean", "sd"),
+                            theme = ttheme("light",  base_size = 10))
+  plist[[4]] <- ggtexttable(correlations, rows = NULL,cols = c("", "mean", "sd"),
+                            theme = ttheme("light",  base_size = 10))
+  
+  hlay <- rbind(c(NA,1,5),
+                c(9,2,6))
+  
+  p <- grid.arrange(grobs=plist, ncol=3, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,1,0.4)#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
   print(p)

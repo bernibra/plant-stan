@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+# source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -14,25 +14,21 @@ rstan_options(auto_write = TRUE)
 baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
   # Fixing some of the options
   variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
-  gp_type <- 2
   ndim <- 2
   pca <- T
-  
-  # File name extension
-  extension <- ""
   
   # If we are dealing with simulated data
   if(simulated){
     extension <- "1d-simulated"
+  }else{
+    extension <- "1d"
   }
-  extension <- paste(extension, as.character(gp_type), sep="")
   
   if(min.occurrence==10){
-    extension2 <- ""
+    extension2 <- "-"
   }else{
-    extension2 <- "min30-"
+    extension2 <- paste("min",min.occurrence,"-",sep="")
   }
-  
   
   # Load the data
   if(recompile){
@@ -45,7 +41,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
         variables <- paste("PC", 1:ndim, sep="")
       }
     }
-    filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+    filename <- paste("../../data/processed/jsdm/", extension, "-",paste(variables, collapse = ""), extension2, "data.rds", sep = "")
     
     if (file.exists(filename)){
       question <- askYesNo("Do you want to overwrite the file?", default = F, 
@@ -69,7 +65,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
       }
     }
     if(is.null(d)){
-      d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
+      d <- readRDS(file = paste("../../data/processed/jsdm/", extension,"-", paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
     }
   }
   
@@ -117,7 +113,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
-  
+
   # Run stan model
   mfit_5.1 <- stan ( model_code=model_code ,
                      data=dat_5.1 ,
@@ -125,32 +121,29 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
                      cores= n_chains_5.1 ,
                      warmup=1000, iter=2000,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
-  
-  
-  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "baseline-model-1d", extension,".rds", sep=""))
+
+
+  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   return(mfit_5.1)
 }
 
 skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
   # Fixing some of the options
   variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
-  gp_type <- 2
   ndim <- 2
   pca <- T
   
-  # File name extension
-  extension <- ""
-  
   # If we are dealing with simulated data
   if(simulated){
-    extension <- "skew-simulated"
+    extension <- "1d-skew-simulated"
+  }else{
+    extension <- "1d-skew"
   }
-  extension <- paste(extension, as.character(gp_type), sep="")
   
   if(min.occurrence==10){
-    extension2 <- ""
+    extension2 <- "-"
   }else{
-    extension2 <- paste("min", as.character(min.occurrence),"-",sep="")
+    extension2 <- paste("min",min.occurrence,"-",sep="")
   }
   
   
@@ -165,7 +158,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
         variables <- paste("PC", 1:ndim, sep="")
       }
     }
-    filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+    filename <- paste("../../data/processed/jsdm/", extension,"-", paste(variables, collapse = ""), extension2, "data.rds", sep = "")
     
     if (file.exists(filename)){
       question <- askYesNo("Do you want to overwrite the file?", default = F, 
@@ -189,7 +182,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
       }
     }
     if(is.null(d)){
-      d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
+      d <- readRDS(file = paste("../../data/processed/jsdm/","-", extension, "-", paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
     }
   }
   
@@ -233,12 +226,12 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   )
   
   model_code=skew.model.traits.1d
-  
+
   # Initialize data structure
   n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
-  
+
   # Run stan model
   mfit_5.1 <- stan ( model_code=model_code ,
                      data=dat_5.1 ,
@@ -246,14 +239,15 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
                      cores= n_chains_5.1 ,
                      warmup=1000, iter=2000,
                      init=init_5.1 , control = list(adapt_delta=0.95, max_treedepth = 15))
-  
-  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "skew-model-traits-1d", extension,".rds", sep=""))
+
+  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   return(mfit_5.1)
 }
 
-# d <- readRDS(file = "../../data/processed/jsdm/skew-simulated2S1S2data.rds")
-# skew.1d(d=d, simulated=T, recompile = F, min.occurrence = 10, ofolder="/cluster/scratch/bemora/plant-stan/")
-# baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+min.occurrence <- 10
+d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 
 

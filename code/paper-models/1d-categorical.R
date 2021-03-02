@@ -6,29 +6,24 @@ library(rstan)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-
 categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
   # Fixing some of the options
   variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
-  gp_type <- 2
   ndim <- 2
   pca <- T
   
-  # File name extension
-  extension <- ""
-  
   # If we are dealing with simulated data
   if(simulated){
-    extension <- "simulated-categorical"
+    extension <- "1d-simulated-categorical"
+  }else{
+    extension <- "1d-categorical"
   }
-  extension <- paste(extension, as.character(gp_type), sep="")
   
   if(min.occurrence==10){
-    extension2 <- ""
+    extension2 <- "-"
   }else{
-    extension2 <- "min30-"
+    extension2 <- paste("min",min.occurrence,"-",sep="")
   }
-  
   
   # Load the data
   if(recompile){
@@ -41,7 +36,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
         variables <- paste("PC", 1:ndim, sep="")
       }
     }
-    filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+    filename <- paste("../../data/processed/jsdm/", extension, "-",paste(variables, collapse = ""), extension2, "data.rds", sep = "")
     
     if (file.exists(filename)){
       question <- askYesNo("Do you want to overwrite the file?", default = F, 
@@ -65,7 +60,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
       }
     }
     if(is.null(d)){
-      d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
+      d <- readRDS(file = paste("../../data/processed/jsdm/", extension, "-", paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
     }
   }
   
@@ -120,7 +115,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
   n_chains_5.1 <- 15
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
-  
+
   # Run stan model
   mfit_5.1 <- stan ( model_code=model_code ,
                      data=dat_5.1 ,
@@ -128,34 +123,30 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                      cores= n_chains_5.1 ,
                      warmup=1000, iter=1600,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
-  
-  
-  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "categorical-model-1d", extension,".rds", sep=""))
+
+
+  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   return(mfit_5.1)
 }
 
 categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
   # Fixing some of the options
   variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
-  gp_type <- 2
   ndim <- 2
   pca <- T
   
-  # File name extension
-  extension <- ""
-  
   # If we are dealing with simulated data
   if(simulated){
-    extension <- "simulated-categorical"
-  }
-  extension <- paste(extension, as.character(gp_type), sep="")
-  
-  if(min.occurrence==10){
-    extension2 <- ""
+    extension <- "1d-skew-simulated-categorical"
   }else{
-    extension2 <- "min30-"
+    extension <- "1d-skew-categorical"
   }
-  
+
+  if(min.occurrence==10){
+    extension2 <- "-"
+  }else{
+    extension2 <- paste("min",min.occurrence,"-",sep="")
+  }
   
   # Load the data
   if(recompile){
@@ -168,7 +159,7 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
         variables <- paste("PC", 1:ndim, sep="")
       }
     }
-    filename <- paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = "")
+    filename <- paste("../../data/processed/jsdm/", extension, "-",paste(variables, collapse = ""), extension2, "data.rds", sep = "")
     
     if (file.exists(filename)){
       question <- askYesNo("Do you want to overwrite the file?", default = F, 
@@ -192,7 +183,7 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
       }
     }
     if(is.null(d)){
-      d <- readRDS(file = paste("../../data/processed/jsdm/", extension, paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
+      d <- readRDS(file = paste("../../data/processed/jsdm/", extension, "-",paste(variables, collapse = ""), extension2, "data.rds", sep = ""))
     }
   }
   
@@ -245,12 +236,12 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
   )
   
   model_code=categorical.model.skew.1d
-  
+
   # Initialize data structure
   n_chains_5.1 <- 15
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
-  
+
   # Run stan model
   mfit_5.1 <- stan ( model_code=model_code ,
                      data=dat_5.1 ,
@@ -258,12 +249,13 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
                      cores= n_chains_5.1 ,
                      warmup=1000, iter=1600,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
-  
-  
-  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "categorical-model-skew-1d", extension,".rds", sep=""))
+
+
+  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   return(mfit_5.1)
 }
 
-d <- readRDS(file = "../../data/processed/jsdm/2PC1PC2categorical-min30-data.rds")
-# categorical.1d(d=d, simulated=F, recompile=F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
-categorical.skew.1d(d=d, simulated=F, recompile=F, min.occurrence = 30, ofolder="/cluster/scratch/bemora/plant-stan/")
+min.occurrence <- 10
+d <- readRDS(file = paste("../../data/processed/jsdm/1d-categorical-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+categorical.1d(d=d, simulated=F, recompile=F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+categorical.skew.1d(d=d, simulated=F, recompile=F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
