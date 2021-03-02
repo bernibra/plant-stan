@@ -112,7 +112,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
   model_code=categorical.model.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 15
+  n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
 
@@ -121,7 +121,7 @@ categorical.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
                      data=dat_5.1 ,
                      chains=n_chains_5.1 ,
                      cores= n_chains_5.1 ,
-                     warmup=1000, iter=1600,
+                     warmup=1000, iter=2000,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
 
 
@@ -238,7 +238,7 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
   model_code=categorical.model.skew.1d
 
   # Initialize data structure
-  n_chains_5.1 <- 15
+  n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
 
@@ -247,7 +247,7 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
                      data=dat_5.1 ,
                      chains=n_chains_5.1 ,
                      cores= n_chains_5.1 ,
-                     warmup=1000, iter=1600,
+                     warmup=1000, iter=2000,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
 
 
@@ -256,6 +256,10 @@ categorical.skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
 }
 
 min.occurrence <- 10
-d <- readRDS(file = paste("../../data/processed/jsdm/1d-categorical-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+if(min.occurrence==10){
+  d <- readRDS(file = paste("../../data/processed/jsdm/1d-categorical-PC1PC2-data.rds", sep=""))
+}else{
+  d <- readRDS(file = paste("../../data/processed/jsdm/1d-categorical-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+}
 categorical.1d(d=d, simulated=F, recompile=F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 categorical.skew.1d(d=d, simulated=F, recompile=F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")

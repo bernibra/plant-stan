@@ -1,5 +1,5 @@
 # source("./prepare-data.R")
-source("./models.R")
+source("./models-binomial.R")
 library(rethinking)
 library(rstan)
 
@@ -82,6 +82,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   
   dat_5.1 <- list(N=N,
                   L=L,
+                  minp=1e-100,
                   Y=t(obs),
                   X1=X1,
                   Dmat_b=Dis_b,
@@ -199,6 +200,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   
   dat_5.1 <- list(N=N,
                   L=L,
+                  minp=1e-100,
                   Y=t(obs),
                   X1=X1,
                   Dmat_b=Dis_b,
@@ -245,10 +247,13 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 }
 
 min.occurrence <- 10
-d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+if(min.occurrence==10){
+  d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2-data.rds", sep=""))
+}else{
+  d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+}
 skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-
+# baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 
 # # 

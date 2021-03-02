@@ -514,8 +514,8 @@ plot.actual.data.alpha <- function(model=NULL){
   for(i in 1:2){
     if(i==1){
       target <- post$beta[,i,]      
-      mu_target <- mu_alpha[[1]]
-      ci_target <- ci_alpha[[1]]
+      mu_target <- mu_beta[[1]]
+      ci_target <- ci_beta[[1]]
     }else{
       target <- post$gamma[,i,]
       mu_target <- mu_gamma[[1]]
