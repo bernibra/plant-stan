@@ -151,6 +151,50 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   return(figure)
 }
 
+plot.simulated.data.tails <- function(beta=T, gp_type = 2){
+  # load data
+  d <- readRDS(file = paste("../../data/processed/jsdm/1d-generror-simulated-S1S2-", "data.rds", sep = ""))
+  model_r <- readRDS(paste("../../results/models/-1d-generror-simulated.rds", sep=""))
+  
+  # Extract variables from the model
+  alphas <- precis(model_r, pars = "alpha", depth=2)
+  betas <- precis(model_r, pars = "beta", depth=3)
+  sigmas <- precis(model_r, pars = "gamma", depth=3)
+  nu <- precis(model_r, pars = "nu", depth=3)
+
+  # Extract true values
+  N <- length(unique(d$dataset$id))
+  alpha_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$alpha[1])
+  nu_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$nu[1])
+  beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
+  sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
+  
+  # Build data.frames for the plots
+  d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , sd=c(rep(0,length(alpha_r)),alphas$sd))
+  d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , sd=c(rep(0,length(beta1_r)),betas[1:N,]$sd))
+  d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , sd=c(rep(0,length(sigma1_r)),sigmas[1:N,]$sd))
+  d_nu <- data.frame(N=1:N, id= c(rep("real", length(nu_r)), rep("estimated", length(nu$mean))),value=c(nu_r,nu$mean) , sd=c(rep(0,length(nu_r)),nu$sd))
+  
+  
+  # Generate plot
+  p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + 
+    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.title = element_blank())
+  leg <- get_legend(p1)
+  p1 <-  p1 + theme(legend.position = "none")
+  p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id)) + ggtitle("beta 1") + 
+    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
+  p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1") + 
+    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
+  p4 <- ggplot(d_nu, aes(x=N, y=value, group=id, color=id))  + ggtitle("nu") + 
+    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
+  
+  
+  figure <- grid.arrange(p1, p2, p3, p4,
+                         ncol = 2, nrow = 2)
+  print(figure)
+  return(figure)
+}
+
 compare.models <- function(){
   m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
   m2 <- readRDS(paste("../../results/models/min30-baseline-model-1d2.rds", sep=""))

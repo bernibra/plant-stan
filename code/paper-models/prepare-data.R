@@ -211,7 +211,7 @@ simulated.generr.data <- function(){
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
         alpha <- exp(rnorm(N, 0,1))
-        nu <- exp(rnorm(N,0,0.5))+1
+        nu <- exp(rnorm(N,-1,0.5))+1
         
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
@@ -225,7 +225,7 @@ simulated.generr.data <- function(){
         dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*abs(beta1[dataset$id] - dataset$S1)**nu)
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1, S2=dataset$S2)                
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1,nu=dataset$nu, S1=dataset$S1, S2=dataset$S2)                
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 
