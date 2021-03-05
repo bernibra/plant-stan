@@ -367,7 +367,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   return(mfit_5.1)
 }
 
-min.occurrence <- 30
+min.occurrence <- 10
 if(min.occurrence==10){
   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2-data.rds", sep=""))
 }else{

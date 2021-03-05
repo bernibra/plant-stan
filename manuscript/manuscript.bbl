@@ -1,8 +1,13 @@
-\begin{thebibliography}{37}
+\begin{thebibliography}{42}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Ashour \& {Abdel-hameed}(2010)}]{ashourApproximateSkewNormal2010}
+Ashour, S.~K. \& {Abdel-hameed}, M.~A. (2010).
+\newblock Approximate skew normal distribution.
+\newblock \emph{Journal of Advanced Research}, 1, 341--350.
 
 \bibitem[{Austin(1976)}]{austinNonlinearSpeciesResponse1976}
 Austin, M. (1976).
@@ -14,6 +19,12 @@ Austin, M.~P. (1987).
 \newblock Models for the analysis of species' response to environmental
   gradients.
 \newblock \emph{Vegetatio}, 69, 35--45.
+
+\bibitem[{Austin(2002)}]{austinSpatialPredictionSpecies2002}
+Austin, M.~P. (2002).
+\newblock Spatial prediction of species distribution: An interface between
+  ecological theory and statistical modelling.
+\newblock \emph{Ecological Modelling}, 157, 101--118.
 
 \bibitem[{Bhattarai \& Vetaas(2006)}]{bhattaraiCanRapoportRule2006}
 Bhattarai, K.~R. \& Vetaas, O.~R. (2006).
@@ -47,11 +58,11 @@ Frank, S.~A. (2009).
 \newblock \emph{Proceedings of the National Academy of Sciences}, 113,
   14207--14212.
 
-\bibitem[{Gotelli \& Ulrich(2010)}]{gotelliEmpiricalBayesApproach2010}
-Gotelli, N.~J. \& Ulrich, W. (2010).
-\newblock The empirical {{Bayes}} approach as a tool to identify non-random
-  species associations.
-\newblock \emph{Oecologia}, 162, 463--477.
+\bibitem[{Guisan \& Thuiller(2005)}]{guisanPredictingSpeciesDistribution2005}
+Guisan, A. \& Thuiller, W. (2005).
+\newblock Predicting species distribution: Offering more than simple habitat
+  models.
+\newblock \emph{Ecology Letters}, 8, 993--1009.
 
 \bibitem[{Guisan \& Zimmermann(2000)}]{guisanPredictiveHabitatDistribution2000}
 Guisan, A. \& Zimmermann, N.~E. (2000).
@@ -75,6 +86,11 @@ Ives, A.~R. \& Helmus, M.~R. (2011).
 \newblock Generalized linear mixed models for phylogenetic analyses of
   community structure.
 \newblock \emph{Ecological Monographs}, 81, 511--525.
+
+\bibitem[{Jackman(2009)}]{jackmanBayesianAnalysisSocial2009}
+Jackman, S. (2009).
+\newblock \emph{Bayesian Analysis for the Social Sciences}, vol. 846.
+\newblock {John Wiley \& Sons}.
 
 \bibitem[{Jamil \& ter Braak(2013)}]{jamilGeneralizedLinearMixed2013}
 Jamil, T. \& ter Braak, C. J.~F. (2013).
@@ -123,6 +139,11 @@ Minchin, P.~R. (1987).
   ordination.
 \newblock \emph{Vegetatio}, 69, 89--107.
 
+\bibitem[{Nadarajah(2005)}]{nadarajahGeneralizedNormalDistribution2005}
+Nadarajah, S. (2005).
+\newblock A generalized normal distribution.
+\newblock \emph{Journal of Applied Statistics}, 32, 685--694.
+
 \bibitem[{Neuschulz \emph{et~al.}(2018)Neuschulz, Merges, Bollmann, Gugerli \&
   B{\"o}hning-Gaese}]{neuschulzBioticInteractionsSeed2018}
 Neuschulz, E.~L., Merges, D., Bollmann, K., Gugerli, F. \& B{\"o}hning-Gaese,
@@ -170,6 +191,14 @@ Petrovskii, S., Morozov, A., Taylor, A. E. P.~D. \& DeAngelis, E. D.~L. (2009).
 \newblock Dispersal in a {{Statistically Structured Population}}: {{Fat Tails
   Revisited}}.
 \newblock \emph{The American Naturalist}, 173, 278--289.
+
+\bibitem[{Poggiato \emph{et~al.}(2021)Poggiato, M{\"u}nkem{\"u}ller, Bystrova,
+  Arbel, Clark \& Thuiller}]{poggiatoInterpretationsJointModeling2021}
+Poggiato, G., M{\"u}nkem{\"u}ller, T., Bystrova, D., Arbel, J., Clark, J.~S. \&
+  Thuiller, W. (2021).
+\newblock On the {{Interpretations}} of {{Joint Modeling}} in {{Community
+  Ecology}}.
+\newblock \emph{Trends in Ecology \& Evolution}.
 
 \bibitem[{Pollock \emph{et~al.}(2012)Pollock, Morris \&
   Vesk}]{pollockRoleFunctionalTraits2012}
