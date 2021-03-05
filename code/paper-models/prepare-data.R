@@ -172,6 +172,64 @@ simulated.data <- function(simulated.type="linear.corr"){
 }
 
 # Generate fake data to test the extent to which the model works
+simulated.generr.data <- function(){
+        
+        set.seed(30)
+        # Define system dimensions
+        N <- 20
+        sites <- 300
+        
+        # Environmental predictors for each site
+        e1 <- rnorm(sites)
+        e2 <- rnorm(sites)
+        
+        # uncorrelated coefficients for each species and parameters
+        sigma1 <- 0.3 # sd beta1
+        mean1 <- -1 # mean beta1
+        sigma2 <- 0.4 # sd beta2
+        mean2 <- 1.5 # mean beta2
+        rho <- 0.4 # correlation between betas
+        
+        # Coefficients for generating the variance-covariance matrix
+        nu <- 3
+        s <- 0.5
+        Dis <- (as.matrix(dist(1:N))/N)
+        
+        # coefficients for each species
+        Sigma <- nu*exp(-1/(s*s)*(Dis^2)) + diag(N)*sigma1
+        z1 <- mvrnorm(mu = rep(0, times = N), Sigma = Sigma)
+        
+        # Generate correlations
+        beta1 <- z1
+        
+        vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        
+        Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
+        sigma_beta1 <- exp(mvrnorm(mu = rep(-1, times = N), Sigma = Sigma))
+        # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
+        # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        alpha <- exp(rnorm(N, 0,1))
+        nu <- exp(rnorm(N,0,0.5))+1
+        
+        # Simulate data
+        dataset <- expand.grid(site=1:sites, id=1:N)
+        dataset$S1 <- e1[dataset$site]
+        dataset$S2 <- e2[dataset$site]
+        dataset$beta1 <- beta1[dataset$id] 
+        dataset$alpha <- alpha[dataset$id]
+        dataset$nu <- nu[dataset$id]
+        dataset$sigma_beta1 <- sigma_beta1[dataset$id]
+        
+        dataset$p <- exp(-alpha[dataset$id] - sigma_beta1[dataset$id]*abs(beta1[dataset$id] - dataset$S1)**nu)
+        
+        dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
+        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, S1=dataset$S1, S2=dataset$S2)                
+        return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
+}
+
+# Generate fake data to test the extent to which the model works
 simulated.data.categorical <- function(){
         
         # Define system dimensions
@@ -362,13 +420,15 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                                       simulated=F, simulated.type="linear.corr", min.occurrence=0){
         
         if(simulated){
-                if(!(simulated.type %in% c("skew","categorical","linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
+                if(!(simulated.type %in% c("skew", "generror", "categorical","linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
                         stop(paste("'", simulated.type, "' is not a valid 'simulated.type'", sep=""))
                 }
                 if(simulated.type=="categorical"){
                         dataset <- simulated.data.categorical()
                 }else if (simulated.type=="skew"){
                         dataset <- simulated.data.skew()
+                }else if (simulated.type=="generror"){
+                        dataset <- simulated.generr.data()
                 }else{
                         dataset <- simulated.data(simulated.type=simulated.type)
                 }

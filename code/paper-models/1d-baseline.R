@@ -149,7 +149,7 @@ generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   
   # Load the data
   if(recompile){
-    d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
+    d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="generror", min.occurrence=min.occurrence)
     # rename variables
     if(simulated){
       variables <- c("S1", "S2")
@@ -368,12 +368,13 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
 }
 
 min.occurrence <- 10
-if(min.occurrence==10){
-  d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2-data.rds", sep=""))
-}else{
-  d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
-}
-generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# if(min.occurrence==10){
+#   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2-data.rds", sep=""))
+# }else{
+#   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
+# }
+d <- readRDS("../../data/processed/jsdm/1d-generror-simulated-S1S2-data.rds")
+generror.1d(d=d, simulated=T, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
@@ -429,3 +430,9 @@ generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, of
 # lines(c(beta1-sd(y_r), beta1+sd(y_r)), c(max(y)*0.45,max(y)*0.45), col="black")
 # print(max(y))
 # 
+
+# generrskew <- function(x, a, mu, sigma, lambda, p){
+#   v <- sqrt((pi*gamma(1/p))/(pi*(1+3*lambda**2)*gamma(3/p)-(16**(1/p))*lambda*lambda*(gamma(1/2+1/p)**2)*gamma(1/p)))
+#   m <- (2**(2/p))*v*sigma*lambda*gamma(1/2+1/p)/sqrt(pi)
+#   a*exp(-(abs(x-mu+m)/(v*sigma*(1+lambda*sign(x-mu+m))))**p)
+# }

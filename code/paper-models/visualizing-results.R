@@ -832,12 +832,12 @@ plot.actual.data.means2 <- function(model=NULL){
       transformation <- "log"
     }else{
       # alphas
-      mu_gamma <- apply( post$alpha , 2 , mean )
-      ci_gamma <- apply( post$alpha , 2 , PI )
+      mu_beta <- apply( post$alpha , 2 , mean )
+      ci_beta <- apply( post$alpha , 2 , PI )
       
-      mu_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,mean))[[1]]
-      ci_beta <- lapply(1:2, function(x) apply(post$beta[,x,],2,PI))[[1]]
-      transformation <- "identity"
+      mu_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,mean))[[1]]
+      ci_gamma <- lapply(1:2, function(x) apply(post$gamma[,x,],2,PI))[[1]]
+      transformation <- "log"
       
     }
     
