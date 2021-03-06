@@ -162,6 +162,7 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   nu <- precis(model_r, pars = "nu", depth=3)
   
   post <- extract.samples(model_r, n = 1000, pars=c("nu", "beta", "gamma"))
+  post$gamma <- post$gamma
   
   nu$mean <- sapply(1:dim(post$nu)[2], function(x) mean(post$nu[,x]), USE.NAMES = F)
   nu$`5.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$nu[,x], prob = c(0.890))[1], USE.NAMES = F)

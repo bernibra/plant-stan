@@ -212,6 +212,7 @@ simulated.generr.data <- function(){
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
         alpha <- exp(rnorm(N, 0,1))
         nu <- exp(rnorm(N,-1,0.5))+1
+        sigma_beta1 <- sqrt( (sigma_beta1 * gamma(3/nu)) / gamma(1/nu))
         
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
