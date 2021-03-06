@@ -163,7 +163,7 @@ transformed parameters{
     gamma = exp(gamma);
     
     for (i in 1:L){
-       gamma[i] = sqrt(sqrt(2*gamma[i]) * tgamma(3/nu[i]) / tgamma(1/nu[i]));
+       gamma[i] = sqrt( (gamma[i] * tgamma(3/nu[i])) / tgamma(1/nu[i]));
     }
 }
 model{

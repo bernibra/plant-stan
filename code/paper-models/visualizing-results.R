@@ -56,7 +56,6 @@ plot.simulated.compare <- function(){
       alphas$`5.5%` <- sapply(1:dim(post$alpha)[2], function(x) PI(post$alpha[,x], prob = c(0.890))[1], USE.NAMES = F)
       alphas$`94.5%` <- sapply(1:dim(post$alpha)[2], function(x) PI(post$alpha[,x], prob = c(0.890))[2], USE.NAMES = F)
       
-      
     }else{
       model_r <- m2
       
@@ -161,7 +160,16 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   betas <- precis(model_r, pars = "beta", depth=3)
   sigmas <- precis(model_r, pars = "gamma", depth=3)
   nu <- precis(model_r, pars = "nu", depth=3)
-
+  
+  post <- extract.samples(model_r, n = 1000, pars=c("nu", "beta", "gamma"))
+  
+  nu$mean <- sapply(1:dim(post$nu)[2], function(x) mean(post$nu[,x]), USE.NAMES = F)
+  nu$`5.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$nu[,x], prob = c(0.890))[1], USE.NAMES = F)
+  nu$`94.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$nu[,x], prob = c(0.890))[2], USE.NAMES = F)
+  sigmas$mean <- sapply(1:dim(post$nu)[2], function(x) mean(post$sigmas[,x]), USE.NAMES = F)
+  sigmas$`5.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$sigmas[,x], prob = c(0.890))[1], USE.NAMES = F)
+  sigmas$`94.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$sigmas[,x], prob = c(0.890))[2], USE.NAMES = F)
+  
   # Extract true values
   N <- length(unique(d$dataset$id))
   alpha_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$alpha[1])
@@ -185,8 +193,8 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
     geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
   p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1") + 
     geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
-  p4 <- ggplot(d_nu, aes(x=N, y=value, group=id, color=id))  + ggtitle("nu") + 
-    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + theme(legend.position = "none")
+  p4 <- ggplot(d_nu, aes(x=N, y=value, group=id, color=id))  + ggtitle("nu") +
+    geom_pointrange(aes(ymin=value-sd, ymax=value+sd)) + theme_linedraw() + ylim(-1,4) + theme(legend.position = "none")
   
   
   figure <- grid.arrange(p1, p2, p3, p4,
