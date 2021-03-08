@@ -130,13 +130,13 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector[L] nu;
+    vector[L] znu;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
-    // real nu_bar;
+    real nu_bar;
     real<lower=0> sigma_a;
-    // real<lower=0> sigma_n;
+    real<lower=0> sigma_n;
     real<lower=0> sigma_b;
     real<lower=0> etasq_b;
     real<lower=0> rhosq_b;
@@ -153,9 +153,8 @@ transformed parameters{
     matrix[L, L] L_SIGMA_g;
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
-    // nu = exp(znu * sigma_n + nu_bar)+1;
-    nu = znu + 1;
-    
+    nu = fabs(znu * sigma_n + nu_bar)+1;
+
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
     beta = L_SIGMA_b * zbeta + beta_bar;
 
@@ -171,7 +170,7 @@ model{
     // matrix[L,N] p;
 
     sigma_a ~ exponential( 1 );
-    // sigma_n ~ exponential( 2 );
+    sigma_n ~ exponential( 2 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );
     etasq_b ~ exponential( 1 );
@@ -181,11 +180,11 @@ model{
     alpha_bar ~ normal( 0 , 1.3 );
     beta_bar ~ std_normal();
     gamma_bar ~ std_normal();
-    // nu_bar ~ std_normal();
+    nu_bar ~ std_normal();
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    znu ~ exponential( 1 );
+    znu ~ std_normal();
 
     for ( i in 1:L ){
         for( j in 1:N ){

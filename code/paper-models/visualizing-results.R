@@ -161,11 +161,10 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   sigmas <- precis(model_r, pars = "gamma", depth=3)
   nu <- precis(model_r, pars = "nu", depth=3)
 
-  post <- extract.samples(model_r, n = 1000, pars=c("znu", "gamma", "beta", "alpha", "nu_bar", "sigma_n"))
+  post <- extract.samples(model_r, n = 1000, pars=c("nu", "gamma", "beta", "alpha"))
   post$gamma <- (post$gamma**2) * gamma(1/post$nu) / gamma(3/post$nu)
-  post$nu <- post$znu*post$sigma_n+post$nu_bar
 
-  PI(exp(post$nu_bar + 0.5*post$sigma_n**2)+1)
+  # PI(exp(post$nu_bar + 0.5*post$sigma_n**2)+1)
   
   p <- 0.89
   alphas$mean <- sapply(1:dim(post$alpha)[2], function(x) mean(post$alpha[,x]), USE.NAMES = F)
@@ -192,7 +191,7 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , lower=c(alpha_r,alphas[,3]), upper=c(alpha_r,alphas[,4]))
   d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , lower=c(beta1_r,betas[,3]), upper=c(beta1_r,betas[,4]))
   d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , lower=c(sigma1_r,sigmas[,3]), upper=c(sigma1_r,sigmas[,4]))
-  d_nu <- data.frame(N=1:N, id= c(rep("real", length(nu_r)), rep("estimated", length(nu$mean))),value=c(log(nu_r-1),nu$mean) ,  lower=c(log(nu_r-1),nu[,3]), upper=c(log(nu_r-1),nu[,4]))
+  d_nu <- data.frame(N=1:N, id= c(rep("real", length(nu_r)), rep("estimated", length(nu$mean))),value=c(nu_r,nu$mean) ,  lower=c(nu_r,nu[,3]), upper=c(nu_r,nu[,4]))
   
   
   # Generate plot
