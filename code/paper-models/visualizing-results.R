@@ -161,22 +161,22 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   sigmas <- precis(model_r, pars = "gamma", depth=3)
   nu <- precis(model_r, pars = "nu", depth=3)
 
-  post <- extract.samples(model_r, n = 1000, pars=c("nu", "gamma", "beta", "alpha"))
+  post <- extract.samples(model_r, n = 1000, pars=c("nu", "gamma", "beta", "alpha", "beta_bar"))
   post$gamma <- (post$gamma**2) * gamma(1/post$nu) / gamma(3/post$nu)
 
   # PI(exp(post$nu_bar + 0.5*post$sigma_n**2)+1)
   
   p <- 0.89
-  alphas$mean <- sapply(1:dim(post$alpha)[2], function(x) mean(post$alpha[,x]), USE.NAMES = F)
+  alphas$mean <- sapply(1:dim(post$alpha)[2], function(x) median(post$alpha[,x]), USE.NAMES = F)
   alphas$`5.5%` <- sapply(1:dim(post$alpha)[2], function(x) PI(post$alpha[,x], prob = c(p))[1], USE.NAMES = F)
   alphas$`94.5%` <- sapply(1:dim(post$alpha)[2], function(x) PI(post$alpha[,x], prob = c(p))[2], USE.NAMES = F)
-  betas$mean <- sapply(1:dim(post$beta)[2], function(x) mean(post$beta[,x]), USE.NAMES = F)
+  betas$mean <- sapply(1:dim(post$beta)[2], function(x) median(post$beta[,x]), USE.NAMES = F)
   betas$`5.5%` <- sapply(1:dim(post$beta)[2], function(x) PI(post$beta[,x], prob = c(p))[1], USE.NAMES = F)
   betas$`94.5%` <- sapply(1:dim(post$beta)[2], function(x) PI(post$beta[,x], prob = c(p))[2], USE.NAMES = F)
-  sigmas$mean <- sapply(1:dim(post$gamma)[2], function(x) mean(post$gamma[,x]), USE.NAMES = F)
+  sigmas$mean <- sapply(1:dim(post$gamma)[2], function(x) median(post$gamma[,x]), USE.NAMES = F)
   sigmas$`5.5%` <- sapply(1:dim(post$gamma)[2], function(x) PI(post$gamma[,x], prob = c(p))[1], USE.NAMES = F)
   sigmas$`94.5%` <- sapply(1:dim(post$gamma)[2], function(x) PI(post$gamma[,x], prob = c(p))[2], USE.NAMES = F)
-  nu$mean <- sapply(1:dim(post$nu)[2], function(x) mean(post$nu[,x]), USE.NAMES = F)
+  nu$mean <- sapply(1:dim(post$nu)[2], function(x) median(post$nu[,x]), USE.NAMES = F)
   nu$`5.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$nu[,x], prob = c(p))[1], USE.NAMES = F)
   nu$`94.5%` <- sapply(1:dim(post$nu)[2], function(x) PI(post$nu[,x], prob = c(p))[2], USE.NAMES = F)
   

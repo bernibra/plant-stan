@@ -501,7 +501,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_g;
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
-    nu = exp(znu * sigma_n + nu_bar)+1;
+    nu = fabs(znu * sigma_n + nu_bar)+1;
     lambda = inv_logit(zlambda*sigma_l + lambda_bar)*2-1;
 
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
@@ -512,8 +512,8 @@ transformed parameters{
     gamma = exp(gamma);
     
     for (i in 1:L){
-       gamma[i] = sqrt((pi()*(1+3*lambda[i]*lambda[i])*tgamma(3/nu[i])-pow(16,(1/nu[i]))*lambda[i]*lambda[i]*tgamma(0.5+1/nu[i])*tgamma(0.5+1/nu[i])*tgamma(1/nu[i]))/(pi()*tgamma(1/nu[i])));
-       beta[i] = pow(2, 2/nu[i])*lambda[i]*tgamma(0.5+1/nu[i])/sqrt(pi()*gamma[i]);
+       gamma[i] = gamma[i] * sqrt((pi()*(1+3*pow(lambda[i],2))*tgamma(3.0/nu[i])-pow(16,(1.0/nu[i]))*pow(lambda[i],2)*tgamma(0.5+1.0/nu[i])*tgamma(0.5+1.0/nu[i])*tgamma(1.0/nu[i]))/(pi()*tgamma(1.0/nu[i])));
+       beta[i] = beta[i] - pow(2, 2.0/nu[i])*lambda[i]*tgamma(0.5+1.0/nu[i])/(sqrt(pi())*gamma[i]);
     }
 }
 model{
@@ -544,7 +544,6 @@ model{
            Y[i, j] ~ binomial(1, exp(-alpha[i] - pow(gamma[i] * fabs(X1[j] - beta[i])/(1+lambda[i]*sgn(X1[j] - beta[i])), nu[i])) + minp);
         }
     }
-    // Y ~ binomial(1, to_vector(p));
 }
 generated quantities{
     vector[L*N] log_lik;
