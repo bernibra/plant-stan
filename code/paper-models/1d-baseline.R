@@ -109,7 +109,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   model_code=base.model.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 3
+  n_chains_5.1 <- 5
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
 
@@ -227,7 +227,7 @@ generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   model_code=base.model.generror.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 3
+  n_chains_5.1 <- 5
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
   
@@ -347,7 +347,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   model_code=skew.model.traits.1d
 
   # Initialize data structure
-  n_chains_5.1 <- 3
+  n_chains_5.1 <- 5
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
 
@@ -467,7 +467,7 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
   model_code=base.model.skew.generror.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 3
+  n_chains_5.1 <- 5
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
   
@@ -485,17 +485,25 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
 }
 
 
-min.occurrence <- 10
+min.occurrence <- 20
 # if(min.occurrence==10){
 #   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2-data.rds", sep=""))
 # }else{
 #   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
 # }
-d <- readRDS("../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-data.rds")
-skew.generror.1d(d=d, simulated=T, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-# skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
+skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
+
+
+
+
+####################################### OTHER STUFF ###############################################
+####################################### OTHER STUFF ###############################################
+####################################### OTHER STUFF ###############################################
 
 # # 
 # expose_stan_functions(mod)

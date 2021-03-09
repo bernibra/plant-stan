@@ -459,7 +459,7 @@ visua <- function(dataset){
         n <- length(id)
         qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
         col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-        for(i in 1:3){
+        for(i in 1:n){
                 j <- id[i]
                 dat <- dataset[dataset$id==j,]
                 index <- sort(dat$S1, index.return=T)
