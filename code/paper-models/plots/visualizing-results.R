@@ -27,11 +27,11 @@ transform.skew <- function(post){
 }
 
 plot.simulated.compare <- function(){
-  m1 <- readRDS(paste("../../results/models/skew-model-traits-1dskew-simulated2.rds", sep=""))
-  m2 <- readRDS(paste("../../results/models/baseline-model-1d1d-simulated2.rds", sep=""))
+  m1 <- readRDS(paste("../../../results/models/skew-model-traits-1dskew-simulated2.rds", sep=""))
+  m2 <- readRDS(paste("../../../results/models/baseline-model-1d1d-simulated2.rds", sep=""))
   rethinking::compare(m1, m2)
   
-  d <- readRDS(file = paste("../../data/processed/jsdm/skew-simulated2S1S2", "data.rds", sep = ""))
+  d <- readRDS(file = paste("../../../data/processed/jsdm/skew-simulated2S1S2", "data.rds", sep = ""))
 
   for (i in 1:2){
     if (i==1){
@@ -105,8 +105,8 @@ plot.simulated.compare <- function(){
 
 plot.simulated.data <- function(beta=T, gp_type = 2){
   # load data
-  d <- readRDS(file = paste("../../data/processed/jsdm/skew-simulated-workingexample-S1S2", "data.rds", sep = ""))
-  model_r <- readRDS(paste("../../results/models/skew-workingexample-simulated.rds", sep=""))
+  d <- readRDS(file = paste("../../../data/processed/jsdm/skew-simulated-workingexample-S1S2", "data.rds", sep = ""))
+  model_r <- readRDS(paste("../../../results/models/skew-workingexample-simulated.rds", sep=""))
 
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)
@@ -152,8 +152,8 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
 
 plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   # load data
-  d <- readRDS(file = paste("../../data/processed/jsdm/1d-generror-simulated-S1S2-", "data.rds", sep = ""))
-  model_r <- readRDS(paste("../../results/models/-1d-generror-simulated.rds", sep=""))
+  d <- readRDS(file = paste("../../../data/processed/jsdm/1d-generror-simulated-S1S2-", "data.rds", sep = ""))
+  model_r <- readRDS(paste("../../../results/models/-1d-generror-simulated.rds", sep=""))
   
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)
@@ -214,8 +214,8 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
 
 plot.simulated.data.tails.skew <- function(beta=T, gp_type = 2){
   # load data
-  d <- readRDS(file = paste("../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-", "data.rds", sep = ""))
-  model_r <- readRDS(paste("../../results/models/-1d-skew-generror-simulated.rds", sep=""))
+  d <- readRDS(file = paste("../../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-", "data.rds", sep = ""))
+  model_r <- readRDS(paste("../../../results/models/-1d-skew-generror-simulated.rds", sep=""))
   
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)
@@ -281,9 +281,9 @@ plot.simulated.data.tails.skew <- function(beta=T, gp_type = 2){
 }
 
 compare.models <- function(){
-  m1 <- readRDS(paste("../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
-  m2 <- readRDS(paste("../../results/models/min30-baseline-model-1d2.rds", sep=""))
-  m3 <- readRDS(paste("../../results/models/min30-1d-generror.rds", sep=""))
+  m1 <- readRDS(paste("../../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
+  m2 <- readRDS(paste("../../../results/models/min30-baseline-model-1d2.rds", sep=""))
+  m3 <- readRDS(paste("../../../results/models/min30-1d-generror.rds", sep=""))
   comp <- rethinking::compare(m1, m2, m3, refresh = 1)
   
   # Parameters for plots
@@ -291,9 +291,9 @@ compare.models <- function(){
   colo <- c("#1b9e77", "#d95f02", "#7570b3")
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed-30.csv", sep = " ", header=T)
-  Tinvasive <- read.table("../../data/properties/codes/neophytes-list_reindexed-30.csv", sep = " ", header=T)
-  competitive <- read.table("../../data/properties/codes/competitive_reindexed-30.csv", sep = " ", header=T)
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed-30.csv", sep = " ", header=T)
+  Tinvasive <- read.table("../../../data/properties/codes/neophytes-list_reindexed-30.csv", sep = " ", header=T)
+  competitive <- read.table("../../../data/properties/codes/competitive_reindexed-30.csv", sep = " ", header=T)
   
   # extract samples
   post <- extract.samples(m1, pars=c("alpha", "beta", "gamma", "lambda"))
@@ -558,11 +558,11 @@ plot.actual.data <- function(model=NULL){
 
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/baseline-model.rds")
+    model <- readRDS("../../../results/models/baseline-model.rds")
   }
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -651,11 +651,11 @@ plot.actual.data.alpha <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/baseline-model.rds")
+    model <- readRDS("../../../results/models/baseline-model.rds")
   }
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -757,13 +757,13 @@ plot.actual.data.means <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/baseline-model.rds")
+    model <- readRDS("../../../results/models/baseline-model.rds")
   }
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
-  Tend <- read.table("../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
-  NEO <- read.table("../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
+  NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -933,13 +933,13 @@ plot.actual.data.means2 <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/baseline-model.rds")
+    model <- readRDS("../../../results/models/baseline-model.rds")
   }
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
-  Tend <- read.table("../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
-  NEO <- read.table("../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
+  NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -1109,13 +1109,13 @@ plot.actual.data.means.pairwise <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/min30-skew-model-traits-1d2.rds")
+    model <- readRDS("../../../results/models/min30-skew-model-traits-1d2.rds")
   }
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
-  Tend <- read.table("../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
-  NEO <- read.table("../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed.csv", sep = ",")
+  NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta", "lambda")) 
@@ -1244,11 +1244,11 @@ plot.actual.data.distribution <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
+    model <- readRDS("../../../results/models/binomial-stan-gauss-RBFs-traits2.rds")
   }
   
   #indicator values
-  Tind <- read.table("../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed.csv", sep = ",")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -1373,7 +1373,7 @@ plot.distributions.gp <- function(model=NULL){
 
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../results/models/binomial-stan-gauss-RBFs2.rds")
+    model <- readRDS("../../../results/models/binomial-stan-gauss-RBFs2.rds")
   }
   
   # extract samples
@@ -1431,12 +1431,12 @@ plot.distributions.gp <- function(model=NULL){
 }
 
 generate.association.matrix <- function(){
-  comm <- readRDS("../../data/properties/communities/communities.rds")
-  dsp <- readRDS("../../data/properties/communities/dictionary.rds")
-  dictionary <- read.table("../../data/properties/codes/dictionary.csv", sep=",", header = T)
+  comm <- readRDS("../../../data/properties/communities/communities.rds")
+  dsp <- readRDS("../../../data/properties/communities/dictionary.rds")
+  dictionary <- read.table("../../../data/properties/codes/dictionary.csv", sep=",", header = T)
   
   # load data
-  # d <- readRDS(file = paste("../../data/processed/jsdm/PC1PC2data_backup", ".rds", sep = ""))
+  # d <- readRDS(file = paste("../../../data/processed/jsdm/PC1PC2data_backup", ".rds", sep = ""))
   
   # Find dimensions
   L <- length(unique(d$dataset$id))
