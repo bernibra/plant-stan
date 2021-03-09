@@ -520,7 +520,7 @@ model{
     // matrix[L,N] p;
 
     sigma_a ~ exponential( 1 );
-    sigma_n ~ exponential( 2 );
+    sigma_n ~ exponential( 1 );
     sigma_l ~ exponential( 1 );
     sigma_b ~ exponential( 1 );
     sigma_g ~ exponential( 1 );

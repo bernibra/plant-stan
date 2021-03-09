@@ -289,7 +289,7 @@ simulated.skew.generr.data <- function(){
         dataset$p <- exp(-alpha[dataset$id] - (sigma_beta1[dataset$id]*abs(dataset$S1-beta1[dataset$id])/(1+lambda[dataset$id]*sign(dataset$S1-beta1[dataset$id])))**nu[dataset$id])
         
         dataset$obs <- rbinom(n = length(dataset$S1), size = 1, prob = dataset$p)
-        dataset <- data.frame(id=dataset$id, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, nu=dataset$nu, lambda=dataset$lambda, S1=dataset$S1, S2=dataset$S2, p=dataset$p)                
+        dataset <- data.frame(id=dataset$id, p=dataset$p, obs=dataset$obs, alpha=dataset$alpha, beta1=dataset$beta1, sigma_beta1=dataset$sigma_beta1, nu=dataset$nu, lambda=dataset$lambda, S1=dataset$S1, S2=dataset$S2)                
         return(list(dataset=dataset, corr=Dis, corr2=Dis_sigma, corr3=Dis))
 }
 
@@ -459,7 +459,7 @@ visua <- function(dataset){
         n <- length(id)
         qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
         col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
-        for(i in 1:n){
+        for(i in 1:3){
                 j <- id[i]
                 dat <- dataset[dataset$id==j,]
                 index <- sort(dat$S1, index.return=T)
@@ -473,8 +473,6 @@ visua <- function(dataset){
         hist(unique(dataset$beta_hat))
         hist(unique(dataset$sigma_beta1))
         hist(unique(dataset$alpha))
-        
-        
 }
 
 ####
