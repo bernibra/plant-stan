@@ -360,7 +360,7 @@ parameters{
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
-    vector<lower=-10, upper=10>[L] zlambda;
+    vector<lower=-10, upper=10>[L] lambda;
     real alpha_bar;
     real beta_bar;
     real gamma_bar;
@@ -378,12 +378,12 @@ transformed parameters{
     vector[L] alpha;
     vector[L] beta;
     vector[L] gamma;
-    vector[L] lambda;
+    //vector[L] lambda;
     real delta;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
     
-    lambda = zlambda * sigma_l + lambda_bar;
+    //lambda = zlambda * sigma_l + lambda_bar;
     
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -418,7 +418,7 @@ model{
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    zlambda ~ std_normal();
+    lambda ~ normal( lambda_bar , sigma_l );
 
     for ( i in 1:L ){
         Y[i] ~ binomial(1, exp(- alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) .* (1.0 + erf((lambda[i] * (X1 - beta[i])) * sqrt(gamma[i]) )) + minp);

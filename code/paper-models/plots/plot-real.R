@@ -270,7 +270,7 @@ plot.actual.data <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../../results/models/baseline-model.rds")
+    model <- readRDS("../../../results/models-old/baseline-model.rds")
   }
   
   #indicator values
@@ -278,7 +278,8 @@ plot.actual.data <- function(model=NULL){
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
-  post$beta <- post$beta*(-1)
+  # post$beta <- post$beta*(-1)
+  # post$gamma <- 1/(post$gamma*2)
   
   # alphas
   mu_alpha <- apply( post$alpha , 2 , mean )
@@ -307,7 +308,7 @@ plot.actual.data <- function(model=NULL){
     Tind_ <- as.numeric(as.character(Tind[idx,3]))
     Tind_ <- Tind_[!(is.na(Tind_))]
     Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
-    Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+    Tind_ <- c("high elevation", "low elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
     
     ylim = c(min(ci_beta[[i]]), max(ci_beta[[i]]))
     xlim = c(-1, length(mu_beta[[i]])+1)
@@ -469,7 +470,7 @@ plot.actual.data.means <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../../results/models/baseline-model.rds")
+    model <- readRDS("../../../results/models-old/baseline-model.rds")
   }
   
   #indicator values

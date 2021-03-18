@@ -109,7 +109,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   model_code=base.model.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 5
+  n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
 
@@ -227,7 +227,7 @@ generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   model_code=base.model.generror.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 5
+  n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
   
@@ -326,7 +326,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   
   # Set starting values for the parameters
   start_5.1 <- list(
-    zlambda = rep(0, dat_5.1$L),
+    lambda = rep(0, dat_5.1$L),
     zalpha = rep(0, dat_5.1$L),
     zbeta = rep(0, dat_5.1$L),
     zgamma = rep(0, dat_5.1$L),
@@ -347,7 +347,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   model_code=skew.model.traits.1d
 
   # Initialize data structure
-  n_chains_5.1 <- 5
+  n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
 
@@ -467,7 +467,7 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
   model_code=base.model.skew.generror.1d
   
   # Initialize data structure
-  n_chains_5.1 <- 5
+  n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
   

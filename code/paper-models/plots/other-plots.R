@@ -114,4 +114,84 @@ prior_p <- function(N=2, sd_=1){
   print(p)
 }
 
+distribution.type <- function(){
+  x <- seq(-5, 5, length.out = 2000)
+  generrskew <- function(x, a, mu, sigma, lambda, p){
+    v <- sqrt((pi*gamma(1/p))/(pi*(1+3*lambda**2)*gamma(3/p)-(16**(1/p))*lambda*lambda*(gamma(1/2+1/p)**2)*gamma(1/p)))
+    m <- (2**(2/p))*v*sigma*lambda*gamma(1/2+1/p)/sqrt(pi)
+    return((p*sigma/(2*v*gamma(1/p)))*exp(-(sigma*abs(x-mu+m)/(v*(1+lambda*sign(x-mu+m))))**p))
+  }
+  
+  plist <- list()
+  
+  for(i in 1:4){
+    if(i==1){
+      a <- rep(0,3)
+      mu <- rep(0,3)
+      sigma <- c(1,0.6,1.5)
+      lambda <- rep(0,3)
+      nu <- rep(2,3)
+      title <- "(a)  normal"
+      labs <- c(expression(gamma==1), expression(gamma<1), expression(gamma>1))
+    }else if (i==2){
+      a <- rep(0,3)
+      mu <- rep(0,3)
+      sigma <- c(1,1,1)
+      lambda <- rep(0,3)
+      nu <- c(2,1.2,9)
+      labs <- c(expression(nu==2), expression(nu<2), expression(nu>2))
+      title <- "(b)  heavy-tails"
+    }else if (i==3){
+      a <- rep(0,3)
+      mu <- rep(0,3)
+      sigma <- c(1,1,1)
+      lambda <- c(0,-0.5, 0.5)
+      nu <- rep(2,3)
+      labs <- c(expression(lambda==0), expression(lambda<0), expression(lambda>0))
+      title <- "(c)  skewed"
+    }else{
+      a <- rep(0,3)
+      mu <- rep(0,3)
+      sigma <- c(1,1, 1)
+      lambda <- c(0, -0.75, 0.75)
+      nu <- c(2,1.2,9)
+      title <- "(d)  heavy-tail and skewed"
+      labs <- c(expression(list(lambda==0, nu==2)), expression(list(lambda<0, nu<2)), expression(list(lambda>0, nu>2)))
+      
+    }
+    dat <- data.frame(x=x, y=generrskew(x, a[1], mu[1], sigma[1], lambda[1], nu[1]), color=rep(1, length(x)))
+    for (j in 2:length(a)){
+      dat <- rbind(dat, data.frame(x=x, y=generrskew(x, a[j], mu[j], sigma[j], lambda[j], nu[j]), color=rep(j, length(x))))
+    }
+    plist[[i]] <- ggplot() +
+      geom_line(data = dat[dat$color==2,], aes(x=x, y=y,colour="2"), size=0.7, alpha=0.8)+
+      geom_line(data = dat[dat$color==3,], aes(x=x, y=y,colour="3"), size=0.7, alpha=0.8)+
+      geom_line(data = dat[dat$color==1,], aes(x=x, y=y,colour="1"), size=0.7, alpha=0.8)+
+      theme_bw() +
+      scale_color_manual(labels = labs, values=c("#7570b3", "#d95f02", "#1b9e77"))+
+      ggtitle(title)+
+      # scale_fill_grey() +
+      ylab(" ")+
+      xlab("elevation")+
+      scale_x_continuous(limits = c(-4, 4))+
+      theme(text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.text = element_text(colour = "black"),
+            legend.title = element_blank(),
+            legend.spacing.x = unit(3, "pt"),
+            legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
+            # legend.position="none",
+            legend.position=c(0.3,.85),
+            legend.background = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+            plot.title = element_text(size=10))
+  }
+
+  p <- grid.arrange(grobs=plist, ncol=4, nrow=1#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  
+}
+
 
