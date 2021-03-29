@@ -463,42 +463,43 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
     etasq_g = 0.1,
     rhosq_g = 0.1
   )
-  
-  model_code=base.model.skew.generror.1d
-  
+
   # Initialize data structure
   n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
+
+  # model_code=base.model.skew.generror.1d
+  # 
+  # # Run stan model
+  # mfit_5.1 <- stan ( model_code=model_code ,
+  #                    data=dat_5.1 ,
+  #                    chains=n_chains_5.1 ,
+  #                    cores= n_chains_5.1 ,
+  #                    warmup=1000, iter=2000,
+  #                    init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+  # 
+  # saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   
-  # Run stan model
-  mfit_5.1 <- stan ( model_code=model_code ,
-                     data=dat_5.1 ,
-                     chains=n_chains_5.1 ,
-                     cores= n_chains_5.1 ,
-                     warmup=1000, iter=2000,
-                     init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+  dat_5.1 <- list(N=N,
+                  L=L,
+                  minp=1e-100,
+                  Y=t(obs),
+                  indices=1:L,
+                  X1=X1,
+                  Dmat_b=Dis_b,
+                  Dmat_g=Dis_g
+  )
+  model_code = base.model.skew.generror.1d.multithread
+  generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
+  mfit_5.1 <- generror1d$sample(data = dat_5.1,
+                                init = init_5.1,
+                                chains = 3,
+                                threads_per_chain = 10,
+                                parallel_chains = 3,
+                                refresh = 1000)
+  mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   
-  # dat_5.1 <- list(N=N,
-  #                 L=L,
-  #                 minp=1e-100,
-  #                 Y=t(obs),
-  #                 indices=1:L,
-  #                 X1=X1,
-  #                 Dmat_b=Dis_b,
-  #                 Dmat_g=Dis_g
-  # )
-  # model_code = base.model.skew.generror.1d.multithread
-  # generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
-  # mfit_5.1 <- generror1d$sample(data = dat_5.1,
-  #                               init = init_5.1,
-  #                               chains = 4,
-  #                               threads_per_chain = 10,
-  #                               parallel_chains = 4,
-  #                               refresh = 1000)
-  # mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,".rds", sep=""))
-  
-  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   return(mfit_5.1)
 }
 
