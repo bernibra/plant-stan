@@ -500,6 +500,7 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
                                 parallel_chains = 3,
                                 refresh = 500)
   mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,".rds", sep=""))
+  saveRDS(rstan::read_stan_csv(model_r$output_files()), file = paste(ofolder, extension2, "", extension,"stanfit.rds", sep=""))
   
   return(mfit_5.1)
 }
