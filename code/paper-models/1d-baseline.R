@@ -479,6 +479,24 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
                      warmup=1000, iter=2000,
                      init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
   
+  # dat_5.1 <- list(N=N,
+  #                 L=L,
+  #                 minp=1e-100,
+  #                 Y=t(obs),
+  #                 indices=1:L,
+  #                 X1=X1,
+  #                 Dmat_b=Dis_b,
+  #                 Dmat_g=Dis_g
+  # )
+  # model_code = base.model.skew.generror.1d.multithread
+  # generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
+  # mfit_5.1 <- generror1d$sample(data = dat_5.1,
+  #                               init = init_5.1,
+  #                               chains = 4,
+  #                               threads_per_chain = 10,
+  #                               parallel_chains = 4,
+  #                               refresh = 1000)
+  # mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   
   saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   return(mfit_5.1)
