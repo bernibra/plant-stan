@@ -2,6 +2,7 @@
 source("./models-binomial.R")
 library(rethinking)
 library(rstan)
+library(cmdstanr)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
