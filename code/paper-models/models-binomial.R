@@ -684,12 +684,19 @@ model{
 }
 generated quantities{
     vector[L*N] log_lik;
+    vector[L] betam;
+    vector[L] gammav;
     int k;
+    
+    for (i in 1:L){
+        gammav[i] = gamma[i] * sqrt((pi()*(1+3*pow(lambda[i],2))*tgamma(3.0/nu[i])-pow(16,(1.0/nu[i]))*pow(lambda[i],2)*tgamma(0.5+1.0/nu[i])*tgamma(0.5+1.0/nu[i])*tgamma(1.0/nu[i]))/(pi()*tgamma(1.0/nu[i])));
+        betam[i] = beta[i] - pow(2, 2.0/nu[i])*lambda[i]*tgamma(0.5+1.0/nu[i])/(sqrt(pi())*gammav[i]);
+    }
     
     k = 1;
     for ( i in 1:L ){
         for (j in 1:N){
-           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - pow(gamma[i] * fabs(X1[j] - beta[i])/(1+lambda[i]*sgn(X1[j] - beta[i])), nu[i])) + minp);
+           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - pow(gammav[i] * fabs(X1[j] - betam[i])/(1+lambda[i]*sgn(X1[j] - betam[i])), nu[i])) + minp);
            k = k + 1;
         }
     }

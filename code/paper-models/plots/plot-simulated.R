@@ -212,11 +212,17 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   return(figure)
 }
 
+transform.skew.generror <- function(post){
+  post$gamma <- post$gamma * sqrt((pi*(1+3*post$lambda*post$lambda)*gamma(3/post$nu)-(16**(1/post$nu))*post$lambda*post$lambda*gamma(0.5+1/post$nu)*gamma(0.5+1/post$nu)*gamma(1/post$nu))/(pi*gamma(1/post$nu)))
+  post$beta <- post$beta - 2**(2.0/post$nu)*post$lambda*gamma(0.5+1.0/post$nu)/(sqrt(pi)*post$gamma)
+  return(post)
+}
+
 plot.simulated.data.tails.skew <- function(beta=T, gp_type = 2){
   # load data
   d <- readRDS(file = paste("../../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-", "data.rds", sep = ""))
-  model_r <- readRDS(paste("../../../results/models/-1d-skew-generror-simulated.rds", sep=""))
-  
+  model_r <- readRDS(paste("../../../results/models/skew-generror-simulated.rds", sep=""))
+
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)
   betas <- precis(model_r, pars = "beta", depth=3)
@@ -225,7 +231,7 @@ plot.simulated.data.tails.skew <- function(beta=T, gp_type = 2){
   lambda <- precis(model_r, pars = "lambda", depth=3)
   
   post <- extract.samples(model_r, n = 1000, pars=c("nu", "gamma", "beta", "alpha", "lambda"))
-  
+  post <- transform.skew.generror(post)
   # PI(exp(post$nu_bar + 0.5*post$sigma_n**2)+1)
   
   p <- 0.89

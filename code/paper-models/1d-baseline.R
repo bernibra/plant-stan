@@ -496,11 +496,13 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
   mfit_5.1 <- generror1d$sample(data = dat_5.1,
                                 init = init_5.1,
                                 chains = 3,
-                                threads_per_chain = 10,
+                                threads_per_chain = 15,
                                 parallel_chains = 3,
+                                max_treedepth = 15,
+                                adapt_delta = 0.95,
                                 refresh = 500)
   mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,"-cdmstan.rds", sep=""))
-  saveRDS(rstan::read_stan_csv(model_r$output_files()), file = paste(ofolder, extension2, "", extension,".rds", sep=""))
+  saveRDS(rstan::read_stan_csv(mfit_5.1$output_files()), file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   
   return(mfit_5.1)
 }
@@ -512,8 +514,7 @@ min.occurrence <- 20
 # }else{
 #   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
 # }
-# d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
-d <- readRDS("../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-data.rds")
+d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
