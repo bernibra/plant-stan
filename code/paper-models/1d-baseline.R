@@ -549,77 +549,12 @@ min.occurrence <- 20
 #   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
 # }
 # d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
-# d <- readRDS("../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-data.rds")
-# d <- readRDS("../../data/processed/jsdm/1d-skew-simulated-S1S2min20-data.rds")
-d <- readRDS("../../data/processed/jsdm/1d-generror-simulated-S1S2min20-data.rds")
+# d <- readRDS("../../data/processed/jsdm/skew-generror-simulated-data.rds")
+d <- readRDS("../../data/processed/jsdm/skew-simulated-data.rds")
+# d <- readRDS("../../data/processed/jsdm/generror-simulated-data.rds")
 
 # skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-# skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
-
-
-
-
-####################################### OTHER STUFF ###############################################
-####################################### OTHER STUFF ###############################################
-####################################### OTHER STUFF ###############################################
-
-# # 
-# expose_stan_functions(mod)
-# # 
-# # skew.1d(d=NULL, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
-# #
-# #
-# skn <- function(x, alpha, sigma, beta, lambda){
-# 
-# 
-#         delta <- lambda/sqrt(1+lambda**2)
-#         # skewness <- 0.5*(4-pi)*(delta*sqrt(2/pi))**3/(1-2*delta**2/pi)**(3/2)
-#         mu_z <- sqrt(2/pi)*delta
-#         # sigma_z <- sqrt(1-mu_z**2)
-#         # mode_x <- beta + 1/sqrt(2*sigma)*(mu_z- skewness*sigma_z*0.5-0.5*sign(lambda)*exp(-2*pi/abs(lambda)))
-#         # maxy_ <- dsn(mode_x, xi=beta, omega=sqrt(1/(2*sigma)), alpha=lambda)
-# 
-#         maxy = 0.5 * ( 4 - pi ) * (delta * sqrt(2/pi))**3 / (1 - 2 * delta**2 / pi )**(3 / 2.0);
-# 
-#         maxy = beta + 1 / sqrt( 2 * sigma) * (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))
-#         # print(c(maxy, 1 / sqrt( 2 * sigma), mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5,
-#         #                                      0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ),
-#         #         (mu_z - maxy * sqrt(1 - mu_z**2 ) * 0.5 - 0.5 * sign(lambda) * exp(- 2 * pi / abs(lambda) ))))
-# 
-#         maxy = exp(- sigma * (maxy - beta)**2) * (1 + pracma::erf((lambda * (maxy - beta)) * sqrt(sigma) ))
-#         # print(c(maxy,findmax(delta, beta, sigma, lambda)))
-#         y <- exp(-log(findmax(delta, beta, sigma, lambda)) - alpha - sigma * (beta - x)**2) * (1 + pracma::erf(lambda * (x-beta) * sqrt(sigma)))
-#         # y <- exp(-alpha - sigma * (beta - x)**2) / (1 + lambda * (x-beta) * sqrt(2) * sqrt(sigma))
-#         y
-# }
-# 
-# 
-# x <- seq(-5, 5, length.out = 2000)
-# alpha=0
-# lambda=10
-# sigma_beta1=6
-# beta1=1
-# lambda_hat <- lambda/sqrt(1+lambda**2)
-# sigma_hat <- sigma_beta1 * (1 - (2*(lambda_hat**2))/pi)
-# beta_hat <- beta1 - sqrt(1/(2*sigma_hat)) * lambda_hat * sqrt(2/pi)
-# alpha_hat <- log(findmax(lambda_hat, beta_hat, sigma_hat, lambda))+exp(alpha)
-# 
-# y <- skn(x, alpha=alpha, beta=beta_hat, sigma=sigma_hat, lambda=lambda)
-# y_r <- rsn(n=6000, xi=beta_hat, omega=sqrt(1/(2*sigma_hat)), alpha=lambda)
-# plot(x, y, type="l", ylim=c(0,1))
-# abline(v=beta_hat, col="red")
-# abline(v=mean(y_r), col="blue")
-# lines(c(beta1-sqrt(1/(2*sigma_beta1)), beta1+sqrt(1/(2*sigma_beta1))), c(max(y)*0.5,max(y)*0.5), col="blue")
-# lines(c(beta_hat-sqrt(1/(2*sigma_hat)), beta_hat+sqrt(1/(2*sigma_hat))), c(max(y)*0.4,max(y)*0.4), col="red")
-# lines(c(beta1-sd(y_r), beta1+sd(y_r)), c(max(y)*0.45,max(y)*0.45), col="black")
-# print(max(y))
-# 
-
-# generrskew <- function(x, a, mu, sigma, lambda, p){
-#   v <- sqrt((pi*gamma(1/p))/(pi*(1+3*lambda**2)*gamma(3/p)-(16**(1/p))*lambda*lambda*(gamma(1/2+1/p)**2)*gamma(1/p)))
-#   m <- (2**(2/p))*v*sigma*lambda*gamma(1/2+1/p)/sqrt(pi)
-#   a*exp(-(abs(x-mu+m)/(v*sigma*(1+lambda*sign(x-mu+m))))**p)
-# }
