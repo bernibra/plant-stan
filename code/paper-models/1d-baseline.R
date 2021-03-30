@@ -345,12 +345,12 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
     rhosq_g = 0.1
   )
   
+  # Initialize data structure
+  n_chains_5.1 <- 3
+  init_5.1 <- list()
+  for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
+  
   # model_code=skew.model.traits.1d
-  # 
-  # # Initialize data structure
-  # n_chains_5.1 <- 3
-  # init_5.1 <- list()
-  # for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
   # 
   # # Run stan model
   # mfit_5.1 <- stan ( model_code=model_code ,
@@ -362,15 +362,8 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   # 
   # saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   
-  dat_5.1 <- list(N=N,
-                  L=L,
-                  minp=1e-100,
-                  Y=t(obs),
-                  indices=1:L,
-                  X1=X1,
-                  Dmat_b=Dis_b,
-                  Dmat_g=Dis_g
-  )
+  dat_5.1$indices <- 1:L
+  
   model_code = base.model.skew.1d.multithread
   generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
   mfit_5.1 <- generror1d$sample(data = dat_5.1,
@@ -508,15 +501,8 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
   # 
   # saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
   
-  dat_5.1 <- list(N=N,
-                  L=L,
-                  minp=1e-100,
-                  Y=t(obs),
-                  indices=1:L,
-                  X1=X1,
-                  Dmat_b=Dis_b,
-                  Dmat_g=Dis_g
-  )
+  dat_5.1$indices <- 1:L
+  
   model_code = base.model.skew.generror.1d.multithread
   generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
   mfit_5.1 <- generror1d$sample(data = dat_5.1,
@@ -526,7 +512,7 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
                                 parallel_chains = 3,
                                 max_treedepth = 15,
                                 max_depth = 15,
-                                iter_sampling = 2000,
+                                iter_sampling = 1000,
                                 #adapt_delta = 0.95,
                                 refresh = 500)
   mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,"-cdmstan.rds", sep=""))
@@ -545,6 +531,7 @@ min.occurrence <- 20
 # }
 # d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 d <- readRDS("../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-data.rds")
+# d <- readRDS("../../data/processed/jsdm/1d-skew-simulated-S1S2min20-data.rds")
 skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
