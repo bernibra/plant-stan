@@ -225,23 +225,42 @@ generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
     rhosq_g = 0.1
   )
   
-  model_code=base.model.generror.1d
-  
   # Initialize data structure
   n_chains_5.1 <- 3
   init_5.1 <- list()
   for ( i in 1:n_chains_5.1 ) init_5.1[[i]] <- start_5.1
   
-  # Run stan model
-  mfit_5.1 <- stan ( model_code=model_code ,
-                     data=dat_5.1 ,
-                     chains=n_chains_5.1 ,
-                     cores= n_chains_5.1 ,
-                     warmup=1000, iter=2000,
-                     init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+  # model_code=base.model.generror.1d
+  # 
+  # # Run stan model
+  # mfit_5.1 <- stan ( model_code=model_code ,
+  #                    data=dat_5.1 ,
+  #                    chains=n_chains_5.1 ,
+  #                    cores= n_chains_5.1 ,
+  #                    warmup=1000, iter=2000,
+  #                    init=init_5.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
+  # 
+  # saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
+  # 
   
+  dat_5.1$indices <- 1:L
   
-  saveRDS(mfit_5.1, file = paste(ofolder, extension2, "", extension,".rds", sep=""))
+  model_code = base.model.generror.1d.multithread
+  generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
+  mfit_5.1 <- generror1d$sample(data = dat_5.1,
+                                init = init_5.1,
+                                chains = 3,
+                                threads_per_chain = 15,
+                                parallel_chains = 3,
+                                max_treedepth = 15,
+                                max_depth = 15,
+                                iter_sampling = 1000,
+                                #adapt_delta = 0.95,
+                                refresh = 500)
+  mfit_5.1$save_object(file = paste(ofolder, extension2, "", extension,"-cdmstan.rds", sep=""))
+  saveRDS(rstan::read_stan_csv(mfit_5.1$output_files()), file = paste(ofolder, extension2, "", extension,".rds", sep=""))
+  print(mfit_5.1$cmdstan_diagnose())
+  
   return(mfit_5.1)
 }
 

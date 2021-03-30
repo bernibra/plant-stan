@@ -222,6 +222,17 @@ functions{
         K[N, N] = a + delta;
         return K;
     }
+    real partial_sum(int[] y_slice,
+                   int start, int end,
+                   int N, vector alpha, vector beta, vector gamma, vector nu, int[ , ] Y, row_vector X1, real minp ) {
+        real lp = 0.0;
+        for( i in start:end){
+            for( j in 1:N ){
+                lp += binomial_lpmf( Y[i, j] | 1 , exp(-alpha[i] - pow(gamma[i] * fabs(X1[j] - beta[i]), nu[i])) + minp);
+            }
+        }
+        return lp;
+    }
 }
 data{
     int N;
@@ -230,6 +241,7 @@ data{
     // int K;
     // int Y[K];
     int Y[L, N];
+    int indices[L];
     row_vector[N] X1;
     matrix[L,L] Dmat_b;
     matrix[L,L] Dmat_g;
@@ -293,12 +305,13 @@ model{
     zgamma ~ std_normal();
     zbeta ~ std_normal();
     znu ~ std_normal();
+    
+    int grainsize = 1;
 
-    for ( i in 1:L ){
-        for( j in 1:N ){
-           Y[i, j] ~ binomial(1, exp(-alpha[i] - pow(gamma[i] * fabs(X1[j] - beta[i]), nu[i])) + minp);
-        }
-    }
+    target += reduce_sum(partial_sum, indices,
+                     grainsize,
+                     N, alpha, beta, gamma, nu, Y, X1, minp);
+
 }
 generated quantities{
     vector[L*N] log_lik;
