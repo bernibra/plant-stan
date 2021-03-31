@@ -736,7 +736,7 @@ functions{
             v = gamma[i] * sqrt((pi()*(1+3*pow(lambda[i],2))-8.0*pow(lambda[i],2))/(2.0*pi()));
             m = beta[i] - 2.0*lambda[i]/(sqrt(pi())*v);
             for( j in 1:N ){
-                lp += binomial_lpmf( Y[i, j] | 1 , exp(-alpha[i] - pow(v * fabs(X1[j] - m)/(1+lambda[i]*sgn(X1[j] - m)), nu[i])) + minp);
+                lp += binomial_lpmf( Y[i, j] | 1 , exp(-alpha[i] - pow(v * fabs(X1[j] - m)/(1+lambda[i]*sgn(X1[j] - m)), 2.0)) + minp);
             }
         }
         return lp;
@@ -831,7 +831,7 @@ generated quantities{
     k = 1;
     for ( i in 1:L ){
         for (j in 1:N){
-           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - pow(gammav[i] * fabs(X1[j] - betam[i])/(1+lambda[i]*sgn(X1[j] - betam[i])), nu[i])) + minp);
+           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - pow(gammav[i] * fabs(X1[j] - betam[i])/(1+lambda[i]*sgn(X1[j] - betam[i])), 2.0)) + minp);
            k = k + 1;
         }
     }
