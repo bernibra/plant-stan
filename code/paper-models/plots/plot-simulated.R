@@ -31,7 +31,7 @@ plot.simulated.compare <- function(){
   m2 <- readRDS(paste("../../../results/models/baseline-model-1d1d-simulated2.rds", sep=""))
   rethinking::compare(m1, m2)
   
-  d <- readRDS(file = paste("../../../data/processed/jsdm/skew-simulated2S1S2", "data.rds", sep = ""))
+  d <- readRDS(file = paste("../../../data/processed/jsdm/backup-data/skew-simulated2S1S2", "data.rds", sep = ""))
   
   for (i in 1:2){
     if (i==1){
@@ -153,7 +153,7 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
 plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   # load data
   d <- readRDS(file = paste("../../../data/processed/jsdm/generror-simulated-", "data.rds", sep = ""))
-  model_r <- readRDS(paste("../../../results/models/-1d-generror-simulated.rds", sep=""))
+  model_r <- readRDS(paste("../../../results/models/generror-simulated.rds", sep=""))
   
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)
@@ -194,15 +194,15 @@ plot.simulated.data.tails <- function(beta=T, gp_type = 2){
   d_nu <- data.frame(N=1:N, id= c(rep("real", length(nu_r)), rep("estimated", length(nu$mean))),value=c(nu_r,nu$mean) ,  lower=c(nu_r,nu[,3]), upper=c(nu_r,nu[,4]))
   
   # Generate plot
-  p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + 
+  p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + ylim(c(0,4.5)) +
     geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.title = element_blank())
   leg <- get_legend(p1)
   p1 <-  p1 + theme(legend.position = "none")
-  p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id)) + ggtitle("beta 1") + 
+  p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id)) + ggtitle("beta 1")  + ylim(c(-3.5,1)) + 
     geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.position = "none")
-  p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1") + 
+  p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1")  + ylim(c(0,3.5)) + 
     geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.position = "none")
-  p4 <- ggplot(d_nu, aes(x=N, y=value, group=id, color=id))  + ggtitle("nu") +
+  p4 <- ggplot(d_nu, aes(x=N, y=value, group=id, color=id))  + ggtitle("nu")  + ylim(c(1,3)) +
     geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.position = "none")
   
   

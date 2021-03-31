@@ -383,7 +383,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   
   dat_5.1$indices <- 1:L
   
-  model_code = base.model.skew.1d.multithread
+  model_code = base.model.skew.1d.multithread2
   generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
   mfit_5.1 <- generror1d$sample(data = dat_5.1,
                                 init = init_5.1,
