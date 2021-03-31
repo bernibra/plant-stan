@@ -27,8 +27,8 @@ transform.skew <- function(post){
 }
 
 plot.simulated.compare <- function(){
-  m1 <- readRDS(paste("../../../results/models/skew-model-traits-1dskew-simulated2.rds", sep=""))
-  m2 <- readRDS(paste("../../../results/models/baseline-model-1d1d-simulated2.rds", sep=""))
+  m1 <- readRDS(paste("../../../results/models-old/skew-model-traits-1dskew-simulated2.rds", sep=""))
+  m2 <- readRDS(paste("../../../results/models-old/baseline-model-1d1d-simulated2.rds", sep=""))
   rethinking::compare(m1, m2)
   
   d <- readRDS(file = paste("../../../data/processed/jsdm/backup-data/skew-simulated2S1S2", "data.rds", sep = ""))
@@ -60,9 +60,9 @@ plot.simulated.compare <- function(){
       model_r <- m2
       
       # Extract variables from the model
-      alphas <- precis(model_r, pars = "alpha", depth=2, prob = 0.99)
-      betas <- precis(model_r, pars = "beta", depth=3, prob = 0.99)
-      sigmas <- precis(model_r, pars = "gamma", depth=3, prob = 0.99)
+      alphas <- precis(model_r, pars = "alpha", depth=2, prob = 0.89)
+      betas <- precis(model_r, pars = "beta", depth=3, prob = 0.89)
+      sigmas <- precis(model_r, pars = "gamma", depth=3, prob = 0.89)
     }
     
     
@@ -106,16 +106,22 @@ plot.simulated.compare <- function(){
 plot.simulated.data <- function(beta=T, gp_type = 2){
   # load data
   d <- readRDS("../../../data/processed/jsdm/skew-simulated-data.rds")
-  model_r <- readRDS(paste("../../../results/models/skew-simulated.rds", sep=""))
+  model_r <- readRDS(paste("../../../results/models/skew-simulated2.rds", sep=""))
+  
+  post <- extract.samples(model_r, pars=c("gammav", "lambda"))
+  post$sigma <- 1/(post$gammav**2)
   
   # Extract variables from the model
-  alphas <- precis(model_r, pars = "alpha_", depth=2, prob = 0.89)
-  betas <- precis(model_r, pars = "beta_", depth=3, prob = 0.89)
-  sigmas <- precis(model_r, pars = "gamma_", depth=3, prob = 0.89)
+  alphas <- precis(model_r, pars = "alpha", depth=2, prob = 0.89)
+  betas <- precis(model_r, pars = "beta", depth=3, prob = 0.89)
+  sigmas <- precis(model_r, pars = "gamma", depth=3, prob = 0.89)
   lambdas <- precis(model_r, pars = "lambda", depth=3, prob = 0.89)
   precis(model_r, pars = "lambda_bar", depth=3)
   precis(model_r, pars = "sigma_l", depth=3)
   
+  sigmas$mean <- sapply(1:dim(post$sigma)[2], function(x) mean(post$sigma[,x]), USE.NAMES = F)
+  sigmas$`5.5%` <- sapply(1:dim(post$sigma)[2], function(x) PI(post$sigma[,x], prob = c(0.890))[1], USE.NAMES = F)
+  sigmas$`94.5%` <- sapply(1:dim(post$sigma)[2], function(x) PI(post$sigma[,x], prob = c(0.890))[2], USE.NAMES = F)
   
   # Extract true values
   N <- length(unique(d$dataset$id))
@@ -123,6 +129,11 @@ plot.simulated.data <- function(beta=T, gp_type = 2){
   lambda_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$lambda[1])
   beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
   sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
+  
+  sigmaHat_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_hat[1])
+  delta <- lambda_r/sqrt(1+lambda_r**2)
+  sigma1_r <- (sigmaHat_r**(-1)) * (1-2*(delta**2)/pi)
+  
   
   # Build data.frames for the plots
   d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , lower=c(alpha_r,alphas[,3]), upper=c(alpha_r,alphas[,4]))

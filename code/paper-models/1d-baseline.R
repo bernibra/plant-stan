@@ -383,7 +383,7 @@ skew.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofo
   
   dat_5.1$indices <- 1:L
   
-  model_code = base.model.skew.1d.multithread2
+  model_code = base.model.skew.1d.multithread
   generror1d <- cmdstan_model(write_stan_file(model_code), cpp_options = list(stan_threads = TRUE))
   mfit_5.1 <- generror1d$sample(data = dat_5.1,
                                 init = init_5.1,
@@ -543,18 +543,14 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
 
 
 min.occurrence <- 20
-# if(min.occurrence==10){
-#   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2-data.rds", sep=""))
-# }else{
-#   d <- readRDS(file = paste("../../data/processed/jsdm/1d-PC1PC2min",min.occurrence,"-data.rds", sep=""))
-# }
-# d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
+
+d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 # d <- readRDS("../../data/processed/jsdm/skew-generror-simulated-data.rds")
-d <- readRDS("../../data/processed/jsdm/skew-simulated-data.rds")
+# d <- readRDS("../../data/processed/jsdm/skew-simulated-data.rds")
 # d <- readRDS("../../data/processed/jsdm/generror-simulated-data.rds")
 
-# skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-# baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
