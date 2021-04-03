@@ -273,7 +273,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_g;
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
-    nu = fabs(znu * sigma_n + nu_bar)+1;
+    nu = exp(znu * sigma_n + nu_bar)+1;
 
     L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
     beta = L_SIGMA_b * zbeta + beta_bar;

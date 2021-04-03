@@ -136,10 +136,11 @@ plot.ranking.y <- function(mu, ci, color="black", xlabel="-", ylabel="-", mu_ord
 }
 
 compare.models <- function(){
-  m1 <- readRDS(paste("../../../results/models/min30-skew-model-traits-1d2.rds", sep=""))
-  m2 <- readRDS(paste("../../../results/models/min30-baseline-model-1d2.rds", sep=""))
-  m3 <- readRDS(paste("../../../results/models/min30-1d-generror.rds", sep=""))
-  comp <- rethinking::compare(m1, m2, m3, refresh = 1)
+  m1 <- readRDS(paste("../../../results/models/skew-min20-1d.rds", sep=""))
+  m2 <- readRDS(paste("../../../results/models/baseline-min20-1d.rds", sep=""))
+  m3 <- readRDS(paste("../../../results/models/generror-min20-1d.rds", sep=""))
+  m4 <- readRDS(paste("../../../results/models/skew-generror-min20-1d.rds", sep=""))
+  # comp <- rethinking::compare(m1, m2, m3, refresh = 1)
   
   # Parameters for plots
   extra <- 1
@@ -152,7 +153,8 @@ compare.models <- function(){
   
   # extract samples
   post <- extract.samples(m1, pars=c("alpha", "beta", "gamma", "lambda"))
-  post <- transform.skew(post)
+  # post <- transform.skew(post)
+  post$beta <- post$betam
   
   # alphas
   mu_lambda <- apply( post$lambda , 2 , mean )
@@ -205,11 +207,17 @@ compare.models <- function(){
   )
   print(p)
   
-  post <- extract.samples(m3, n = 1000, pars=c("nu_bar")) 
+  post <- extract.samples(m3, n = 1000, pars=c("nu", "nu_bar"))
+  post_ <- extract.samples(m4, n = 1000, pars=c("nu", "lambda_bar"))
+  
+  kurtosis.generror <- gamma(5/post$nu)*gamma(1/post$nu)/(gamma(3/post$nu))**2-3
+  kurtosis.generror <- apply(kurtosis.generror, 1, median)
+  
+  nu_hat <- abs(post$nu_bar)+1
+  nu_hat <- gamma(5/nu_hat)*gamma(1/nu_hat)/(gamma(3/nu_hat))**2-3
+  
   
   plist <- list()
-  nu_hat <- exp(post$nu_bar)+1
-  nu_hat <- gamma(5/nu_hat)*gamma(1/nu_hat)/(gamma(3/nu_hat))**2-3
   plist[[1]] <- ggplot(data.frame(x=nu_hat), aes(x=x))+
     stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
     theme_bw() +
@@ -232,8 +240,7 @@ compare.models <- function(){
           panel.border = element_rect(colour = "black", fill=NA, size=0.5),
           plot.title = element_text(size=10))
   
-  post <- extract.samples(m1, n = 1000, pars=c("lambda_bar")) 
-  lambda_bar <- -post$lambda_bar
+  post <- extract.samples(m4, n = 1000, pars=c("lambda_bar")) 
   lambda_bar <- lambda_bar/sqrt(1+lambda_bar**2)
   lambda_bar <- 0.5*(4-pi)*((lambda_bar*sqrt(2/pi))**3/(1-lambda_bar*lambda_bar*(2/pi))**(3/2))
   plist[[2]] <- ggplot(data.frame(x=lambda_bar), aes(x=x))+
