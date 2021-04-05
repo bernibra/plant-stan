@@ -70,11 +70,7 @@ categorical.skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, m
   Dis_g <- d$corr2
   N <- sum(d$dataset$id==1)
   L <- length(unique(d$dataset$id))
-  if(simulated){
-    obs <- d$dataset$obs
-  }else{
-    obs <- d$dataset$abundance
-  }
+  obs <- d$dataset$obs
   obs <- as.numeric(as.character(obs))
   obs <- matrix(obs, N, L)
   dat <- d$dataset
