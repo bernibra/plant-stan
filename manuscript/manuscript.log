@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.10)  10 MAR 2021 19:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.10)  14 APR 2021 12:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -562,55 +562,55 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 {/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 
 Package natbib Warning: Citation `more in Rapoport' on page 2 undefined on inpu
-t line 122.
+t line 126.
 
 [2]
 
-Package natbib Warning: Citation `review' on page 3 undefined on input line 124
+Package natbib Warning: Citation `review' on page 3 undefined on input line 128
 .
 
 
 Package natbib Warning: Citation `good example' on page 3 undefined on input li
-ne 124.
+ne 128.
 
 [3] [4] [5] [6]
 <figures/all-distributions.pdf, id=178, 663.22781pt x 220.57407pt>
 File: figures/all-distributions.pdf Graphic file (type pdf)
 <use figures/all-distributions.pdf>
-Package pdftex.def Info: figures/all-distributions.pdf  used on input line 221.
+Package pdftex.def Info: figures/all-distributions.pdf  used on input line 225.
 
 (pdftex.def)             Requested size: 438.17227pt x 145.72742pt.
  [7] [8 <./figures/all-distributions.pdf>] [9] [10] [11]
 [12]
-<figures/figure1-prime.pdf, id=330, 542.025pt x 411.57834pt>
+<figures/figure1-prime.pdf, id=330, 542.025pt x 408.98781pt>
 File: figures/figure1-prime.pdf Graphic file (type pdf)
 <use figures/figure1-prime.pdf>
-Package pdftex.def Info: figures/figure1-prime.pdf  used on input line 303.
-(pdftex.def)             Requested size: 394.35236pt x 299.45741pt.
+Package pdftex.def Info: figures/figure1-prime.pdf  used on input line 307.
+(pdftex.def)             Requested size: 394.35236pt x 297.57259pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<figures/means-Rapopor.pdf, id=333, 469.43379pt x 302.4774pt>
+<figures/means-Rapopor.pdf, id=333, 495.02942pt x 301.4901pt>
 File: figures/means-Rapopor.pdf Graphic file (type pdf)
 <use figures/means-Rapopor.pdf>
-Package pdftex.def Info: figures/means-Rapopor.pdf  used on input line 312.
-(pdftex.def)             Requested size: 394.35236pt x 254.11159pt.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 319.
+Package pdftex.def Info: figures/means-Rapopor.pdf  used on input line 316.
+(pdftex.def)             Requested size: 394.35236pt x 240.1849pt.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 323.
 
 (/usr/local/texlive/2019/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 319.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 323.
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 319.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 323.
  [13] [14 <./figures/figure1-prime.pdf>]
-<figures/kurto-skew.pdf, id=399, 542.025pt x 252.945pt>
+<figures/kurto-skew.pdf, id=399, 542.025pt x 216.81pt>
 File: figures/kurto-skew.pdf Graphic file (type pdf)
 <use figures/kurto-skew.pdf>
-Package pdftex.def Info: figures/kurto-skew.pdf  used on input line 323.
-(pdftex.def)             Requested size: 350.53915pt x 163.5902pt.
+Package pdftex.def Info: figures/kurto-skew.pdf  used on input line 327.
+(pdftex.def)             Requested size: 394.35236pt x 157.74727pt.
  [15 <./figures/means-Rapopor.pdf>] [16 <./figures/kurto-skew.pdf>] [17] (./man
 uscript.bbl [18
 
@@ -618,15 +618,15 @@ uscript.bbl [18
 
 Package natbib Warning: There were undefined citations.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 385.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 390.
 [21]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 385.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 390.
  (./manuscript.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 385.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 385.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 390.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 390.
 Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 385.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 390.
  ) 
 Here is how much of TeX's memory you used:
  9943 strings out of 492616
@@ -665,7 +665,7 @@ e/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2
 exmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2019/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on manuscript.pdf (21 pages, 608672 bytes).
+Output written on manuscript.pdf (21 pages, 557284 bytes).
 PDF statistics:
  632 PDF objects out of 1000 (max. 8388607)
  512 compressed objects within 6 object streams

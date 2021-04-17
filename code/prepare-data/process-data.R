@@ -37,7 +37,7 @@ prepare.data <- function(){
   ## Extract all places and species names to loop over, and rename stuff
   sp.weighted <- colnames(dat.weighted)
   sp.codes <- cbind(sp.weighted, 1:length(sp.weighted),colSums(1*(dat.weighted>0)))
-  places.codes <- cbind(rownames(dat.weighted), 1:length(rownames(dat.weighted)), rowSums(1*(dat.weighted>0)), dat_SP$Easting, dat_SP$Northing)
+  places.codes <- cbind(rownames(dat.weighted), 1:length(rownames(dat.weighted)), rowSums(1*(dat.weighted>0)), dat_SP$Easting, dat_SP$Northing, elevation)
   
   ## Rename rows and columns
   colnames(dat.weighted) <- 1:length(sp.weighted)
@@ -45,7 +45,7 @@ prepare.data <- function(){
 
   ## Save species and places codes
   write.table(sp.codes, file = "../../data/properties/codes/sp_codes.csv", quote = F, row.names = F, col.names = c("sp", "id", "range"), sep=",")
-  write.table(places.codes, file = "../../data/properties/codes/places_codes.csv", quote = F, row.names = F, col.names = c("place", "id", "richness", "easting", "northing"), sep=",")
+  write.table(places.codes, file = "../../data/properties/codes/places_codes.csv", quote = F, row.names = F, col.names = c("place", "id", "richness", "easting", "northing", "elevation"), sep=",")
   write.table(file="../../data/processed/distribution/distribution.csv", x=1*(dat.weighted>0), sep = ",",row.names = F, col.names = F, quote = F )
 
   return(list(dat = dat.weighted, coord = dat_SP, places = places.codes, sp = sp.codes))
@@ -65,7 +65,10 @@ prepare.data.sdm <- function(absences=T){
   }
 }
 
-prepare.data.jsdm <- function(){
+prepare.sliding <- function(){
+  dat <- prepare.data()
+  
+  pi <- rethinking::PI(elevation, prob = c((1:9)*0.1))
   
 }
 

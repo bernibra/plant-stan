@@ -135,13 +135,46 @@ plot.ranking.y <- function(mu, ci, color="black", xlabel="-", ylabel="-", mu_ord
   return(p)
 }
 
+kurtosis.skewness <- function(lambda){
+  v <- ((pi-8*lambda*lambda+3*pi*lambda*lambda)/(2*pi))**(-0.5)
+  kurtosis <- (v**4)*(-192*(lambda**4)+16*pi*(lambda**2)*(-5+lambda**2)+3*pi*pi*(1+10*lambda*lambda+5*(lambda**4)))/(4*(pi**2))-3
+  return(kurtosis)
+}
+kurtosis.generror <- function(nu){
+  kurtosis <- gamma(5/nu)*gamma(1/nu)/((gamma(3/nu))**2)-3
+  return(kurtosis)
+}
+kurtosis.skew.generror <- function(nu, lambda){
+  v <- ((pi*(1+3*lambda*lambda)*gamma(3/nu)-((16)**(1/nu))*lambda*lambda*(gamma(0.5+1/nu)**2)*gamma(1/nu))/(pi*gamma(1/nu)))**(-1/2)
+  kurtosis <- ((v**4)/(pi*pi*gamma(1/nu)))*(-3*(256**(1/nu))*(lambda**4)*(gamma(0.5+1/nu)**4)*gamma(1/nu) +
+                                                  3*(2**((4+nu)/nu))*pi*(lambda**2)*(1+3*(lambda**2))*(gamma(0.5+1/nu)**2)*gamma(3/nu)-
+                                                  (2**(4+2/nu))*(pi**(3/2))*(lambda**2)*(1+lambda**2)*gamma(0.5+1/nu)*gamma(4/nu)+
+                                                  (pi**2)*(1+10*(lambda**2)+5*(lambda**4))*gamma(5/nu))-3
+  return(kurtosis)
+}
+
+skewness.skew <- function(lambda){
+  v <- ((pi-8*lambda*lambda+3*pi*lambda*lambda)/(2*pi))**(-0.5)
+  skewness <- (v**3)*lambda*(16*lambda*lambda-pi*(-1+5*lambda*lambda))/(pi**(3/2))
+  return(skewness)
+}
+skewness.skew.generror <- function(nu, lambda){
+  v <- ((pi*(1+3*lambda*lambda)*gamma(3/nu)-((16)**(1/nu))*lambda*lambda*(gamma(0.5+1/nu)**2)*gamma(1/nu))/(pi*gamma(1/nu)))**(-1/2)
+  skewness <- (lambda*(v**3)/((pi**(3/2))*gamma(1/nu)))*((2**((6+nu)/nu))*(lambda**2)*(gamma(0.5+1/nu)**3)*gamma(1/nu)-
+                                                           3*(4**(1/nu))*pi*(1+3*lambda*lambda)*gamma(0.5+1/nu)*gamma(3/nu)+
+                                                           4*(pi**(3/2))*(1+lambda*lambda)*gamma(4/nu))
+  return(skewness)
+}
+
+
 compare.models <- function(){
-  m1 <- readRDS(paste("../../../results/models/skew-min20-1d.rds", sep=""))
-  m2 <- readRDS(paste("../../../results/models/baseline-min20-1d.rds", sep=""))
-  m3 <- readRDS(paste("../../../results/models/generror-min20-1d.rds", sep=""))
-  m4 <- readRDS(paste("../../../results/models/skew-generror-min20-1d.rds", sep=""))
-  # comp <- rethinking::compare(m1, m2, m3, refresh = 1)
-  
+  # m1 <- readRDS(paste("../../../results/models/skew-min20-1d.rds", sep=""))
+  # # m2 <- readRDS(paste("../../../results/models/baseline-min20-1d.rds", sep=""))
+  # m3 <- readRDS(paste("../../../results/models/generror-min20-1d.rds", sep=""))
+  # m4 <- readRDS(paste("../../../results/models/skew-generror-min20-1d.rds", sep=""))
+  # # comp <- rethinking::compare(m1, m2, m3, refresh = 1)
+  # 
+
   # Parameters for plots
   extra <- 1
   colo <- c("#1b9e77", "#d95f02", "#7570b3")
@@ -152,9 +185,9 @@ compare.models <- function(){
   competitive <- read.table("../../../data/properties/codes/competitive_reindexed-30.csv", sep = " ", header=T)
   
   # extract samples
-  post <- extract.samples(m1, pars=c("alpha", "beta", "gamma", "lambda"))
+  post <- extract.samples(m4, pars=c("lambda", "beta"))
   # post <- transform.skew(post)
-  post$beta <- post$betam
+  # post$beta <- post$betam
   
   # alphas
   mu_lambda <- apply( post$lambda , 2 , mean )
@@ -164,7 +197,7 @@ compare.models <- function(){
   mu_beta <- apply(post$beta,2,mean)
   ci_beta <- apply(post$beta,2,PI)
   
-  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,], post$lambda[x,]))
+  corPI <- sapply(1:dim(post$nu)[1], function(x) cor(post$nu[x,], post$nu[x,]))
   meanPI <- mean(corPI)
   sdPI <- sd(corPI)
   corPIci <- round(sort(c(as.vector(PI(corPI)),meanPI)), 2)
@@ -207,26 +240,42 @@ compare.models <- function(){
   )
   print(p)
   
-  post <- extract.samples(m3, n = 1000, pars=c("nu", "nu_bar"))
-  post_ <- extract.samples(m4, n = 1000, pars=c("nu", "lambda_bar"))
+  post.m3 <- extract.samples(m3, n = 1000, pars=c("nu", "nu_bar"))
+  post.m4 <- extract.samples(m4, n = 1000, pars=c("nu", "nu_bar", "lambda_bar", "lambda"))
   
-  kurtosis.generror <- gamma(5/post$nu)*gamma(1/post$nu)/(gamma(3/post$nu))**2-3
-  kurtosis.generror <- apply(kurtosis.generror, 1, median)
+  kurtosis.median.m3 <- kurtosis.generror(post.m3$nu)
+  nu_bar.m3 <- apply(kurtosis.median.m3, 1, mean)
+
+  kurtosis.median.m4 <- kurtosis.skew.generror(post.m4$nu, post.m4$lambda)
+  nu_bar.m4 <- apply(kurtosis.median.m4, 1, mean)
+
+  # nu_bar.m3 <- apply(post.m3$nu, 1, median)
+  # nu_bar.m4 <- apply(post.m4$nu, 1, median)
   
-  nu_hat <- abs(post$nu_bar)+1
-  nu_hat <- gamma(5/nu_hat)*gamma(1/nu_hat)/(gamma(3/nu_hat))**2-3
-  
+  n <-  length(nu_bar.m3)
+  dat <- data.frame(
+    x = c(
+      nu_bar.m3,
+      nu_bar.m4
+    ),
+    label = c(
+      rep("heavy-tails", n),
+      rep("heavy-tails and skewed", n)
+    )
+  )
+  dat$label <- factor(dat$label, levels = c("heavy-tails", "heavy-tails and skewed"))
   
   plist <- list()
-  plist[[1]] <- ggplot(data.frame(x=nu_hat), aes(x=x))+
+  plist[[1]] <- ggplot(dat, aes(x=x, color = label, group = label))+
+    geom_vline(xintercept = 0, colour = "#999999", linetype="dashed") +
     stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+    scale_color_manual(values=c("black", "#E69F00")) +
     theme_bw() +
-    geom_vline(xintercept = 0, colour = "red", linetype="dashed") +
     ggtitle("(a)  average kurtosis of distributions")+
     # scale_fill_grey() +
     ylab("density")+
     xlab("kurtosis")+
-    scale_x_continuous(limits = c(-0.5, 0.5))+
+    scale_x_continuous(limits = c(-0.75, 0.75))+
     theme(text = element_text(size=10),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -235,23 +284,46 @@ compare.models <- function(){
           legend.spacing.x = unit(3, "pt"),
           legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
           # legend.position="none",
-          legend.position=c(0.70,.80),
+          legend.position=c(0.25,.85),
           legend.background = element_blank(),
           panel.border = element_rect(colour = "black", fill=NA, size=0.5),
           plot.title = element_text(size=10))
   
-  post <- extract.samples(m4, n = 1000, pars=c("lambda_bar")) 
-  lambda_bar <- lambda_bar/sqrt(1+lambda_bar**2)
-  lambda_bar <- 0.5*(4-pi)*((lambda_bar*sqrt(2/pi))**3/(1-lambda_bar*lambda_bar*(2/pi))**(3/2))
-  plist[[2]] <- ggplot(data.frame(x=lambda_bar), aes(x=x))+
+  post.m1 <- extract.samples(m1, n = 1000, pars=c("lambda", "lambda_bar"))
+
+  skewness.mean.m1 <- skewness.skew(post.m1$lambda)
+  lambda_bar.m1 <- apply(skewness.mean.m1, 1, mean)
+  
+  skewness.mean.m4 <- skewness.skew.generror(post.m4$nu, post.m4$lambda)
+  lambda_bar.m4 <- apply(skewness.mean.m4, 1, mean)
+  
+  # nu_bar.m3 <- apply(post.m3$nu, 1, median)
+  # nu_bar.m4 <- apply(post.m4$nu, 1, median)
+  
+  n <-  length(lambda_bar.m4)
+  dat <- data.frame(
+    x = c(
+      lambda_bar.m1,
+      lambda_bar.m4
+    ),
+    label = c(
+      rep("skewed", n),
+      rep("heavy-tails and skewed", n)
+    )
+  )
+  
+  dat$label <- factor(dat$label, levels = c("skewed", "heavy-tails and skewed"))
+  
+  plist[[2]] <- ggplot(dat, aes(x=x, color = label, group = label))+
+    geom_vline(xintercept = 0, colour = "#999999", linetype="dashed") +
     stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+    scale_color_manual(values=c("black", "#E69F00")) +
     theme_bw() +
-    geom_vline(xintercept = 0, colour = "red", linetype="dashed") +
     ggtitle("(b)  average skewness of distributions")+
     # scale_fill_grey() +
     ylab(" ")+
     xlab("skewness")+
-    scale_x_continuous(limits = c(-0.1, 0.75))+
+    scale_x_continuous(limits = c(-0.4, 0.4))+
     theme(text = element_text(size=10),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -260,14 +332,61 @@ compare.models <- function(){
           legend.spacing.x = unit(3, "pt"),
           legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
           # legend.position="none",
-          legend.position=c(0.70,.80),
+          legend.position=c(0.75,.85),
           legend.background = element_blank(),
           panel.border = element_rect(colour = "black", fill=NA, size=0.5),
           plot.title = element_text(size=10))
   p <- grid.arrange(grobs=plist, ncol=2, nrow=1#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
+}
+
+distributions.hyperparameters <- function(model=NULL){
+  if(is.null(model)){
+    model <- readRDS("../../../results/models/skew-traits-min20-1d.rds")
+  }
   
+  post <- extract.samples(model, n = 1000, pars=c("etasq_l", "sigma_l"))
+
+  n <-  length(post$etasq_l)
+  dat <- data.frame(
+    x = c(
+      post$etasq_l,
+      post$sigma_l,
+      rexp(n,rate = 1)
+      ),
+    label = c(
+      rep("etasq", n),
+      rep("sigma", n),
+      rep("prior", n)
+    )
+  )
+  dat$label <- factor(dat$label, levels = c("etasq", "sigma", "prior"))
+  
+  p <- ggplot(dat, aes(x=x, color = label, group = label))+
+    stat_density(geom = "line", position = "identity") +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+    scale_color_manual(values=c("black", "#E69F00", "gray")) +
+    theme_bw() +
+    ggtitle("(a)  sigma vs etasq")+
+    # scale_fill_grey() +
+    ylab("density")+
+    xlab("kurtosis")+
+    scale_x_continuous(limits = c(0, 3))+
+    theme(text = element_text(size=10),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(colour = "black"),
+          legend.title = element_blank(),
+          legend.spacing.x = unit(3, "pt"),
+          legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
+          # legend.position="none",
+          legend.position=c(0.7,.85),
+          legend.background = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          plot.title = element_text(size=10))
+ print(p)  
+ # rethinking::pairs(model, pars=c("etasq_l", "sigma_l", "rhosq_l"))
+ 
 }
 
 plot.actual.data <- function(model=NULL){
@@ -287,7 +406,7 @@ plot.actual.data <- function(model=NULL){
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
   # post$beta <- post$beta*(-1)
-  # post$gamma <- 1/(2*post$gamma)
+  post$gamma <- 1/(2*post$gamma)
   
   # alphas
   mu_alpha <- apply( post$alpha , 2 , mean )
@@ -327,26 +446,26 @@ plot.actual.data <- function(model=NULL){
     ylim = c(min(ci_beta), max(ci_beta))
     xlim = c(-1, length(mu_beta)+1)
     posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
-    posx = (xlim[2]-xlim[1])*0.2 + xlim[1]
+    posx = (xlim[2]-xlim[1])*0.8 + xlim[1]
     
     # Beta
     plist[[1]] <- plot.ranking.x(mu_beta, ci_beta, color=colo[1], xlabel="species", ylabel="", ylims=ylim, xlims=xlim, mar=margin(5.5,5.5,5.5,5.5), additional_label = Tind_, posx=posx, posy=c(posy, ylim[2]-(posy-ylim[1])))+
       coord_trans(x="identity")
     
     xlim = c(min(ci_gamma), max(ci_gamma))
-    posx = exp((log(xlim[2])-log(xlim[1]))*0.796 + log(xlim[1]))
+    posx = exp((log(xlim[2])-log(xlim[1]))*0.2 + log(xlim[1]))
     
     # Scatter plot
-    plist[[2]] <- plot.scatter(mu=mu_beta, variance=mu_gamma, color=colo[3], xlabel="", ylabel=expression(beta), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
+    plist[[2]] <- plot.scatter(mu=mu_beta, variance=mu_gamma, color=colo[3], xlabel="", ylabel=expression(paste("mean ", beta)), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
     breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
     plist[[2]] <- plist[[2]] + coord_trans(x="log")+
       scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
-    plist[[2]] <- plist[[2]] + annotate("text", x=posx, y = ylim[2]-(posy-ylim[1]), label=paste0(round(meanPI,2), " ± ", round(sdPI,2)), size=3)
+    plist[[2]] <- plist[[2]] + annotate("text", x=posx, y = posy, label=paste0(round(meanPI,2), " ± ", round(sdPI,2)), size=3)
     
     ylim = c(-1, length(mu_gamma)+1)
     
     # Gamma
-    plist[[3]] <- plot.ranking.y(mu_gamma, ci_gamma, color=colo[2], xlabel=expression(gamma), ylabel="species", xlims=xlim, ylims=ylim, mar=margin(5.5,5.5,5.5,5.5))
+    plist[[3]] <- plot.ranking.y(mu_gamma, ci_gamma, color=colo[2], xlabel=expression(variance %prop% gamma^{-1}), ylabel="species", xlims=xlim, ylims=ylim, mar=margin(5.5,5.5,5.5,5.5))
     plist[[3]] <- plist[[3]] + coord_trans(x="log") +
       scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
     
@@ -496,7 +615,7 @@ plot.actual.data.means <- function(model=NULL){
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
   
   # post$beta <- post$beta*(-1) 
-  # post$gamma <- 1/(2*post$gamma)
+  post$gamma <- 1/(2*post$gamma)
   
   # alphas
   mu_alpha <- apply( post$alpha , 2 , mean )
@@ -511,7 +630,7 @@ plot.actual.data.means <- function(model=NULL){
   ci_gamma <- apply(post$gamma,2,PI)
 
   plist = list()
-  ylab <- expression(beta)
+  ylab <- expression(paste("mean ", beta))
   
   idx <- sort(mu_beta,index.return=T)$ix
   Tind_ <- as.numeric(as.character(Tind[idx,3]))
@@ -521,7 +640,7 @@ plot.actual.data.means <- function(model=NULL){
     
   ylim = c(min(mu_beta), max(mu_beta))
   xlim = c(min(mu_gamma), max(mu_gamma))
-  posx = exp((log(xlim[2])-log(xlim[1]))*0.83 + log(xlim[1]))
+  posx = exp((log(xlim[2])-log(xlim[1]))*0.2 + log(xlim[1]))
   posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
   posy = c(posy, ylim[2]-(posy-ylim[1]))
     
@@ -559,7 +678,7 @@ plot.actual.data.means <- function(model=NULL){
   color <- colo
   alphas <- c(0.7,0.7,0.7,0.6)
   alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
-  xlab=expression(gamma)
+  xlab=expression(variance %prop% gamma^{-1})
     
   corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V3==1], post$gamma[x,Tend$V3==1]))
   meanPI <- mean(corPI)
@@ -610,14 +729,14 @@ plot.actual.data.means <- function(model=NULL){
   
 }
 
-plot.actual.data.means2 <- function(model=NULL){
+plot.actual.data.pairs <- function(model=NULL){
   # Parameters for plots
   extra <- 1
   colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS("../../../results/models/baseline-min20-1d.rds")
+    readRDS(paste("../../../results/models/categorical-skew-generror-min20-1d.rds", sep=""))
   }
   
   #indicator values
@@ -625,160 +744,223 @@ plot.actual.data.means2 <- function(model=NULL){
   Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed-20.csv", sep = " ")
   NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed-20.csv", sep = " ")
   
-  # extract samples
-  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  params <- c("alpha", "gamma", "beta", "lambda", "nu")
+  label <- c("amplitude", "variance", "mean", "skewness", "kurtosis")
+  trans <- c("log", "log", "identity", "identity", "identity")
   
-  # post$gamma <- 1/(2*post$gamma)
+  com <- combn(c(1:length(params)), 2)
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=params) 
+  post$gamma <- 1/(2*post$gamma)
   post$alpha <- exp(-post$alpha)
   
-  plist = list()
-  ylab <- expression(beta)
-  for(i in 1:2){
-    if(i==1){
-      # betas
-      mu_beta <- apply(post$beta,2,mean)
-      ci_beta <- apply(post$beta,2,PI)
-      # gammas
-      mu_gamma <- apply(post$gamma,2,mean)
-      ci_gamma <- apply(post$gamma,2,PI)
-      transformation <- "log"
+  plist <- list()
+  hlay <- matrix(NA, nrow=length(params), ncol=length(params))
+  correlations <- matrix(NA, nrow=length(params), ncol=length(params))
+  
+  for(i in 1:length(params)){
+    correlations[i,i] <- label[i]
+  }
+  
+  for( i in 1:ncol(com)){
+    hlay[com[1,i], com[2,i]] <- i
+    # betas
+    mu_beta <- apply(post[[params[com[1,i]]]],2,mean)
+    ci_beta <- apply(post[[params[com[1,i]]]],2,PI)
+    transformation_y <- trans[com[1, i]]
+    label_y <- ifelse(is.na(hlay[com[1,i], com[2,i]-1]), label[com[1,i]], "")
+    
+    # gammas
+    mu_gamma <- apply(post[[params[com[2,i]]]],2,mean)
+    ci_gamma <- apply(post[[params[com[2,i]]]],2,PI)
+    transformation_x <- trans[com[2, i]]
+    label_x <- ifelse(is.na(hlay[com[1,i], com[2,i]-1]), label[com[2,i]], "")
+    
+    corPI <- sapply(1:dim(post[[params[com[1,i]]]])[1], function(x) cor(post[[params[com[1,i]]]][x,NEO$V3==1], post[[params[com[2,i]]]][x,NEO$V3==1]))
+    meanPI <- mean(corPI)
+    sdPI <- sd(corPI)
+    corPIci_NEO <- paste(round(c(meanPI, sdPI), 2), collapse = " ± ")
+    correlations[com[1,i], com[2,i]] <- corPIci_NEO
+
+    corPI <- sapply(1:dim(post[[params[com[1,i]]]])[1], function(x) cor(post[[params[com[1,i]]]][x,NEO$V3!=1], post[[params[com[2,i]]]][x,NEO$V3!=1]))
+    meanPI <- mean(corPI)
+    sdPI <- sd(corPI)
+    corPIci_NATIVE <- paste(round(c(meanPI, sdPI), 2), collapse = " ± ")
+    correlations[com[2,i],com[1,i]] <- corPIci_NATIVE
+    
+    posx <- ifelse(meanPI>0, 0.85, 0.15)
+    
+    if(transformation_x=="log"){
+      posx <- exp((log(max(mu_gamma)) - log(min(mu_gamma)))*posx + log(min(mu_gamma)))
     }else{
-      # alphas
-      mu_beta <- apply( post$alpha , 2 , mean )
-      ci_beta <- apply( post$alpha , 2 , PI )
-      
-      mu_gamma <- apply(post$gamma,2,mean)
-      ci_gamma <- apply(post$gamma,2,PI)
-      transformation <- "log"
-      
+      posx <- (max(mu_gamma) - min(mu_gamma))*posx + min(mu_gamma)
     }
-    
-    idx <- sort(mu_beta,index.return=T)$ix
-    Tind_ <- as.numeric(as.character(Tind[idx,3]))
-    Tind_ <- Tind_[!(is.na(Tind_))]
-    Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
-    Tind_ <- c("low elevation", "high elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
-    
-    ylim = c(min(mu_beta), max(mu_beta))
-    xlim = c(min(mu_gamma), max(mu_gamma))
-    posx = exp((log(xlim[2])-log(xlim[1]))*0.83 + log(xlim[1]))
-    posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
-    posy = c(posy, ylim[2]-(posy-ylim[1]))
-    
+    if(transformation_y=="log"){
+      posy <- exp((log(max(mu_beta)) - log(min(mu_beta)))*0.15 + log(min(mu_beta)))
+    }else{
+      posy <- (max(mu_beta) - min(mu_beta))*0.15 + min(mu_beta)
+    }
+
     labels = ifelse(NEO$V3==1, "neophyte", "native")
     alphas = ifelse(NEO$V3==1, 0.7, 0.6)
     color <- c("#e7298a",colo[4])
-    xlab=""
     
-    if(i==1){
-      breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
-      
-      correlations <- c()
-      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,NEO$V3==1], post$gamma[x,NEO$V3==1]))
-      meanPI <- mean(corPI)
-      sdPI <- sd(corPI)
-      corPIci <- round(c(meanPI, sdPI), 2)
-      correlations <- rbind(correlations, c("neophytes", corPIci))
-      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,NEO$V3!=1], post$gamma[x,NEO$V3!=1]))
-      meanPI <- mean(corPI)
-      sdPI <- sd(corPI)
-      corPIci <- round(c(meanPI, sdPI), 2)
-      correlations <- rbind(correlations, c("native", corPIci))
-    }else{
-      breaks <- seq(from=0,to=1,length.out = 6)
-    }
-    
-    p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=c(color[2],color[1]), alpha = alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+    p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=c(color[2],color[1]), alpha = alphas, xlabel=label_x, ylabel=label_y, mar=margin(5.5,5.5,5.5,5.5))
     # Scatter plot
-    p <- p + coord_trans(x=transformation, clip = "off")+
-      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
-    
-    if(i==1){
-      p <- p+annotate("text", x = posx, y = posy, label = Tind_, colour = "#525252", size=3)+
-        ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
-      title1 <- get_title(p)
-    }else{
-      p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
-      title2 <- get_title(p)
-    }
-    legend1 <- get_legend(p)
-    plist[[2*(i-1)+1]] <- p+theme(legend.position = "none", plot.title = element_blank())
-    # 
-    labs <- c("decreasing", "decreasing low", "increasing", "stable")
-    labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
-    color <- colo
-    alphas <- c(0.7,0.7,0.7,0.6)
-    alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
-    
-    if(i==1){
-      xlab=expression(gamma)
-      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V3==1], post$gamma[x,Tend$V3==1]))
-      meanPI <- mean(corPI)
-      sdPI <- sd(corPI)
-      corPIci <- round(c(meanPI, sdPI), 2)
-      correlations <- rbind(correlations, c("decreasing", corPIci))
-      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V4==1], post$gamma[x,Tend$V4==1]))
-      meanPI <- mean(corPI)
-      sdPI <- sd(corPI)
-      corPIci <- round(c(meanPI, sdPI), 2)
-      correlations <- rbind(correlations, c("decreasing low", corPIci))
-      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V5==1], post$gamma[x,Tend$V5==1]))
-      meanPI <- mean(corPI)
-      sdPI <- sd(corPI)
-      corPIci <- round(c(meanPI, sdPI), 2)
-      correlations <- rbind(correlations, c("increasing", corPIci))
-      corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V6==1], post$gamma[x,Tend$V6==1]))
-      meanPI <- mean(corPI)
-      sdPI <- sd(corPI)
-      corPIci <- round(c(meanPI, sdPI), 2)
-      correlations <- rbind(correlations, c("stable", corPIci))
-    }else{
-      xlab=expression(exp(-alpha))
-    }
-    
-    p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=color, alpha=alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
-    legend2 <- get_legend(p)
-    p <- p + coord_trans(x=transformation, clip = "off")+
-      scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
-    if(i==1){
-      p <- p+ ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
-    }else{
-      p <- p + ggtitle(label = "second axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
-    }
-    plist[[2*(i-1)+2]] <- p+theme(legend.position = "none", plot.title = element_blank())
-    ylab <- ""
+    p <- p + coord_trans(x=transformation_x, y=transformation_y, clip = "off")
+    p <- p + annotate("text", x=posx, y = posy, label=paste0("\n", corPIci_NEO), size=2, color="#e7298a")
+    p <- p + annotate("text", x=posx, y = posy, label=paste0(corPIci_NATIVE, "\n"), size=2)
+      # scale_x_continuous(breaks = breaks_x, labels = breaks_x, limits = xlim)+
+      # scale_y_continuous(breaks = breaks_y, labels = breaks_y, limits = ylim)
+    p <- p+theme(legend.position = "none", plot.title = element_blank())
+    plist[[i]] <- p
   }
-  plist[[5]] <- legend1
-  plist[[6]] <- legend2
-  plist[[7]] <- title1
-  plist[[8]] <- title2
   
-  hlay <- rbind(c(7,8,NA),
-                c(1,3,5),
-                c(2,4,6))
+  # tab <- ggtexttable(correlations, rows = NULL,cols = NULL,
+  #                    theme = ttheme("blank",  base_size = 9))
+
   
-  p <- grid.arrange(grobs=plist, ncol=3, nrow=3, heights=c(0.1,1,1), layout_matrix=hlay, widths=c(1,1,0.4)#, vp=viewport(width=1, height=1, clip = TRUE),
+  hlay <- hlay[1:(nrow(hlay)-1), 2:ncol(hlay)]
+
+  grobs <- list()
+  widths <- list()
+  heights <- list()
+  
+  for (k in 1:length(plist)){
+    grobs[[k]] <- ggplotGrob(plist[[k]])
+    widths[[k]] <- grobs[[k]]$widths[2:5]
+    heights[[k]] <- grobs[[k]]$heights[2:5]
+  }    
+  maxwidth <- do.call(grid::unit.pmax, widths)
+  maxheight <- do.call(grid::unit.pmax, heights)
+  for (k in 1:length(grobs)){
+    grobs[[k]]$widths[2:5] <- as.list(maxwidth)
+    grobs[[k]]$heights[2:5] <- as.list(maxheight)
+  }
+  
+  # grobs[[length(grobs)+1]] <- ggplotGrob(tab)
+  # hlay[(ncol(hlay)/2+1):ncol(hlay), 1:(ncol(hlay)/2)] <- length(grobs)
+  # 
+  
+  p <- grid.arrange(grobs=grobs, ncol=length(params)-1, nrow=length(params)-1, layout_matrix=hlay#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
+  print(p)
   
-  plist2 <- list()
-  tab <- ggtexttable(correlations, rows = NULL,cols = c("", "mean", "sd"),
-                     theme = ttheme("light",  base_size = 9))
-  tab <- tab %>%
-    tab_add_hline(at.row = 4, row.side = "top", linetype = 2)
+}
+
+plot.actual.data.distributions <- function(model=NULL){
+  # Parameters for plots
+  meansample=T
+  extra <- 1
+  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
   
-  plist2[[1]] <- tab
-  plist2[[2]] <- plist[[1]]
-  plist2[[3]] <- plist[[2]] 
-  plist2[[4]] <- plist[[5]]
-  plist2[[5]] <- plist[[6]]
-  plist2[[6]] <- plist[[3]]
-  plist2[[7]] <- plist[[4]]
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS(paste("../../../results/models/categorical-skew-generror-min20-1d.rds", sep=""))
+  }
   
-  hlay <- rbind(c(1,2,6,4),
-                c(1,3,7,5))
+  #indicator values
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed-20.csv", sep = " ")
+  Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed-20.csv", sep = " ")
+  NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed-20.csv", sep = " ")
   
-  p <- grid.arrange(grobs=plist2, ncol=4, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,1,1,0.4)#, vp=viewport(width=1, height=1, clip = TRUE),
+  params <- c("alpha", "gamma", "beta", "lambda", "nu")
+  label <- c("amplitude", "variance", "mean", "skewness", "kurtosis")
+  trans <- c("log", "log", "identity", "identity", "identity")
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=params) 
+  post$gamma <- 1/(2*post$gamma)
+  post$alpha <- exp(-post$alpha)
+  
+  plist <- list()
+  for(i in 1:length(params)){
+
+    label_y <- ifelse(i==1, "density", "")
+    transformation_x <- trans[i]
+    label_x <- label[i]
+    
+    # z <- matrix(NA, nrow(post[[params[i]]]), sum(NEO$V3==1))
+    # for(j in 1:nrow(post[[params[i]]])){z[j,] <- post[[params[i]]][j,(1:length(NEO$V3)) %in% sample((1:length(NEO$V3))[NEO$V3!=1], sum(NEO$V3==1))]}
+
+    x <- post[[params[i]]][,NEO$V3!=1]
+    y <- post[[params[i]]][,NEO$V3==1]    
+    if(meansample){
+      x <- apply(x, 1, median)
+      y <- apply(y, 1, median)
+      # z <- apply(z, 1, mean)
+    }else{
+      x <- as.vector(x)
+      y <- as.vector(y)
+      # z <- as.vector(z)
+    }
+    
+    dat <- data.frame(
+      x = c(
+        # z,
+        x,
+        y
+      ),
+      label = c(
+        # rep("random", length(z)),
+        rep("native", length(x)),
+        rep("neophytes", length(y))
+      )
+    )
+    
+    # dat$label <- factor(dat$label, levels = c("random","native", "neophytes"))
+    # colorins <- c("gray",colo[4], "#e7298a")
+    colorins <- c(colo[4], "#e7298a")
+    dat$label <- factor(dat$label, levels = c("native", "neophytes"))
+    
+    p <- ggplot(dat, aes(x=x, color = label, group = label, fill=label))+
+      # geom_vline(xintercept = 0, colour = "#999999", linetype="dashed") +
+      geom_density(position = "identity", alpha=0.2) +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+      scale_color_manual(values=colorins) +
+      scale_fill_manual(values=colorins) +
+      xlim(c(1,2))
+      theme_bw() +
+      # scale_fill_grey() +
+      ylab(label_y)+
+      xlab(label_x)+
+      theme(text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.text = element_text(colour = "black"),
+            legend.title = element_blank(),
+            legend.spacing.x = unit(3, "pt"),
+            legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
+            # legend.position="none",
+            legend.position=c(0.75,.85),
+            legend.background = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+            plot.title = element_text(size=10))
+
+    # p <- p + coord_trans(x=transformation_x, clip = "off")
+    
+    if(i!=length(params)){p <- p+theme(legend.position = "none", plot.title = element_blank())}
+    plist[[i]] <- p
+  }
+  
+
+  grobs <- list()
+  widths <- list()
+  heights <- list()
+  
+  for (k in 1:length(plist)){
+    grobs[[k]] <- ggplotGrob(plist[[k]])
+    widths[[k]] <- grobs[[k]]$widths[2:5]
+    heights[[k]] <- grobs[[k]]$heights[2:5]
+  }
+  maxwidth <- do.call(grid::unit.pmax, widths)
+  maxheight <- do.call(grid::unit.pmax, heights)
+  for (k in 1:length(grobs)){
+    grobs[[k]]$widths[2:5] <- as.list(maxwidth)
+    grobs[[k]]$heights[2:5] <- as.list(maxheight)
+  }
+
+  p <- grid.arrange(grobs=grobs, ncol=3, nrow=2#, vp=viewport(width=1, height=1, clip = TRUE),
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
   print(p)
