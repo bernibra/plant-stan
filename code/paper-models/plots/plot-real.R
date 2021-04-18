@@ -919,7 +919,6 @@ plot.actual.data.distributions <- function(model=NULL){
       geom_density(position = "identity", alpha=0.2) +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
       scale_color_manual(values=colorins) +
       scale_fill_manual(values=colorins) +
-      xlim(c(1,2))
       theme_bw() +
       # scale_fill_grey() +
       ylab(label_y)+

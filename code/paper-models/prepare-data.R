@@ -12,10 +12,11 @@ library(grid)
 # Define projection as global variable
 projection <- "+proj=somerc +init=world:CH1903"
 
-prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrence=0){
+prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrence=0, elevation=F){
         
         # Determine geographic extent of our data
         places <- read.csv(file = "../../data/properties/codes/places_codes.csv", header = T)
+        # places$elevation <- as.vector(scale(places$elevation))
         max.lat <- max(places$northing)
         min.lat <- min(places$northing)
         max.lon <- max(places$easting)
@@ -69,6 +70,9 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
              obs.data_$id <- kdx
              obs.data_$real.id <- idx
              obs.data_$mmsbm.id <- correlation_matrix_ids$V1[as.character(correlation_matrix_ids$V2)==new.name]
+             if(elevation){
+                     obs.data_$elevation <- places$elevation
+             }
              obs.data <- rbind(obs.data, obs.data_)
              kdx <- kdx+1
         }
@@ -479,8 +483,8 @@ visua <- function(dataset){
 # Run species distribution model for a given species
 ####
 species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_"),
-                                      pca=F, ndim=2,
-                                      simulated=F, simulated.type="linear.corr", min.occurrence=0){
+                                      pca=F, ndim=1,
+                                      simulated=F, simulated.type="linear.corr", min.occurrence=0, elevation=F){
         
         if(simulated){
                 if(!(simulated.type %in% c("skew", "skew.generror", "generror", "categorical","linear.corr", "linear.gauss", "linear.corr.gauss", "gauss.gauss"))){
@@ -503,8 +507,12 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                         variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")  
                 }
                 
+                if(elevation){
+                        variables=c("bio1_")  
+                }
+                
                 # Load all data
-                dat <- prepare.data(variables = variables, min.occurrence=min.occurrence)
+                dat <- prepare.data(variables = variables, min.occurrence=min.occurrence, elevation=elevation)
                 
                 # extract environmental data
                 clim <- as.data.frame(raster::extract(dat$bioclim.data,data.frame(easting = dat$obs.data$easting, northing = dat$obs.data$northing)))
@@ -529,12 +537,17 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                         # p <- grid.arrange(grobs=list(p1, p2), ncol=2, nrow=1, widths=c(0.65,1))
                         
                 }else{
-                        # Prepare full dataset
-                        dataset = cbind(dat$obs.data, clim)
+                        if(elevation){
+                                # Prepare full dataset
+                                dataset = cbind(dat$obs.data, data.frame(elevationstd=dat$obs.data$elevation))
+                        }else{
+                                # Prepare full dataset
+                                dataset = cbind(dat$obs.data, clim)
+                        }
                 }
                 
                 # Standarize environmental variables
-                for(i in c(1:ncol(dataset))[-c(1:(ncol(dataset)-ndim))]){dataset[,i] <- scale(dataset[,i])}
+                for(i in c(1:ncol(dataset))[-c(1:(ncol(dataset)-ndim))]){dataset[,i] <- as.vector(scale(dataset[,i]))}
                 
                 return(list(dataset=dataset, corr=dat$denv, corr2=dat$dvar, corr3=dat$dtrait))
         }

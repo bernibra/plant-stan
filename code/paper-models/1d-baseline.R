@@ -12,11 +12,26 @@ rstan_options(auto_write = TRUE)
 # - baseline model
 ####
 
-baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
-  # Fixing some of the options
-  variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
-  ndim <- 2
-  pca <- T
+baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, elevation=F, temperature=F, ofolder="../../results/models/"){
+
+  if (temperature & elevation){
+    stop("only one of 'temperature' and 'elevation' can be true")
+  }else if( temperature ){
+    # Fixing some of the options
+    variables=c("bio1_")
+    ndim <- 1
+    pca <- F
+  }else if( elevation ){
+    # Fixing some of the options
+    variables=c("elevation_")
+    ndim <- 1
+    pca <- F
+  }else{
+    # Fixing some of the options
+    variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
+    ndim <- 2
+    pca <- T
+  }
   
   # If we are dealing with simulated data
   if(simulated){
@@ -33,7 +48,7 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   
   # Load the data
   if(recompile){
-    d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
+    d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, elevation = elevation, simulated=simulated, simulated.type="gauss.gauss", min.occurrence=min.occurrence)
     # rename variables
     if(simulated){
       variables <- c("S1", "S2")
@@ -79,7 +94,16 @@ baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10,
   dat <- d$dataset
   id <- dat$id
   bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
-  X1 <- matrix(bio[,1], N, L)[,1]
+  if(elevation | temperature){
+    X1 <- matrix(bio, N, L)[,1]
+    if(elevation){
+      extension <- gsub("1d","elevation",extension)
+    }else{
+      extension <- gsub("1d","temperature",extension)
+    }
+  }else{
+    X1 <- matrix(bio[,1], N, L)[,1]
+  }
   
   dat_5.1 <- list(N=N,
                   L=L,
@@ -464,7 +488,7 @@ skew.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
   # Prepare training data for stan model
   Dis_b <- d$corr
   Dis_g <- d$corr2
-  Dis_l <- d$corr3
+  Dis_l <- d$corr
   N <- sum(d$dataset$id==1)
   L <- length(unique(d$dataset$id))
   obs <- matrix(d$dataset$obs, N, L)
@@ -543,18 +567,33 @@ skew.traits.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=
   return(mfit_5.1)
 }
 
-skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
-  # Fixing some of the options
-  variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
-  ndim <- 2
-  pca <- T
+skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, elevation=F, temperature=F, ofolder="../../results/models/"){
+
+  if (temperature & elevation){
+    stop("only one of 'temperature' and 'elevation' can be true")
+  }else if( temperature ){
+    # Fixing some of the options
+    variables=c("bio1_")
+    ndim <- 1
+    pca <- F
+  }else if( elevation ){
+    # Fixing some of the options
+    variables=c("elevation_")
+    ndim <- 1
+    pca <- F
+  }else{
+    # Fixing some of the options
+    variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
+    ndim <- 2
+    pca <- T
+  }
   
   # If we are dealing with simulated data
   if(simulated){
     extension <- "1d-skew-generror-simulated"
   }else{
     extension <- "1d-skew-generror"
-  }
+  }    
   
   if(min.occurrence==10){
     extension2 <- "-"
@@ -564,7 +603,7 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
   
   # Load the data
   if(recompile){
-    d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, simulated.type="skew.generror", min.occurrence=min.occurrence)
+    d <- species_distribution.data(variables=variables, pca=pca, ndim = ndim, simulated=simulated, elevation = elevation, simulated.type="skew.generror", min.occurrence=min.occurrence)
     # rename variables
     if(simulated){
       variables <- c("S1", "S2")
@@ -610,7 +649,16 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
   dat <- d$dataset
   id <- dat$id
   bio <- dat[,(ncol(dat)-length(variables)+1):ncol(dat)]
-  X1 <- matrix(bio[,1], N, L)[,1]
+  if(elevation | temperature){
+    X1 <- matrix(bio, N, L)[,1]
+    if(elevation){
+      extension <- gsub("1d","elevation",extension)
+    }else{
+      extension <- gsub("1d","temperature",extension)
+    }
+  }else{
+    X1 <- matrix(bio[,1], N, L)[,1]
+  }
   
   dat_5.1 <- list(N=N,
                   L=L,
@@ -685,14 +733,27 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
 
 min.occurrence <- 20
 
+# Basic analyses
 d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 # d <- readRDS("../../data/processed/jsdm/skew-generror-simulated-data.rds")
 # d <- readRDS("../../data/processed/jsdm/skew-simulated-data.rds")
 # d <- readRDS("../../data/processed/jsdm/generror-simulated-data.rds")
 
 # skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-skew.traits.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # skew.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+# Traits to explain lambda
+# skew.traits.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+# Elevation
+d <- readRDS("../../data/processed/jsdm/1d-skew-generror-elevation_min20-data.rds")
+skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=T, temperature=F, ofolder="/cluster/scratch/bemora/plant-stan/")
+# baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=T, temperature=F, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+# Temperature
+# d <- readRDS("../../data/processed/jsdm/1d-skew-generror-bio1_min20-data.rds")
+# skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=F, temperature=T, ofolder="/cluster/scratch/bemora/plant-stan/")
+# baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=F, temperature=T, ofolder="/cluster/scratch/bemora/plant-stan/")
 

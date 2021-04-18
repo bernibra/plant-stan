@@ -66,9 +66,9 @@ prepare.data.sdm <- function(absences=T){
 }
 
 prepare.sliding <- function(){
-  dat <- prepare.data()
-  
-  pi <- rethinking::PI(elevation, prob = c((1:9)*0.1))
+  # dat <- prepare.data()
+  # 
+  # pi <- rethinking::PI(elevation, prob = c((1:9)*0.1))
   
 }
 
