@@ -736,7 +736,7 @@ plot.actual.data.pairs <- function(model=NULL){
   
   # Load the data if not added  
   if(is.null(model)){
-    readRDS(paste("../../../results/models/categorical-skew-generror-min20-1d.rds", sep=""))
+    model <- readRDS(paste("../../../results/models/skew-generror-min20-elevation.rds", sep=""))
   }
   
   #indicator values

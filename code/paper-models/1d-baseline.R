@@ -748,8 +748,8 @@ d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 # skew.traits.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 # Elevation
-d <- readRDS("../../data/processed/jsdm/1d-skew-generror-elevation_min20-data.rds")
-skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=T, temperature=F, ofolder="/cluster/scratch/bemora/plant-stan/")
+# d <- readRDS("../../data/processed/jsdm/1d-skew-generror-elevation_min20-data.rds")
+# skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=T, temperature=F, ofolder="/cluster/scratch/bemora/plant-stan/")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=T, temperature=F, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 # Temperature

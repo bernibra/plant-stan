@@ -37,7 +37,8 @@ prepare.data <- function(){
   ## Extract all places and species names to loop over, and rename stuff
   sp.weighted <- colnames(dat.weighted)
   sp.codes <- cbind(sp.weighted, 1:length(sp.weighted),colSums(1*(dat.weighted>0)))
-  places.codes <- cbind(rownames(dat.weighted), 1:length(rownames(dat.weighted)), rowSums(1*(dat.weighted>0)), dat_SP$Easting, dat_SP$Northing, elevation)
+  places.codes <- cbind(rownames(dat.weighted), 1:length(rownames(dat.weighted)), rowSums(1*(dat.weighted>0)), dat_SP$Easting, dat_SP$Northing, as.vector(as.numeric(elevation)))
+  
   
   ## Rename rows and columns
   colnames(dat.weighted) <- 1:length(sp.weighted)
@@ -66,9 +67,39 @@ prepare.data.sdm <- function(absences=T){
 }
 
 prepare.sliding <- function(){
-  # dat <- prepare.data()
-  # 
-  # pi <- rethinking::PI(elevation, prob = c((1:9)*0.1))
+  dat <- prepare.data()
+  elevation <- as.numeric(dat$places[,6])
+
+  pi <- rethinking::PI(elevation, prob = c((0:10)*0.1))
+  noms <- unique(names(pi))
+  pi <- unique(pi)
+  names(pi) <- noms
   
+  for(i in 1:16){
+    condition <- (elevation>pi[i] & elevation<pi[i+5])
+    ocu <- as.matrix(dat$dat[condition,])
+    places <- dat$places[condition,]
+    sp <- dat$sp
+    Easting <- dat$coord$Easting[condition]
+    Northing <- dat$coord$Northing[condition]
+    
+    sp.codes <- cbind(sp[,1], sp[,2],colSums(1*(ocu>0)))
+    places.codes <- cbind(rownames(ocu), 1:length(rownames(ocu)), rowSums(1*(ocu>0)), places[,4], places[,5], places[,6])
+    print(c(pi[i], pi[i+5],sum(colSums(1*(ocu>0))>=20)))
+    
+    ## Save species and places codes
+    write.table(sp.codes, file = paste("../../data/properties/codes/sdm-sliding/sp_codes_",i,".csv",sep=""), quote = F, row.names = F, col.names = c("sp", "id", "range"), sep=",")
+    write.table(places.codes, file = paste("../../data/properties/codes/sdm-sliding/places_codes_",i,".csv",sep=""), quote = F, row.names = F, col.names = c("place", "id", "richness", "easting", "northing", "elevation"), sep=",")
+
+    ## loop over speces to generate presence and absence dat
+    for(j in 1:nrow(sp.codes)){
+      idx <- ocu[,j]>0 | rep(T, nrow(ocu))
+      presence <- cbind(Easting[idx], Northing[idx], ocu[idx, j])
+      
+      if(length(presence)>0){
+        write.table(presence, file = paste("../../data/processed/sdm-sliding/partition-",i,"/",as.character(j), ".csv", sep=""), quote = F, row.names = F, col.names = c("easting", "northing", "abundance"), sep = ",")
+      }
+    }
+  }
 }
 
