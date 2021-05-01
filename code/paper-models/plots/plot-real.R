@@ -966,3 +966,97 @@ plot.actual.data.distributions <- function(model=NULL){
   
 }
 
+ll.analysis <- function(model){
+  # post <- extract.samples(model, n = 1000, pars=c("log_lik", "gamma", "beta"))
+  # post$gamma <- 1/(2*post$gamma)
+  d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
+  N <- sum(d$dataset$id==1)
+  L <- length(unique(d$dataset$id))
+  dat <- d$dataset
+  X <- matrix(dat$PC1, N, L)[,1]
+  
+  pb <- txtProgressBar(min = 0, max = L, initial = 0, style = 2)
+  for(i in 1:L){
+    idxs <- sample(1:dim(post$beta)[1],10)
+    beta <- post$beta[idxs,i]
+    gamma <- post$gamma[idxs,i]
+    ll <- post$log_lik[idxs,((i-1)*N+1):(i*N)]
+    diffs <- outer(X, beta, "-")
+    diffs <- t(diffs %*% diag(1/gamma))
+    
+    diffs <- as.vector(diffs)
+    ll <- as.vector(ll)
+    if (i==1){
+      data <- data.frame( x=diffs, y=ll )
+    }else{
+      dat <- data.frame( x=diffs, y=ll )
+      data <- rbind(data, dat)
+    }
+    setTxtProgressBar(pb, i)
+  }
+  close(pb)
+  
+  p <- ggplot(data, aes(x=x, y=y) ) +
+    geom_hex() +
+    theme_bw()
+  print(p)
+}
+
+abundance.center.HP <- function(model){
+  post <- extract.samples(model, n = 1000, pars=c("log_lik","alpha", "gammav", "betam", "lambda", "nu"))
+  # post$gamma <- 1/(2*post$gamma)
+  d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
+  N <- sum(d$dataset$id==1)
+  L <- length(unique(d$dataset$id))
+  dat <- d$dataset
+  X <- matrix(dat$PC1, N, L)[,1]
+  obs <- matrix(dat$obs, N, L)
+
+  data_max <- list()
+  data_min <- list()
+  data <- list
+  for(i in 1:L){
+    idxs <- sample(1:dim(post$beta)[1],10)
+    loglik <- post$log_lik[idxs,i]
+    obs_ <- as.numeric(obs[,i])
+    beta <- post$betam[idxs,i]
+    beta <- outer(X, beta, "-")
+    gamma <- post$gammav[idxs,i]
+    gamma <- outer(rep(1, length(X)),gamma, "*")
+    alpha <- post$alpha[idxs,i]
+    alpha <- outer(rep(1, length(X)),alpha, "*")
+    lambda <- post$lambda[idxs,i]
+    lambda <- outer(rep(1, length(X)),lambda, "*")
+    nu <- post$nu[idxs,i]
+    nu <- outer(rep(1, length(X)),nu, "*")
+    
+    p <- exp(-(gamma * abs(beta)/(1+lambda*sign(beta)))**(nu))
+    
+    if(i == 1){
+      data <- data.frame(x=as.vector(p), y=as.vector(loglik))      
+    }else{
+      data_ <- data.frame(x=as.vector(p), y=as.vector(loglik))
+      data <- rbind(data, data_)
+    }
+    # data_max[[i]] = as.vector(p[obs_==obs_[which(obs_==max(obs_))[1]],])
+    # data_min[[i]] = as.vector(p[obs_==obs_[which(obs_==min(obs_))[1]],])
+  }
+  # hist(unlist(data_max))
+  # hist(unlist(data_min))
+  p <- ggplot(data, aes(x=x, y=y) ) +
+    geom_hex() +
+    scale_fill_gradient(low="lightblue1",high="darkblue",trans="log10") +
+    theme_bw()
+  print(p)
+  
+  # ggplot(data, aes(x=x, y=y) ) +
+  #   stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
+  #   scale_fill_distiller(palette=4, direction=-1) +
+  #   scale_x_continuous(expand = c(0, 0)) +
+  #   scale_y_continuous(expand = c(0, 0)) +
+  #   theme(
+  #     legend.position='none'
+  #   )
+}
+
+
