@@ -1,4 +1,4 @@
-source("./prepare-data-sliding.R")
+# source("./prepare-data-sliding.R")
 source("./models-binomial.R")
 library(rethinking)
 library(rstan)
@@ -142,5 +142,5 @@ min.occurrence <- 20
 # Basic analyses
 d <- readRDS(paste("../../data/processed/jsdm/jsdm-sliding/sliding-",as.character(i),"-skew-generror-PC1PC2data.rds", sep=""))
 
-skew.generror.1d(partition=i, d=NULL, simulated=F, recompile = T, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+skew.generror.1d(partition=i, d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
