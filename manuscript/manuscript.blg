@@ -2,56 +2,58 @@ This is BibTeX, Version 0.99d (TeX Live 2019)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: manuscript.aux
 The style file: ecology_letters2.bst.bst
-White space in argument---line 30 of file manuscript.aux
+White space in argument---line 31 of file manuscript.aux
  : \citation{rohdeLatitudinalGradientsSpecies1992,more
  :                                                     in Rapoport}
 I'm skipping whatever remains of this command
-White space in argument---line 35 of file manuscript.aux
- : \citation{good
- :                example}
+White space in argument---line 75 of file manuscript.aux
+ : \citation{Loutlain
+ :                    2015 TREE}
 I'm skipping whatever remains of this command
-Database file #1: references2.bib
-Warning--I didn't find a database entry for "review"
-Warning--I didn't find a database entry for "ref"
-You've used 42 entries,
+Database file #1: references.bib
+Warning--I didn't find a database entry for "abundant-centre-hypothesis"
+Warning--I didn't find a database entry for "bernat"
+Warning--I didn't find a database entry for "randinClimateChangePlant2009"
+Warning--I didn't find a database entry for "mcelreathStatisticalRethinkingBayesian2020"
+You've used 30 entries,
             2860 wiz_defined-function locations,
-            963 strings with 16344 characters,
-and the built_in function-call counts, 23403 in all, are:
-= -- 2136
-> -- 1501
-< -- 27
-+ -- 591
-- -- 531
-* -- 2191
-:= -- 4405
-add.period$ -- 126
-call.type$ -- 42
-change.case$ -- 386
-chr.to.int$ -- 45
-cite$ -- 42
-duplicate$ -- 833
-empty$ -- 1311
-format.name$ -- 651
-if$ -- 4295
+            889 strings with 13169 characters,
+and the built_in function-call counts, 16328 in all, are:
+= -- 1513
+> -- 997
+< -- 20
++ -- 393
+- -- 351
+* -- 1507
+:= -- 3067
+add.period$ -- 90
+call.type$ -- 30
+change.case$ -- 267
+chr.to.int$ -- 33
+cite$ -- 30
+duplicate$ -- 594
+empty$ -- 937
+format.name$ -- 439
+if$ -- 3010
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 43
-newline$ -- 216
-num.names$ -- 168
-pop$ -- 348
+missing$ -- 30
+newline$ -- 156
+num.names$ -- 120
+pop$ -- 239
 preamble$ -- 1
-purify$ -- 345
+purify$ -- 237
 quote$ -- 0
-skip$ -- 523
+skip$ -- 373
 stack$ -- 0
-substring$ -- 1374
-swap$ -- 157
-text.length$ -- 1
+substring$ -- 986
+swap$ -- 110
+text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 369
+type$ -- 264
 warning$ -- 0
-while$ -- 197
+while$ -- 141
 width$ -- 0
-write$ -- 546
+write$ -- 391
 (There were 2 error messages)

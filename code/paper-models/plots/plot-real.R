@@ -7,6 +7,7 @@ library(ggpubr)
 library(hrbrthemes)
 library(plotly)
 library(cowplot)
+library(dplyr)
 
 ####
 # Visualizing the results of some of the models
@@ -248,6 +249,12 @@ compare.models <- function(){
 
   kurtosis.median.m4 <- kurtosis.skew.generror(post.m4$nu, post.m4$lambda)
   nu_bar.m4 <- apply(kurtosis.median.m4, 1, mean)
+  
+  # kurtosis.median.m3 <- post.m3$nu
+  # nu_bar.m3 <- apply(kurtosis.median.m3, 1, median)
+  # 
+  # kurtosis.median.m4 <- post.m4$nu
+  # nu_bar.m4 <- apply(kurtosis.median.m4, 1, median)
 
   # nu_bar.m3 <- apply(post.m3$nu, 1, median)
   # nu_bar.m4 <- apply(post.m4$nu, 1, median)
@@ -293,9 +300,15 @@ compare.models <- function(){
 
   skewness.mean.m1 <- skewness.skew(post.m1$lambda)
   lambda_bar.m1 <- apply(skewness.mean.m1, 1, mean)
-  
+
   skewness.mean.m4 <- skewness.skew.generror(post.m4$nu, post.m4$lambda)
   lambda_bar.m4 <- apply(skewness.mean.m4, 1, mean)
+  
+  # skewness.mean.m1 <- post.m1$lambda
+  # lambda_bar.m1 <- apply(skewness.mean.m1, 1, median)
+  # 
+  # skewness.mean.m4 <- post.m4$lambda
+  # lambda_bar.m4 <- apply(skewness.mean.m4, 1, median)
   
   # nu_bar.m3 <- apply(post.m3$nu, 1, median)
   # nu_bar.m4 <- apply(post.m4$nu, 1, median)
@@ -343,11 +356,16 @@ compare.models <- function(){
 
 distributions.hyperparameters <- function(model=NULL){
   if(is.null(model)){
-    model <- readRDS("../../../results/models/skew-traits-min20-1d.rds")
+    model <- readRDS("../../../results/models/skew-variation-min20-1d.rds")
   }
+  # model <- readRDS("../../../results/models/skew-generror-min20-1d.rds")
   
-  post <- extract.samples(model, n = 1000, pars=c("etasq_l", "sigma_l"))
-
+  
+  # post <- extract.samples(model, n = 1000, pars=c("etasq_l", "sigma_l"))
+  post <- extract.samples(model, n = 1000, pars=c("etasq_b", "sigma_b"))
+  post$etasq_l <- post$etasq_b
+  post$sigma_l <- post$sigma_b
+  
   n <-  length(post$etasq_l)
   dat <- data.frame(
     x = c(
@@ -371,7 +389,7 @@ distributions.hyperparameters <- function(model=NULL){
     # scale_fill_grey() +
     ylab("density")+
     xlab("kurtosis")+
-    scale_x_continuous(limits = c(0, 3))+
+    scale_x_continuous(limits = c(0, 4))+
     theme(text = element_text(size=10),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -457,7 +475,8 @@ plot.actual.data <- function(model=NULL){
     
     # Scatter plot
     plist[[2]] <- plot.scatter(mu=mu_beta, variance=mu_gamma, color=colo[3], xlabel="", ylabel=expression(paste("mean ", beta)), mar=margin(5.5,5.5,5.5,5.5), ylims=ylim, xlims=xlim)
-    breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+    # breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+    breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4), digits = 1)
     plist[[2]] <- plist[[2]] + coord_trans(x="log")+
       scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
     plist[[2]] <- plist[[2]] + annotate("text", x=posx, y = posy, label=paste0(round(meanPI,2), " ± ", round(sdPI,2)), size=3)
@@ -610,6 +629,7 @@ plot.actual.data.means <- function(model=NULL){
   Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed-20.csv", sep = " ")
   Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed-20.csv", sep = " ")
   NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed-20.csv", sep = " ")
+  deta <- read.table("../../../data/properties/codes/neophytes-detailed_reindexed-20.csv", sep = " ")
   
   # extract samples
   post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
@@ -648,7 +668,7 @@ plot.actual.data.means <- function(model=NULL){
   alphas = ifelse(NEO$V3==1, 0.7, 0.6)
   color <- c("#e7298a",colo[4])
   xlab=""
-  breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4))+1
+  breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4), 1)
     
   correlations <- c()
   corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,NEO$V3==1], post$gamma[x,NEO$V3==1]))
@@ -729,7 +749,151 @@ plot.actual.data.means <- function(model=NULL){
   
 }
 
-plot.actual.data.pairs <- function(model=NULL){
+
+plot.actual.data.means.detailed <- function(model=NULL){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS("../../../results/models/baseline-min20-1d.rds")
+  }
+  
+  #indicator values
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed-20.csv", sep = " ")
+  Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed-20.csv", sep = " ")
+  NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed-20.csv", sep = " ")
+  deta <- read.table("../../../data/properties/codes/neophytes-detailed_reindexed-20.csv", sep = " ")
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=c("alpha", "gamma", "beta")) 
+  
+  # post$beta <- post$beta*(-1) 
+  post$gamma <- 1/(2*post$gamma)
+  
+  # alphas
+  mu_alpha <- apply( post$alpha , 2 , mean )
+  ci_alpha <- apply( post$alpha , 2 , PI )
+  
+  # betas
+  mu_beta <- apply(post$beta,2,mean)
+  ci_beta <- apply(post$beta,2,PI)
+  
+  # gammas
+  mu_gamma <- apply(post$gamma,2,mean)
+  ci_gamma <- apply(post$gamma,2,PI)
+  
+  plist = list()
+  ylab <- expression(paste("mean ", beta))
+  
+  idx <- sort(mu_beta,index.return=T)$ix
+  Tind_ <- as.numeric(as.character(Tind[idx,3]))
+  Tind_ <- Tind_[!(is.na(Tind_))]
+  Tind_ <- mean(Tind_[1:round(length(Tind_)*0.5)])>mean(Tind_[round(length(Tind_)*0.5):length(Tind_)])
+  Tind_ <- c("high elevation", "low elevation")[c(Tind_*1+1, (!(Tind_))*1+1)]
+  
+  ylim = c(min(mu_beta), max(mu_beta))
+  xlim = c(min(mu_gamma), max(mu_gamma))
+  posx = exp((log(xlim[2])-log(xlim[1]))*0.2 + log(xlim[1]))
+  posy = (ylim[2]-ylim[1])*0.1 + ylim[1]
+  posy = c(posy, ylim[2]-(posy-ylim[1]))
+  
+  xlab=""
+  breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4), 1)
+  
+  labs <- c("indigenous", "neophytes", "archaeophytes")
+  labels <- labs[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]
+  color <- c(colo[2],colo[4], "#e7298a")
+  alphas <- c(0.6,0.7,0.7)
+  alphas <- alphas[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]
+
+  
+  correlations <- c()
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,(deta$a+deta$ja+deta$isa)==1], post$gamma[x,(deta$a+deta$ja+deta$isa)==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("archaeophytes", corPIci))
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,(deta$n+deta$jn+deta$isn)==1], post$gamma[x,(deta$n+deta$jn+deta$isn)==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("neophytes", corPIci))
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,deta$i==1], post$gamma[x,deta$i==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("indigenous", corPIci))
+  
+  p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=color, alpha = alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+  # Scatter plot
+  p <- p + coord_trans(x="log", clip = "off")+
+    scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+  
+  p <- p+annotate("text", x = posx, y = posy, label = Tind_, colour = "#525252", size=3)+
+    ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+  title1 <- get_title(p)
+  
+  legend1 <- get_legend(p)
+  plist[[1]] <- p+theme(legend.position = "none", plot.title = element_blank())
+  labs <- c("decreasing", "decreasing low", "increasing", "stable")
+  labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+  color <- colo
+  alphas <- c(0.7,0.7,0.7,0.6)
+  alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+  xlab=expression(variance %prop% gamma^{-1})
+  
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V3==1], post$gamma[x,Tend$V3==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("decreasing", corPIci))
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V4==1], post$gamma[x,Tend$V4==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("decreasing low", corPIci))
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V5==1], post$gamma[x,Tend$V5==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("increasing", corPIci))
+  corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,Tend$V6==1], post$gamma[x,Tend$V6==1]))
+  meanPI <- mean(corPI)
+  sdPI <- sd(corPI)
+  corPIci <- round(c(meanPI, sdPI), 2)
+  correlations <- rbind(correlations, c("stable", corPIci))
+  
+  p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=color, alpha=alphas, xlabel=xlab, ylabel=ylab, mar=margin(5.5,5.5,5.5,5.5))
+  legend2 <- get_legend(p)
+  p <- p + coord_trans(x="log", clip = "off")+
+    scale_x_continuous(breaks = breaks, labels = breaks, limits = xlim)
+  p <- p+ ggtitle(label = "first axis") + theme(plot.title = element_text(hjust = 0.1, size=10))
+  plist[[2]] <- p+theme(legend.position = "none", plot.title = element_blank())
+  
+  plist[[3]] <- legend1
+  plist[[4]] <- legend2
+  
+  
+  tab <- ggtexttable(correlations, rows = NULL,cols = c("", "mean", "sd"),
+                     theme = ttheme("light",  base_size = 9))
+  tab <- tab %>%
+    tab_add_hline(at.row = 5, row.side = "top", linetype = 2)
+  
+  plist[[5]] <- tab
+  
+  hlay <- rbind(c(5,1,3),
+                c(5,2,4))
+  
+  p <- grid.arrange(grobs=plist, ncol=3, nrow=2, heights=c(1,1), layout_matrix=hlay, widths=c(1,1,0.4)#, vp=viewport(width=1, height=1, clip = TRUE),
+                    # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
+  )
+  print(p)
+  
+}
+
+plot.actual.data.pairs <- function(model=NULL, typ=1){
   # Parameters for plots
   extra <- 1
   colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
@@ -743,7 +907,13 @@ plot.actual.data.pairs <- function(model=NULL){
   Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed-20.csv", sep = " ")
   Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed-20.csv", sep = " ")
   NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed-20.csv", sep = " ")
-  
+  deta <- read.table("../../../data/properties/codes/neophytes-detailed_reindexed-20.csv", sep = " ")
+  competitive <- read.table("../../../data/properties/codes/competitive_reindexed-20.csv", sep = " ")
+  competitive$c <- (competitive$V3=="ccc" | grepl("cc",  competitive$V3))
+  competitive$r <- (competitive$V3=="rrr" | grepl("rr",  competitive$V3))
+  competitive$s <- (competitive$V3=="sss" | grepl("ss",  competitive$V3))
+  competitive$mix <- (competitive$c==0 & competitive$r==0 & competitive$s==0)  
+    
   params <- c("alpha", "gamma", "beta", "lambda", "nu")
   label <- c("amplitude", "variance", "mean", "skewness", "kurtosis")
   trans <- c("log", "log", "identity", "identity", "identity")
@@ -801,17 +971,38 @@ plot.actual.data.pairs <- function(model=NULL){
       posy <- (max(mu_beta) - min(mu_beta))*0.15 + min(mu_beta)
     }
 
-    labels = ifelse(NEO$V3==1, "neophyte", "native")
-    alphas = ifelse(NEO$V3==1, 0.7, 0.6)
-    color <- c("#e7298a",colo[4])
-    
-    p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=c(color[2],color[1]), alpha = alphas, xlabel=label_x, ylabel=label_y, mar=margin(5.5,5.5,5.5,5.5))
+    if(typ==1){
+      labels = ifelse(NEO$V3==1, "neophyte", "native")
+      alphas = ifelse(NEO$V3==1, 0.7, 0.6)
+      color <- c(colo[4], "#e7298a")
+    }else if(typ==2){
+      labs <- c("indigenous", "neophytes", "archaeophytes")
+      labels <- labs[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]
+      color <- c(colo[2],colo[4], "#e7298a")
+      alphas <- c(0.6,0.7,0.7)
+      alphas <- alphas[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]      
+    }else if(typ==3){
+      labs <- c("decreasing", "decreasing low", "increasing", "stable")
+      labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
+      color <- colo
+      alphas <- c(0.7,0.7,0.7,0.6)
+      alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]      
+    }else{
+      labs <- c("competitive", "stress-tolerant", "ruderal", "mix")
+      labels <- labs[competitive$c+competitive$s*2+competitive$r*3+competitive$mix*4]
+      color <- c(colo[3], colo[4], colo[1], colo[2])
+      alphas <- c(0.7,0.7,0.7,0.6)
+      alphas <- alphas[competitive$c+competitive$s*2+competitive$r*3+competitive$mix*4]
+    }
+
+    p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=color, alpha = alphas, xlabel=label_x, ylabel=label_y, mar=margin(5.5,5.5,5.5,5.5))
     # Scatter plot
     p <- p + coord_trans(x=transformation_x, y=transformation_y, clip = "off")
     p <- p + annotate("text", x=posx, y = posy, label=paste0("\n", corPIci_NEO), size=2, color="#e7298a")
     p <- p + annotate("text", x=posx, y = posy, label=paste0(corPIci_NATIVE, "\n"), size=2)
       # scale_x_continuous(breaks = breaks_x, labels = breaks_x, limits = xlim)+
       # scale_y_continuous(breaks = breaks_y, labels = breaks_y, limits = ylim)
+    legend <- get_legend(p)
     p <- p+theme(legend.position = "none", plot.title = element_blank())
     plist[[i]] <- p
   }
@@ -821,7 +1012,9 @@ plot.actual.data.pairs <- function(model=NULL){
 
   
   hlay <- hlay[1:(nrow(hlay)-1), 2:ncol(hlay)]
+  hlay[3:4, 1:2] <- length(plist)+1
 
+  legend <- ggplotGrob(as_ggplot(legend))
   grobs <- list()
   widths <- list()
   heights <- list()
@@ -837,7 +1030,8 @@ plot.actual.data.pairs <- function(model=NULL){
     grobs[[k]]$widths[2:5] <- as.list(maxwidth)
     grobs[[k]]$heights[2:5] <- as.list(maxheight)
   }
-  
+  grobs[[(length(plist)+1)]] <- legend
+
   # grobs[[length(grobs)+1]] <- ggplotGrob(tab)
   # hlay[(ncol(hlay)/2+1):ncol(hlay), 1:(ncol(hlay)/2)] <- length(grobs)
   # 
@@ -846,7 +1040,7 @@ plot.actual.data.pairs <- function(model=NULL){
                     # top=textGrob("First axis", rot = 0, vjust = 0.9,gp=gpar(fontsize=10)),
   )
   print(p)
-  
+  return(p)
 }
 
 plot.actual.data.distributions <- function(model=NULL){
@@ -1004,6 +1198,13 @@ ll.analysis <- function(model){
 
 abundance.center.HP <- function(model){
   post <- extract.samples(model, n = 1000, pars=c("log_lik","alpha", "gammav", "betam", "lambda", "nu"))
+  maxlog <- max(post$log_lik)
+  minlog <- min(post$log_lik)
+  
+  label_interval <- function(breaks) {
+    rowMeans(cbind(breaks[1:length(breaks) - 1], breaks[2:length(breaks)]))
+  }
+  
   # post$gamma <- 1/(2*post$gamma)
   d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
   N <- sum(d$dataset$id==1)
@@ -1011,42 +1212,96 @@ abundance.center.HP <- function(model){
   dat <- d$dataset
   X <- matrix(dat$PC1, N, L)[,1]
   obs <- matrix(dat$obs, N, L)
-
-  data_max <- list()
-  data_min <- list()
-  data <- list
-  for(i in 1:L){
-    idxs <- sample(1:dim(post$beta)[1],10)
-    loglik <- post$log_lik[idxs,i]
-    obs_ <- as.numeric(obs[,i])
-    beta <- post$betam[idxs,i]
+  
+  breaksx <- seq(from=-0.008334333, to=1.024999, length.out = 63)
+  breaksx_ <- 1:length(label_interval(breaksx))
+  breaksy <- seq(from=-10.43518, to=0.2550755, length.out = 35)
+  breaksy_ <- 1:length(label_interval(breaksy))
+  
+  data <- matrix(0, length(breaksx_), length(breaksy_))
+  
+  for(i in 1:20){
+    loglik <- post$log_lik[i,]
+    beta <- post$betam[i,]
     beta <- outer(X, beta, "-")
-    gamma <- post$gammav[idxs,i]
+    gamma <- post$gammav[i,]
     gamma <- outer(rep(1, length(X)),gamma, "*")
-    alpha <- post$alpha[idxs,i]
+    alpha <- post$alpha[i,]
     alpha <- outer(rep(1, length(X)),alpha, "*")
-    lambda <- post$lambda[idxs,i]
+    lambda <- post$lambda[i,]
     lambda <- outer(rep(1, length(X)),lambda, "*")
-    nu <- post$nu[idxs,i]
+    nu <- post$nu[i,]
     nu <- outer(rep(1, length(X)),nu, "*")
     
-    p <- exp(-(gamma * abs(beta)/(1+lambda*sign(beta)))**(nu))
+    p <- as.vector(exp(-(gamma * abs(beta)/(1+lambda*sign(beta)))**(nu)))
+    df <- data.frame(x=p, y=loglik)
     
-    if(i == 1){
-      data <- data.frame(x=as.vector(p), y=as.vector(loglik))      
+    if(i==1){
+      dat <- df
     }else{
-      data_ <- data.frame(x=as.vector(p), y=as.vector(loglik))
-      data <- rbind(data, data_)
+      dat <- rbind(dat, df)
     }
-    # data_max[[i]] = as.vector(p[obs_==obs_[which(obs_==max(obs_))[1]],])
-    # data_min[[i]] = as.vector(p[obs_==obs_[which(obs_==min(obs_))[1]],])
+    
+    df<-df%>%mutate(xcuts = cut(x, breaks = breaksx, labels = breaksx_ ))
+    df<-df%>%mutate(ycuts = cut(y, breaks =  breaksy, labels = breaksy_ ))
+    ha <- as.data.frame(df%>%group_by(xcuts, ycuts)%>%count())
+    for(k in 1:nrow(ha)){
+      data[ha[k,1], ha[k,2]] <- data[ha[k,1], ha[k,2]] + ha[k, 3]
+    }
+
   }
+  data <- log(data+1)
+  idxs <- which(data>-1, arr.ind = T)
+  # data <- sweep(data,1,rowSums(data),`/`)
+  df <- data.frame(x=label_interval(breaksx)[idxs[,1]], y=label_interval(breaksy)[idxs[,2]], value=data[idxs])
+
   # hist(unlist(data_max))
   # hist(unlist(data_min))
-  p <- ggplot(data, aes(x=x, y=y) ) +
+  p <- ggplot(dat, aes(x=x, y=y) ) +
     geom_hex() +
-    scale_fill_gradient(low="lightblue1",high="darkblue",trans="log10") +
-    theme_bw()
+    xlab("amplitude")+
+    ylab("log-likelihood contribution")+
+    coord_cartesian(clip = 'off') +
+    scale_x_continuous(expand = c(0.01, 0.01)) +
+    scale_y_continuous(expand = c(0.02, 0.02)) +
+    scale_fill_gradient(low="darkblue",high="lightblue1", trans="log10") +
+    theme_bw()+
+    theme(text = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+  print(p)
+  
+
+  # p <- ggplot(data, aes(x=x, y=y) ) +
+  #   geom_hex() +
+  #   xlab("amplitude")+
+  #   ylab("contribution")+
+  #   scale_fill_gradient(low="lightblue1",high="darkblue") +
+  #   theme_bw()
+  
+  # toanalyze <- ggplot_build(p)
+  # dd <- toanalyze$data[[1]]
+  # norm <- sapply(unique(dd$x), function(x) sum(dd$count[dd$x==x]))
+  # for(i in 1:length(unique(dd$x))){
+  #   j <- unique(dd$x)[i]
+  #   dd$count[dd$x==j] <- dd$count[dd$x==j]/norm[i]
+  # }
+  # 
+  # toanalyze$data[[1]] <- dd
+
+  p <- ggplot(df, aes(x=x, y=y, fill=value)) + geom_hex(stat="identity")+
+    xlab("amplitude")+
+    ylab("normalized contribution")+
+    coord_cartesian(clip = 'off') +
+    scale_x_continuous(expand = c(0.01, 0.01)) +
+    scale_y_continuous(expand = c(0.02, 0.02)) +
+    scale_fill_gradient(low="darkblue",high="lightblue1", trans="log10") +
+    theme_bw()+
+    theme(text = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position="none",
+          panel.border = element_blank())
   print(p)
   
   # ggplot(data, aes(x=x, y=y) ) +
@@ -1057,6 +1312,33 @@ abundance.center.HP <- function(model){
   #   theme(
   #     legend.position='none'
   #   )
+}
+
+sliding.test <- function(){
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS(paste("../../../results/models/categorical-skew-generror-min20-1d.rds", sep=""))
+  }
+  d <- readRDS("../../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
+  post <- extract.samples(model, n = 1000, pars=c("lambda")) 
+  
+  mu_ <- c()
+  mu <- c()
+  pi_ <- c()
+  pi <- c()
+  for(i in 1:9){
+    d_ <- readRDS(paste("../../../data/processed/jsdm/jsdm-sliding/sliding-",as.character(i),"-skew-generror-PC1PC2data.rds", sep=""))
+    model_ <- readRDS(paste("../../../results/models-sliding/sliding-",as.character(i),"-skew-generror.rds", sep=""))
+    # print(unique(d$dataset$id[d$dataset$real.id %in% d_$dataset$real.id]))
+    lambda <- post$lambda[,unique(d$dataset$id[d$dataset$real.id %in% d_$dataset$real.id])]
+    lambda_ <- extract.samples(model_, n = 1000, pars=c("lambda"))$lambda
+    mu_ <- c(mu_, mean(apply(lambda_, 2, mean)))
+    mu <- c(mu, mean(apply(lambda, 2, mean)))
+    # pi_ <- rbind(pi_, rethinking::PI(lambda_))
+    # pi <- rbind(pi, rethinking::PI(lambda, prob = c(0)))
+  }
+  plot(1:length(mu), mu_)
+  points(1:length(mu), mu, col="red")
 }
 
 

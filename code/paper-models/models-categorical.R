@@ -1,3 +1,68 @@
+categorical.line.multithread <- "
+functions{
+    real partial_sum(int[] y_slice,
+                   int start, int end,
+                   int N, int M, vector beta, vector phi, int[ , ] Y, row_vector X1) {
+        real lp = 0.0;
+
+        for( i in start:end){
+            for( j in 1:N ){
+                lp += ordered_logistic_lpmf( Y[i, j] | beta[i] * X1[j], phi);
+            }
+        }
+        return lp;
+    }
+}
+data{
+    int N;
+    int L;
+    int M;
+    // int K;
+    // int Y[K];
+    int Y[L, N];
+    int indices[L];
+    row_vector[N] X1;
+}
+parameters{
+    ordered[M] zphi;
+    vector[L] zbeta;
+    real beta_bar;
+    real<lower=0> sigma_b;
+}
+transformed parameters{
+    vector[L] beta;
+    vector<lower=0>[M] phi;
+    beta = zbeta * sigma_b + beta_bar;
+}
+model{
+    // matrix[L,N] p;
+
+    sigma_b ~ exponential( 1 );
+    beta_bar ~ std_normal();
+    zbeta ~ std_normal();
+    zphi ~ std_normal();
+    
+    int grainsize = 1;
+
+    target += reduce_sum(partial_sum, indices,
+                     grainsize,
+                     N, M, beta, phi, Y, X1);
+}
+generated quantities{
+    vector[L*N] log_lik;
+    int k;
+
+    k = 1;
+    for ( i in 1:L ){
+        for (j in 1:N){
+           log_lik[k] = ordered_logistic_lpmf( Y[i, j] | beta[i] * X1[j], phi);
+           k = k + 1;
+        }
+    }
+}
+"
+
+
 # Binomial 1d
 categorical.model.1d <- "
 functions{
@@ -91,6 +156,148 @@ generated quantities{
     for ( i in 1:L ){
         for (j in 1:N){
            log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)) + minp);
+           k = k + 1;
+        }
+    }
+}
+"
+
+categorical.baseline.multithread <- "
+functions{
+    matrix cov_GPL2(matrix x, real a, real b, real delta) {
+        int N = dims(x)[1];
+        matrix[N, N] K;
+
+        for (i in 1:(N-1)) {
+          K[i, i] = a + delta;
+          for (j in (i + 1):N) {
+            K[i, j] = a * exp(- b * square(x[i,j]) );
+            K[j, i] = K[i, j];
+          }
+        }
+        K[N, N] = a + delta;
+        return K;
+    }
+    real partial_sum(int[] y_slice,
+                   int start, int end,
+                   int N, int M, vector alpha, vector beta, vector gamma, vector phi, int[ , ] Y, row_vector X1, real minp ) {
+        real lp = 0.0;
+        real p;
+        vector[M+1] prob;
+
+        for( i in start:end){
+            for( j in 1:N ){
+            
+                p = exp(- alpha[i] - gamma[i] * pow(X1[j] - beta[i], 2));
+            
+                prob[1] = 1 - phi[1]*p - minp*(M+1);
+                       
+                for (k in 2:M){
+                   prob[k]  =  phi[k-1]*p - phi[k]*p + minp;
+                }
+                       
+                prob[M+1]  = phi[M]*p + minp;
+
+                lp += categorical_lpmf( Y[i, j] | prob);
+            }
+        }
+        return lp;
+    }
+}
+data{
+    int N;
+    int L;
+    int M;
+    real minp;
+    // int K;
+    // int Y[K];
+    int Y[L, N];
+    int indices[L];
+    row_vector[N] X1;
+    matrix[L,L] Dmat_b;
+    matrix[L,L] Dmat_g;
+}
+parameters{
+    ordered[M] zphi;
+    vector[L] zalpha;
+    vector[L] zbeta;
+    vector[L] zgamma;
+    real alpha_bar;
+    real beta_bar;
+    real gamma_bar;
+    real<lower=0> sigma_a;
+    real<lower=0> sigma_b;
+    real<lower=0> etasq_b;
+    real<lower=0> rhosq_b;
+    real<lower=0> sigma_g;
+    real<lower=0> etasq_g;
+    real<lower=0> rhosq_g;
+}
+transformed parameters{
+    vector[L] alpha;
+    vector[L] beta;
+    vector[L] gamma;
+    matrix[L, L] L_SIGMA_b;
+    matrix[L, L] L_SIGMA_g;
+    vector<lower=0>[M] phi;
+
+    alpha = exp(zalpha * sigma_a + alpha_bar);
+
+    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
+    beta = L_SIGMA_b * zbeta + beta_bar;
+
+    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
+    gamma = L_SIGMA_g * zgamma + gamma_bar;
+    gamma = exp(gamma);
+
+    for(i in 1:M){
+        phi[i] = exp(-exp(zphi[i]));
+    }    
+}
+model{
+    // matrix[L,N] p;
+
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    sigma_g ~ exponential( 1 );
+    etasq_b ~ exponential( 1 );
+    etasq_g ~ exponential( 1 );
+    rhosq_b ~ exponential( 0.5 );
+    rhosq_g ~ exponential( 0.5 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    gamma_bar ~ std_normal();
+    zalpha ~ std_normal();
+    zgamma ~ std_normal();
+    zbeta ~ std_normal();
+    zphi ~ std_normal();
+    
+    int grainsize = 1;
+
+    target += reduce_sum(partial_sum, indices,
+                     grainsize,
+                     N, M, alpha, beta, gamma, phi, Y, X1, minp);
+}
+generated quantities{
+    vector[L*N] log_lik;
+    int k;
+    real p;
+    vector[M+1] prob;
+    
+    k = 1;
+    for ( i in 1:L ){
+        for (j in 1:N){
+           p = exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i], 2));
+            
+           prob[1] = 1 - phi[1]*p - minp*(M+1);
+                       
+           for (l in 2:M){
+              prob[l]  =  phi[l-1]*p - phi[l]*p + minp;
+           }
+                       
+           prob[M+1]  = phi[M]*p + minp;
+
+           log_lik[k] = categorical_lpmf( Y[i, j] | prob);
            k = k + 1;
         }
     }
