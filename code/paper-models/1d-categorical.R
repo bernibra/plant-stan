@@ -1,6 +1,6 @@
 # source("../multinomial-jsdm/prepare-data.R")
 source("./models-categorical.R")
-library(rethinking)
+library(rethinking) 
 library(rstan)
 library(cmdstanr)
 
@@ -87,7 +87,7 @@ categorical.line.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
   
   # Set starting values for the parameters
   start_5.1 <- list(
-    phi = (1:dat_5.1$M)/dat_5.1$M-0.5,
+    zphi = (1:dat_5.1$M)/dat_5.1$M-0.5,
     zbeta = rep(0, dat_5.1$L),
     beta_bar = 0,
     sigma_b = 0.1
@@ -202,7 +202,7 @@ categorical.baseline.1d <- function(d = NULL, recompile = T, simulated=T, min.oc
   
   # Set starting values for the parameters
   start_5.1 <- list(
-    phi = (1:dat_5.1$M)/dat_5.1$M-0.5,
+    zphi = rep(0.5,dat_5.1$M),
     zalpha = rep(0, dat_5.1$L),
     zbeta = rep(0, dat_5.1$L),
     zgamma = rep(0, dat_5.1$L),
@@ -327,7 +327,7 @@ categorical.skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, m
 
   # Set starting values for the parameters
   start_5.1 <- list(
-    phi = (1:dat_5.1$M)/dat_5.1$M-0.5,
+    zphi = rep(0.5,dat_5.1$M),
     zalpha = rep(0, dat_5.1$L),
     zbeta = rep(0, dat_5.1$L),
     zgamma = rep(0, dat_5.1$L),

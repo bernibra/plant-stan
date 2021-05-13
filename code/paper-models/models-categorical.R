@@ -24,14 +24,13 @@ data{
     row_vector[N] X1;
 }
 parameters{
-    ordered[M] zphi;
+    ordered[M] phi;
     vector[L] zbeta;
     real beta_bar;
     real<lower=0> sigma_b;
 }
 transformed parameters{
     vector[L] beta;
-    vector<lower=0>[M] phi;
     beta = zbeta * sigma_b + beta_bar;
 }
 model{
@@ -39,9 +38,7 @@ model{
 
     sigma_b ~ exponential( 1 );
     beta_bar ~ std_normal();
-    zbeta ~ std_normal();
-    zphi ~ std_normal();
-    
+
     int grainsize = 1;
 
     target += reduce_sum(partial_sum, indices,
@@ -56,106 +53,6 @@ generated quantities{
     for ( i in 1:L ){
         for (j in 1:N){
            log_lik[k] = ordered_logistic_lpmf( Y[i, j] | beta[i] * X1[j], phi);
-           k = k + 1;
-        }
-    }
-}
-"
-
-
-# Binomial 1d
-categorical.model.1d <- "
-functions{
-    matrix cov_GPL2(matrix x, real a, real b, real delta) {
-        int N = dims(x)[1];
-        matrix[N, N] K;
-
-        for (i in 1:(N-1)) {
-          K[i, i] = a + delta;
-          for (j in (i + 1):N) {
-            K[i, j] = a * exp(- b * square(x[i,j]) );
-            K[j, i] = K[i, j];
-          }
-        }
-        K[N, N] = a + delta;
-        return K;
-    }
-}
-data{
-    int N;
-    int L;
-    real minp;
-    // int K;
-    // int Y[K];
-    int Y[L, N];
-    row_vector[N] X1;
-    matrix[L,L] Dmat_b;
-    matrix[L,L] Dmat_g;
-}
-parameters{
-    vector[L] zalpha;
-    vector[L] zbeta;
-    vector[L] zgamma;
-    real alpha_bar;
-    real beta_bar;
-    real gamma_bar;
-    real<lower=0> sigma_a;
-    real<lower=0> sigma_b;
-    real<lower=0> etasq_b;
-    real<lower=0> rhosq_b;
-    real<lower=0> sigma_g;
-    real<lower=0> etasq_g;
-    real<lower=0> rhosq_g;
-}
-transformed parameters{
-    vector[L] alpha;
-    vector[L] beta;
-    vector[L] gamma;
-    matrix[L, L] L_SIGMA_b;
-    matrix[L, L] L_SIGMA_g;
-
-    alpha = exp(zalpha * sigma_a + alpha_bar);
-
-    L_SIGMA_b = cholesky_decompose(cov_GPL2(Dmat_b, etasq_b, rhosq_b, sigma_b));
-    beta = L_SIGMA_b * zbeta + beta_bar;
-
-    L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
-    gamma = L_SIGMA_g * zgamma + gamma_bar;
-    gamma = exp(gamma);
-    
-
-}
-model{
-    // matrix[L,N] p;
-
-    sigma_a ~ exponential( 1 );
-    sigma_b ~ exponential( 1 );
-    sigma_g ~ exponential( 1 );
-    etasq_b ~ exponential( 1 );
-    etasq_g ~ exponential( 1 );
-    rhosq_b ~ exponential( 0.5 );
-    rhosq_g ~ exponential( 0.5 );
-    alpha_bar ~ normal( 0 , 1.3 );
-    beta_bar ~ std_normal();
-    gamma_bar ~ std_normal();
-    zalpha ~ std_normal();
-    zgamma ~ std_normal();
-    zbeta ~ std_normal();
-
-    for ( i in 1:L ){
-        // p[i] = exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i]));
-        Y[i] ~ binomial(1, exp(-alpha[i] - gamma[i] * columns_dot_self(X1 - beta[i])) + minp);
-    }
-    // Y ~ binomial(1, to_vector(p));
-}
-generated quantities{
-    vector[L*N] log_lik;
-    int k;
-    
-    k = 1;
-    for ( i in 1:L ){
-        for (j in 1:N){
-           log_lik[k] = binomial_lpmf(Y[i, j] | 1, exp(-alpha[i] - gamma[i] * pow(X1[j] - beta[i],2)) + minp);
            k = k + 1;
         }
     }
@@ -218,7 +115,7 @@ data{
     matrix[L,L] Dmat_g;
 }
 parameters{
-    ordered[M] zphi;
+    real<lower=0, upper=1> zphi[M];
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
@@ -239,7 +136,12 @@ transformed parameters{
     vector[L] gamma;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
-    vector<lower=0>[M] phi;
+
+    real phi[M];
+    phi[1] = zphi[1];
+    for (i in 2:M){
+       phi[i] = zphi[i] * phi[i - 1];
+    }
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
 
@@ -249,10 +151,6 @@ transformed parameters{
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
     gamma = exp(gamma);
-
-    for(i in 1:M){
-        phi[i] = exp(-exp(zphi[i]));
-    }    
 }
 model{
     // matrix[L,N] p;
@@ -270,7 +168,7 @@ model{
     zalpha ~ std_normal();
     zgamma ~ std_normal();
     zbeta ~ std_normal();
-    zphi ~ std_normal();
+    zphi ~ beta(1, 1);
     
     int grainsize = 1;
 
@@ -758,7 +656,7 @@ data{
     matrix[L,L] Dmat_g;
 }
 parameters{
-    ordered[M] zphi;
+    real<lower=0, upper=1> zphi[M];
     vector[L] zalpha;
     vector[L] zbeta;
     vector[L] zgamma;
@@ -787,7 +685,12 @@ transformed parameters{
     vector[L] nu;
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
-    vector<lower=0>[M] phi;
+    
+    real phi[M];
+    phi[1] = zphi[1];
+    for (i in 2:M){
+       phi[i] = zphi[i] * phi[i - 1];
+    }
 
     alpha = exp(zalpha * sigma_a + alpha_bar);
     nu = exp(znu * sigma_n + nu_bar)+1;
@@ -799,10 +702,6 @@ transformed parameters{
     L_SIGMA_g = cholesky_decompose(cov_GPL2(Dmat_g, etasq_g, rhosq_g, sigma_g));
     gamma = L_SIGMA_g * zgamma + gamma_bar;
     gamma = exp(gamma);
-
-    for(i in 1:M){
-        phi[i] = exp(-exp(zphi[i]));
-    }    
 }
 model{
     // matrix[L,N] p;
@@ -826,7 +725,7 @@ model{
     zbeta ~ std_normal();
     znu ~ std_normal();
     zlambda ~ std_normal();
-    zphi ~ std_normal();
+    zphi ~ beta(1, 1);
     
     int grainsize = 1;
 
