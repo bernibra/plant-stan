@@ -386,6 +386,6 @@ d <- readRDS("../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
 # d <- readRDS("../../data/processed/jsdm/skew-simulated-data.rds")
 # d <- readRDS("../../data/processed/jsdm/generror-simulated-data.rds")
 
-# categorical.skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+ categorical.skew.generror.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 # categorical.baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
-categorical.line.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# categorical.line.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")

@@ -147,7 +147,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    vector phi[M];
+    vector[M] phi;
     phi[1] = zphi[1];
     for (i in 2:M){
        phi[i] = zphi[i] * phi[i - 1];
@@ -696,7 +696,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
     
-    vector phi[M];
+    vector[M] phi;
     phi[1] = zphi[1];
     for (i in 2:M){
        phi[i] = zphi[i] * phi[i - 1];

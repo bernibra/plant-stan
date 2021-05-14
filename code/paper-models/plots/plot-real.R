@@ -1317,28 +1317,46 @@ abundance.center.HP <- function(model){
 sliding.test <- function(){
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS(paste("../../../results/models/categorical-skew-generror-min20-1d.rds", sep=""))
+    model <- readRDS(paste("../../../results/models/skew-generror-min20-1d.rds", sep=""))
   }
   d <- readRDS("../../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
   post <- extract.samples(model, n = 1000, pars=c("lambda")) 
   
-  mu_ <- c()
-  mu <- c()
-  pi_ <- c()
-  pi <- c()
-  for(i in 1:9){
+  prob <- seq(from=0, to=1, by = 0.01)
+  
+  pts <- c()
+  wtin <- 0
+  wtout <- 0
+
+  for(i in c(1:9, 12:16)){
     d_ <- readRDS(paste("../../../data/processed/jsdm/jsdm-sliding/sliding-",as.character(i),"-skew-generror-PC1PC2data.rds", sep=""))
     model_ <- readRDS(paste("../../../results/models-sliding/sliding-",as.character(i),"-skew-generror.rds", sep=""))
-    # print(unique(d$dataset$id[d$dataset$real.id %in% d_$dataset$real.id]))
-    lambda <- post$lambda[,unique(d$dataset$id[d$dataset$real.id %in% d_$dataset$real.id])]
+
     lambda_ <- extract.samples(model_, n = 1000, pars=c("lambda"))$lambda
-    mu_ <- c(mu_, mean(apply(lambda_, 2, mean)))
-    mu <- c(mu, mean(apply(lambda, 2, mean)))
-    # pi_ <- rbind(pi_, rethinking::PI(lambda_))
-    # pi <- rbind(pi, rethinking::PI(lambda, prob = c(0)))
+    
+    PIs <- apply(lambda_,2, function(x) PI(x, prob = prob))
+    rownames(PIs) <- c( 0.5 - sort(prob, decreasing = T) * 0.5, 0.5 + prob * 0.5 )
+    PIs <- unique(PIs[,1:ncol(PIs)])
+    PInames <- as.numeric(rownames(PIs))
+    
+    lambda <- post$lambda[,sort(unique(d$dataset$id[d$dataset$real.id %in% d_$dataset$real.id]))]
+    
+    meanl <- apply(lambda, 2, mean)
+    minl <- sapply(1:length(meanl), function(x) min(PInames[PIs[,x] > meanl[x]]))
+    maxl <- sapply(1:length(meanl), function(x) max(PInames[PIs[,x] < meanl[x]]))
+
+    infi <- is.infinite(minl) | is.infinite(maxl)
+    wtout <- wtout + sum(infi)
+    wtin <- wtin + sum(!(infi))
+    
+    minl <- minl[!(infi)]
+    maxl <- maxl[!(infi)]
+    
+    pts <- c(pts, colMeans(rbind(minl,maxl)))
   }
-  plot(1:length(mu), mu_)
-  points(1:length(mu), mu, col="red")
+
+ print(paste("Less than ",as.character(round(wtout/(wtout+wtin),2)*100),
+             "% of the posterior distributions for lambda estimated with the bootstrapped data do not contain the mean lambda estimated with the full dataset"),  sep="")
 }
 
 
