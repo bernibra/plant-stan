@@ -90,7 +90,10 @@ categorical.line.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
     zphi = (1:dat_5.1$M)/dat_5.1$M-0.5,
     zbeta = rep(0, dat_5.1$L),
     beta_bar = 0,
-    sigma_b = 0.1
+    sigma_b = 0.1,
+    zalpha = rep(0, dat_5.1$L),
+    alpha_bar = 0,
+    sigma_a = 0.1
   )
   
   # Initialize data structure
@@ -107,8 +110,8 @@ categorical.line.1d <- function(d = NULL, recompile = T, simulated=T, min.occurr
                                 chains = 3,
                                 threads_per_chain = 10,
                                 parallel_chains = 3,
-                                # max_treedepth = 15,
-                                # max_depth = 15,
+                                max_treedepth = 15,
+                                max_depth = 15,
                                 iter_sampling = 1000,
                                 #adapt_delta = 0.95,
                                 refresh = 100)

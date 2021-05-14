@@ -1,3 +1,74 @@
+
+line.1d.multithread <- "
+functions{
+    real partial_sum(int[] y_slice,
+                   int start, int end,
+                   int N, vector alpha, vector beta, int[ , ] Y, row_vector X1) {
+        real lp = 0.0;
+        for( i in start:end){
+            for( j in 1:N ){
+                lp += binomial_lpmf( Y[i, j] | 1 , inv_logit( alpha[i] + X1[j] * beta[i] ) );
+            }
+        }
+        return lp;
+    }
+}
+data{
+    int N;
+    int L;
+    // int K;
+    // int Y[K];
+    int Y[L, N];
+    int indices[L];
+    row_vector[N] X1;
+}
+parameters{
+    vector[L] zalpha;
+    vector[L] zbeta;
+    real alpha_bar;
+    real beta_bar;
+    real<lower=0> sigma_a;
+    real<lower=0> sigma_b;
+}
+transformed parameters{
+    vector[L] alpha;
+    vector[L] beta;
+    
+    beta = zbeta * sigma_b + beta_bar;
+    alpha = zalpha * sigma_a + alpha_bar;
+
+}
+model{
+    // matrix[L,N] p;
+
+    sigma_a ~ exponential( 1 );
+    sigma_b ~ exponential( 1 );
+    alpha_bar ~ normal( 0 , 1.3 );
+    beta_bar ~ std_normal();
+    zalpha ~ std_normal();
+    zbeta ~ std_normal();
+
+    int grainsize = 1;
+
+    target += reduce_sum(partial_sum, indices,
+                     grainsize,
+                     N, alpha, beta, Y, X1);
+
+}
+generated quantities{
+    vector[L*N] log_lik;
+    int k;
+    
+    k = 1;
+    for ( i in 1:L ){
+        for (j in 1:N){
+           log_lik[k] = binomial_lpmf(Y[i, j] | 1, inv_logit( alpha[i] + X1[j] * beta[i] ) );
+           k = k + 1;
+        }
+    }
+}
+"
+
 # Binomial 1d
 base.model.1d <- "
 functions{

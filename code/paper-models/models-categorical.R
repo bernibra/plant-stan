@@ -2,12 +2,12 @@ categorical.line.multithread <- "
 functions{
     real partial_sum(int[] y_slice,
                    int start, int end,
-                   int N, int M, vector beta, vector phi, int[ , ] Y, row_vector X1) {
+                   int N, int M, vector alpha, vector beta, vector phi, int[ , ] Y, row_vector X1) {
         real lp = 0.0;
 
         for( i in start:end){
             for( j in 1:N ){
-                lp += ordered_logistic_lpmf( Y[i, j] | beta[i] * X1[j], phi);
+                lp += ordered_logistic_lpmf( Y[i, j] | alpha[i] + beta[i] * X1[j], phi);
             }
         }
         return lp;
@@ -28,22 +28,32 @@ parameters{
     vector[L] zbeta;
     real beta_bar;
     real<lower=0> sigma_b;
+    vector[L] zalpha;
+    real alpha_bar;
+    real<lower=0> sigma_a;
 }
 transformed parameters{
     vector[L] beta;
+    vector[L] alpha;
+    
     beta = zbeta * sigma_b + beta_bar;
+    alpha = zalpha * sigma_a + alpha_bar;
 }
 model{
     // matrix[L,N] p;
 
     sigma_b ~ exponential( 1 );
     beta_bar ~ std_normal();
+    zbeta ~ std_normal();
+    sigma_a ~ exponential( 1 );
+    alpha_bar ~ normal(0,1.5);
+    zalpha ~ std_normal();
 
     int grainsize = 1;
 
     target += reduce_sum(partial_sum, indices,
                      grainsize,
-                     N, M, beta, phi, Y, X1);
+                     N, M, alpha, beta, phi, Y, X1);
 }
 generated quantities{
     vector[L*N] log_lik;
@@ -52,7 +62,7 @@ generated quantities{
     k = 1;
     for ( i in 1:L ){
         for (j in 1:N){
-           log_lik[k] = ordered_logistic_lpmf( Y[i, j] | beta[i] * X1[j], phi);
+           log_lik[k] = ordered_logistic_lpmf( Y[i, j] | alpha[i] + beta[i] * X1[j], phi);
            k = k + 1;
         }
     }
@@ -137,7 +147,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
 
-    real phi[M];
+    vector phi[M];
     phi[1] = zphi[1];
     for (i in 2:M){
        phi[i] = zphi[i] * phi[i - 1];
@@ -686,7 +696,7 @@ transformed parameters{
     matrix[L, L] L_SIGMA_b;
     matrix[L, L] L_SIGMA_g;
     
-    real phi[M];
+    vector phi[M];
     phi[1] = zphi[1];
     for (i in 2:M){
        phi[i] = zphi[i] * phi[i - 1];
