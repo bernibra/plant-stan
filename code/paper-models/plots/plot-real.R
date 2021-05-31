@@ -923,6 +923,10 @@ plot.actual.data.pairs <- function(model=NULL, typ=1){
   post <- extract.samples(model, n = 1000, pars=params) 
   post$gamma <- 1/(2*post$gamma)
   post$alpha <- exp(-post$alpha)
+  kurtosis <- kurtosis.skew.generror(post$nu, post$lambda)
+  skewness <- skewness.skew.generror(post$nu, post$lambda)
+  post$nu <- kurtosis
+  post$lambda <- skewness
   
   plist <- list()
   hlay <- matrix(NA, nrow=length(params), ncol=length(params))
@@ -1043,6 +1047,177 @@ plot.actual.data.pairs <- function(model=NULL, typ=1){
   return(p)
 }
 
+plot.pairs.manuscript <- function(model=NULL, typ=1){
+  # Parameters for plots
+  extra <- 1
+  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
+  
+  # Load the data if not added  
+  if(is.null(model)){
+    model <- readRDS(paste("../../../results/models/skew-generror-min20-elevation.rds", sep=""))
+  }
+  # log10_rev_trans <- trans_new(
+  #   "log10_rev",
+  #   function(x) exp(-exp(x)),
+  #   log_breaks(10),
+  #   domain = c(-Inf, Inf)
+  # )
+  
+  #indicator values
+  Tind <- read.table("../../../data/properties/codes/temperature_indicator_reindexed-20.csv", sep = " ")
+  Tend <- read.table("../../../data/properties/codes/change-tendency_reindexed-20.csv", sep = " ")
+  NEO <- read.table("../../../data/properties/codes/neophytes-list_reindexed-20.csv", sep = " ")
+  deta <- read.table("../../../data/properties/codes/neophytes-detailed_reindexed-20.csv", sep = " ")
+  competitive <- read.table("../../../data/properties/codes/competitive_reindexed-20.csv", sep = " ")
+  competitive$c <- (competitive$V3=="ccc" | grepl("cc",  competitive$V3))
+  competitive$r <- (competitive$V3=="rrr" | grepl("rr",  competitive$V3))
+  competitive$s <- (competitive$V3=="sss" | grepl("ss",  competitive$V3))
+  competitive$mix <- (competitive$c==0 & competitive$r==0 & competitive$s==0)  
+  
+  params <- c("beta", "gamma", "alpha", "lambda", "nu")
+  params2 <- c("beta", "gamma_log", "alpha_log", "lambda", "nu")
+  label <- c("mean", expression(paste("variance (" %prop% gamma^{-1}, ")", "")), expression(paste("amplitude (", e^{-alpha}, ")", "")), "skewness", "kurtosis")
+  trans <- c("identity", "log", "log", "identity", "identity")
+  ylabel <- c("", expression(paste("mean (", beta, ")")), "", expression(paste("mean (", beta, ")")), "")
+  
+  
+  # extract samples
+  post <- extract.samples(model, n = 1000, pars=params) 
+  post$alpha_log <- log(post$alpha)
+  post$gamma_log <- log(post$gamma)
+  post$gamma <- 1/(2*post$gamma)
+  post$alpha <- exp(-post$alpha)
+  kurtosis <- kurtosis.skew.generror(post$nu, post$lambda)
+  skewness <- skewness.skew.generror(post$nu, post$lambda)
+  post$nu <- kurtosis
+  post$lambda <- skewness
+  
+  plist <- list()
+  plist2 <- list()
+  reference <- 1
+  
+  for( i in 2:length(params)){
+    # betas
+    mu_beta <- apply(post[[params[reference]]],2,mean)
+    ci_beta <- apply(post[[params[reference]]],2,PI)
+    mu <- apply(post[[params2[reference]]],2,mean)
+    transformation_y <- trans[reference]
+    label_y <- ylabel[i]
+    
+    # gammas
+    mu_gamma <- apply(post[[params[i]]],2,mean)
+    ci_gamma <- apply(post[[params[i]]],2,PI)
+    gamma <- apply(post[[params2[i]]],2,mean)
+    transformation_x <- trans[i]
+    label_x <- label[i]
+  
+    labs <- c("indigenous", "recent\nrange expanders", "historical\nrange expanders")
+    labels <- labs[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]
+    color <- c("#e6ab02","gray", "#1b9e77")
+    alphas <- c(1,0.5,1)
+    labels_ <- as.vector(matrix(labels, nrow(post$beta), length(labels), byrow = T))
+    
+    # p <- plot.scatter2(mu=mu_beta, variance=mu_gamma, label = labels, color=color, alpha = alphas, xlabel=label_x, ylabel=label_y, mar=margin(5.5,5.5,5.5,5.5))
+    # Scatter plot
+    df <- data.frame(mean=mu_beta, variance=mu_gamma, label=labels)
+    # df2 <- data.frame(y=mu, x=gamma, group=labels_)
+    df2 <- data.frame(y=mu, x=gamma, group=labels)
+    
+    p <- ggplot(df2,  aes(x=x, y=y, fill = group, colour=group))+
+      stat_ellipse(geom="polygon",
+                   alpha = 0,
+                   show.legend = FALSE,
+                   level = 0.682)+
+      scale_color_manual(values=color)
+    df2 <- ggplot_build(p)$data[[1]]
+    
+    extra <- 0
+    xrange <- c(min(df$variance), max(df$variance))
+    deltax <- (xrange[2]-xrange[1])*extra
+    xrange_ <- c(xrange[1]-deltax, xrange[2]+deltax)
+    
+    yrange <- c(min(df$mean), max(df$mean))
+    deltay <- (yrange[2]-yrange[1])*extra
+    yrange_ <- c(yrange[1]-deltay, yrange[2]+deltay)
+    
+    if(params[i]=="alpha"){
+      df2$x <- exp(-exp(df2$x))
+      deltax <- (log(xrange[2])-log(xrange[1]))*extra
+      xrange_ <- c(exp(log(xrange[1])-deltax), exp(log(xrange[2])+deltax))
+    }
+    if(params[i]=="gamma"){
+      df2$x <- 1/(2*exp(df2$x))
+      deltax <- (log(xrange[2])-log(xrange[1]))*extra
+      xrange_ <- c(exp(log(xrange[1])-deltax), exp(log(xrange[2])+deltax))
+    }
+    
+    p <- ggplot(df, aes(x=variance, y=mean, color=label, alpha=label)) + 
+      # stat_ellipse(geom="polygon", aes(fill = label),
+      #              alpha = 0,
+      #              show.legend = FALSE,
+      #              level = 0.682) +
+      # geom_path(data=df2[df2$group==1, ], aes(x=x, y=y), alpha=0.6, color=df2[df2$group==1,]$colour[1], linetype=1)+
+      # geom_path(data=df2[df2$group==2, ], aes(x=x, y=y), alpha=0.6, color=df2[df2$group==2,]$colour[1], linetype=1)+
+      # geom_path(data=df2[df2$group==3, ], aes(x=x, y=y), alpha=0.6, color=df2[df2$group==3,]$colour[1], linetype=1)+
+      geom_point()+
+      coord_trans(x=transformation_x, y=transformation_y, clip = "off",
+                  xlim = xrange_,
+                  ylim = yrange_ ) +
+      scale_color_manual(values=color)+
+      scale_alpha_manual(values=alphas)+
+      ylab(label_y)+
+      xlab(label_x)+
+      scale_x_continuous(expand = expansion(add = c(0, 0)))+
+      scale_y_continuous(expand = expansion(add = c(0, 0)))+
+      theme_bw() + 
+      theme(legend.title = element_blank(),
+            text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.2),
+            plot.margin = margin(5.5,5.5,5.5,5.5)
+      )
+    
+  
+    legend <- get_legend(p)
+
+    p <- p+theme(legend.position = "none", plot.title = element_blank())
+    plist[[(i-1)]] <- p
+    
+    # # plist2[[(i-1)]] <- 
+    # df <- data.frame(x=mu, y=gamma, group=labels_)
+    # plist2[[(i-1)]] <- ggplot(df, aes(x = x, y = y, group = group))+
+    #   geom_density_2d_filled(aes(fill = group), alpha = 0.5)+
+    #   theme_bw()+
+    #   theme(legend.position = "none")
+  }
+  
+  legend <- ggplotGrob(as_ggplot(legend))
+  grobs <- list()
+  widths <- list()
+  heights <- list()
+  
+  for (k in 1:length(plist)){
+    grobs[[k]] <- ggplotGrob(plist[[k]])
+    widths[[k]] <- grobs[[k]]$widths[2:5]
+    heights[[k]] <- grobs[[k]]$heights[2:5]
+  }    
+  maxwidth <- do.call(grid::unit.pmax, widths)
+  maxheight <- do.call(grid::unit.pmax, heights)
+  for (k in 1:length(grobs)){
+    grobs[[k]]$widths[2:5] <- as.list(maxwidth)
+    grobs[[k]]$heights[2:5] <- as.list(maxheight)
+  }
+  grobs[[(length(plist)+1)]] <- legend
+  
+  hlay <- rbind(c(1,2,5),c(3,4,5))
+  p <- grid.arrange(grobs=grobs, ncol=3, nrow=2, layout_matrix=hlay, widths=c(1,1,0.5))
+  print(p)
+  
+  return(p)
+}
+
+
 plot.actual.data.distributions <- function(model=NULL){
   # Parameters for plots
   meansample=T
@@ -1136,7 +1311,6 @@ plot.actual.data.distributions <- function(model=NULL){
     plist[[i]] <- p
   }
   
-
   grobs <- list()
   widths <- list()
   heights <- list()
@@ -1160,50 +1334,15 @@ plot.actual.data.distributions <- function(model=NULL){
   
 }
 
-ll.analysis <- function(model){
-  # post <- extract.samples(model, n = 1000, pars=c("log_lik", "gamma", "beta"))
-  # post$gamma <- 1/(2*post$gamma)
-  d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
-  N <- sum(d$dataset$id==1)
-  L <- length(unique(d$dataset$id))
-  dat <- d$dataset
-  X <- matrix(dat$PC1, N, L)[,1]
-  
-  pb <- txtProgressBar(min = 0, max = L, initial = 0, style = 2)
-  for(i in 1:L){
-    idxs <- sample(1:dim(post$beta)[1],10)
-    beta <- post$beta[idxs,i]
-    gamma <- post$gamma[idxs,i]
-    ll <- post$log_lik[idxs,((i-1)*N+1):(i*N)]
-    diffs <- outer(X, beta, "-")
-    diffs <- t(diffs %*% diag(1/gamma))
-    
-    diffs <- as.vector(diffs)
-    ll <- as.vector(ll)
-    if (i==1){
-      data <- data.frame( x=diffs, y=ll )
-    }else{
-      dat <- data.frame( x=diffs, y=ll )
-      data <- rbind(data, dat)
-    }
-    setTxtProgressBar(pb, i)
-  }
-  close(pb)
-  
-  p <- ggplot(data, aes(x=x, y=y) ) +
-    geom_hex() +
-    theme_bw()
-  print(p)
-}
-
-abundance.center.HP <- function(model){
+abundance.center.HP.hex <- function(model){
+  library(hexbin)
   post <- extract.samples(model, n = 1000, pars=c("log_lik","alpha", "gammav", "betam", "lambda", "nu"))
   maxlog <- max(post$log_lik)
   minlog <- min(post$log_lik)
   
-  label_interval <- function(breaks) {
-    rowMeans(cbind(breaks[1:length(breaks) - 1], breaks[2:length(breaks)]))
-  }
+  # label_interval <- function(breaks) {
+  #   rowMeans(cbind(breaks[1:length(breaks) - 1], breaks[2:length(breaks)]))
+  # }
   
   # post$gamma <- 1/(2*post$gamma)
   d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
@@ -1213,14 +1352,20 @@ abundance.center.HP <- function(model){
   X <- matrix(dat$PC1, N, L)[,1]
   obs <- matrix(dat$obs, N, L)
   
-  breaksx <- seq(from=-0.008334333, to=1.024999, length.out = 63)
-  breaksx_ <- 1:length(label_interval(breaksx))
-  breaksy <- seq(from=-10.43518, to=0.2550755, length.out = 35)
-  breaksy_ <- 1:length(label_interval(breaksy))
+  xlim <- c(0, 1.0)
+  ylim <- c(minlog, maxlog)
+  dat <- expand.grid(seq(from=xlim[1], to=xlim[2], length.out = 1000),
+                     seq(from=ylim[1], to=ylim[2], length.out = 1000))
+  xbins <- 25
   
-  data <- matrix(0, length(breaksx_), length(breaksy_))
+  z.hex <- hexbin(dat$Var1, dat$Var2, xbnds = xlim, ybnds = ylim, xbins = xbins, IDs = T)
+  data <- rep(0,max(as.numeric(names(table(z.hex@cID)))))
+  finaldata <- data.frame(hexbin::hcell2xy(z.hex),
+                          cell = z.hex@cell,
+                          count = z.hex@count)
+  normalization <- finaldata
   
-  for(i in 1:20){
+  for(i in 1:500){
     loglik <- post$log_lik[i,]
     beta <- post$betam[i,]
     beta <- outer(X, beta, "-")
@@ -1234,84 +1379,252 @@ abundance.center.HP <- function(model){
     nu <- outer(rep(1, length(X)),nu, "*")
     
     p <- as.vector(exp(-(gamma * abs(beta)/(1+lambda*sign(beta)))**(nu)))
-    df <- data.frame(x=p, y=loglik)
     
-    if(i==1){
-      dat <- df
-    }else{
-      dat <- rbind(dat, df)
+    z.hex_ <- hexbin(p, loglik, xbnds = xlim, ybnds = ylim, xbins = xbins, IDs = T)
+    z.hex_ <- table(z.hex_@cID)
+    z.hex_id <- as.numeric(names(z.hex_))
+    
+    for(k in 1:length(z.hex_)){
+      data[z.hex_id[k]] <- data[z.hex_id[k]] + z.hex_[k]
     }
     
-    df<-df%>%mutate(xcuts = cut(x, breaks = breaksx, labels = breaksx_ ))
-    df<-df%>%mutate(ycuts = cut(y, breaks =  breaksy, labels = breaksy_ ))
-    ha <- as.data.frame(df%>%group_by(xcuts, ycuts)%>%count())
-    for(k in 1:nrow(ha)){
-      data[ha[k,1], ha[k,2]] <- data[ha[k,1], ha[k,2]] + ha[k, 3]
-    }
-
   }
-  data <- log(data+1)
-  idxs <- which(data>-1, arr.ind = T)
-  # data <- sweep(data,1,rowSums(data),`/`)
-  df <- data.frame(x=label_interval(breaksx)[idxs[,1]], y=label_interval(breaksy)[idxs[,2]], value=data[idxs])
-
-  # hist(unlist(data_max))
-  # hist(unlist(data_min))
-  p <- ggplot(dat, aes(x=x, y=y) ) +
-    geom_hex() +
-    xlab("amplitude")+
-    ylab("log-likelihood contribution")+
-    coord_cartesian(clip = 'off') +
-    scale_x_continuous(expand = c(0.01, 0.01)) +
-    scale_y_continuous(expand = c(0.02, 0.02)) +
-    scale_fill_gradient(low="darkblue",high="lightblue1", trans="log10") +
-    theme_bw()+
-    theme(text = element_text(size=11),
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank())
-  print(p)
   
-
-  # p <- ggplot(data, aes(x=x, y=y) ) +
-  #   geom_hex() +
-  #   xlab("amplitude")+
-  #   ylab("contribution")+
-  #   scale_fill_gradient(low="lightblue1",high="darkblue") +
-  #   theme_bw()
+  finaldata2 <- finaldata
+  finaldata3 <- finaldata
   
-  # toanalyze <- ggplot_build(p)
-  # dd <- toanalyze$data[[1]]
-  # norm <- sapply(unique(dd$x), function(x) sum(dd$count[dd$x==x]))
-  # for(i in 1:length(unique(dd$x))){
-  #   j <- unique(dd$x)[i]
-  #   dd$count[dd$x==j] <- dd$count[dd$x==j]/norm[i]
-  # }
-  # 
-  # toanalyze$data[[1]] <- dd
+  finaldata$count <- data
+  finaldata <- finaldata[finaldata$count!=0,]
+  finaldata$line <- "white"
+  finaldata$count[finaldata$y>log(0.50)] <- log(0)
+  finaldata$line[finaldata$y<=log(0.50)] <- "gray50"
 
-  p <- ggplot(df, aes(x=x, y=y, fill=value)) + geom_hex(stat="identity")+
-    xlab("amplitude")+
-    ylab("normalized contribution")+
+  finaldata$count[!(is.infinite(finaldata$count))] <- finaldata$count[!(is.infinite(finaldata$count))]/sum(  finaldata$count[!(is.infinite(finaldata$count))])
+  
+  p <- ggplot(finaldata, aes(x=x, y=y, fill=count, colour=line, size=line)) + 
+    geom_hex(stat="identity", alpha=1) +
+    xlab("normalized probability") +
+    ylab("log-likelihood") +
+    annotate("text", x = c(0.02, 0.98), y = c(1, 1), label = c("tails", "center"), colour = "#525252", size=3) +
     coord_cartesian(clip = 'off') +
-    scale_x_continuous(expand = c(0.01, 0.01)) +
-    scale_y_continuous(expand = c(0.02, 0.02)) +
-    scale_fill_gradient(low="darkblue",high="lightblue1", trans="log10") +
-    theme_bw()+
+    scale_x_continuous(expand = c(0.02, 0.02)) +
+    scale_y_continuous(expand = c(0.02, 0.02), limits = c(min(finaldata$y)-0.2, 1.2)) +
+    # scale_fill_distiller(limits= c(-0.001,max(finaldata$count)), palette = "PuRd", direction=1, na.value = "white", labels = as.vector(sapply(1:5, function(ll) paste(ll, "%", sep=""))) , breaks = c(1:5*0.01)) +
+    scale_fill_distiller(limits= c(-0.002,max(finaldata$count)), palette = "PuRd", direction=1, na.value = "white", labels = as.vector(sapply(c(1, 1+1:5*2), function(ll) paste(ll, "%", sep=""))) , breaks = c(1, 1+1:5*2)*0.01) +
+    # scale_fill_gradient(low="#e7d4e8",high="#1b7837", na.value = "white") +
+    scale_color_manual(values=c("white", "gray50")) +
+    scale_size_manual(values=c(0, 0.2)) +
+    # scale_fill_gradient(low="lightblue1",high="darkblue") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue", trans="log10") +
+    theme_bw() +
+    guides(color = FALSE, size = FALSE) +
     theme(text = element_text(size=11),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          legend.position="none",
-          panel.border = element_blank())
+          legend.background = element_blank(),
+          legend.title = element_blank())
+  print(p)
+
+  finaldata2$count <- data
+  finaldata2 <- finaldata2[finaldata2$count!=0,]
+  finaldata2 <- finaldata2[finaldata2$y<=log(0.50),]
+  
+  finaldata2$count <- finaldata2$count/sum(  finaldata2$count )
+  
+  p <- ggplot(finaldata2, aes(x=x, y=y, fill=count)) + 
+    geom_hex(stat="identity",size=0.2, alpha=1) +
+    xlab("normalized probability") +
+    ylab("log-likelihood") +
+    annotate("text", x = c(0.02, 0.98), y = c(-0.17, -0.17), label = c("tails", "center"), colour = "#525252", size=3) +
+    coord_cartesian(clip = 'off') +
+    scale_x_continuous(expand = c(0.02, 0.02)) +
+    scale_y_continuous(expand = c(0.02, 0.02), limits = c(min(finaldata$y)-0.2, 0)) +
+    # scale_fill_distiller(limits= c(-0.001,max(finaldata$count)), palette = "PuRd", direction=1, na.value = "white", labels = as.vector(sapply(1:5, function(ll) paste(ll, "%", sep=""))) , breaks = c(1:5*0.01)) +
+    scale_fill_distiller(limits= c(-0.002,max(finaldata$count)), palette = "PuRd", direction=1, na.value = "white", labels = as.vector(sapply(c(1, 1+1:5*2), function(ll) paste(ll, "%", sep=""))) , breaks = c(1, 1+1:5*2)*0.01) +
+    # scale_fill_gradient(low="#e7d4e8",high="#1b7837", na.value = "white") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue", trans="log10") +
+    theme_bw() +
+    guides(color = FALSE, size = FALSE) +
+    theme(text = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.background = element_blank(),
+          legend.title = element_blank())
   print(p)
   
-  # ggplot(data, aes(x=x, y=y) ) +
-  #   stat_density_2d(aes(fill = ..density..), geom = "raster", contour = FALSE) +
-  #   scale_fill_distiller(palette=4, direction=-1) +
-  #   scale_x_continuous(expand = c(0, 0)) +
-  #   scale_y_continuous(expand = c(0, 0)) +
-  #   theme(
-  #     legend.position='none'
-  #   )
+  finaldata3$count <- data
+  finaldata3 <- finaldata3[finaldata3$count!=0,]
+  finaldata3$count <- finaldata3$count/sum(  finaldata3$count )
+  
+  p <- ggplot(finaldata3, aes(x=x, y=y, fill=count)) + 
+    geom_hex(stat="identity", alpha=1) +
+    xlab("normalized probability") +
+    ylab("log-likelihood") +
+    annotate("text", x = c(0.02, 0.98), y = c(1, 1), label = c("tails", "center"), colour = "#525252", size=3) +
+    coord_cartesian(clip = 'off') +
+    scale_x_continuous(expand = c(0.02, 0.02)) +
+    scale_y_continuous(expand = c(0.02, 0.02), limits = c(min(finaldata$y)-0.2, 1.2)) +
+    scale_fill_distiller(limits= c(min(finaldata3$count),max(finaldata3$count)), palette = "PuRd", direction=1, na.value = "white", labels = as.vector(sapply(seq(from=0.02,to=0.26, length.out = 5)*100, function(ll) paste(ll, "%", sep=""))) , breaks = seq(from=0.02,to=0.26, length.out = 5)) +
+    # scale_fill_distiller(limits= c(min(finaldata3$count),max(finaldata3$count)), palette = "PuRd", direction=1, na.value = "white", labels = as.vector(sapply(seq(from=0.02,to=0.26, length.out = 5)*100, function(ll) paste(ll, "%", sep=""))) , breaks = seq(from=0.02,to=0.26, length.out = 5)) +
+    # scale_fill_gradient(low="#e7d4e8",high="#1b7837", na.value = "white") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue", trans="log10") +
+    theme_bw() +
+    guides(color = FALSE, size = FALSE) +
+    theme(text = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.background = element_blank(),
+          legend.title = element_blank())
+  print(p)
+  
+}
+
+line.HP.hex <- function(model){
+  library(hexbin)
+  post <- extract.samples(model, n = 1000, pars=c("log_lik","alpha", "beta"))
+  maxlog <- max(post$log_lik)
+  minlog <- min(post$log_lik)
+  
+  # label_interval <- function(breaks) {
+  #   rowMeans(cbind(breaks[1:length(breaks) - 1], breaks[2:length(breaks)]))
+  # }
+  
+  # post$gamma <- 1/(2*post$gamma)
+  d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
+  N <- sum(d$dataset$id==1)
+  L <- length(unique(d$dataset$id))
+  dat <- d$dataset
+  X <- matrix(dat$PC1, N, L)[,1]
+  obs <- matrix(dat$obs, N, L)
+  
+  xlim <- c(0, 1.0)
+  ylim <- c(minlog, maxlog)
+  dat <- expand.grid(seq(from=xlim[1], to=xlim[2], length.out = 1000),
+                     seq(from=ylim[1], to=ylim[2], length.out = 1000))
+  
+  z.hex <- hexbin(dat$Var1, dat$Var2, xbnds = xlim, ybnds = ylim, xbins = 30, IDs = T)
+  data <- rep(0,max(as.numeric(names(table(z.hex@cID)))))
+  finaldata <- data.frame(hexbin::hcell2xy(z.hex),
+                          cell = z.hex@cell,
+                          count = z.hex@count)
+  normalization <- finaldata
+  
+  for(i in 1:100){
+    loglik <- post$log_lik[i,]
+    beta <- post$beta[i,]
+    beta <- outer(X, beta, "*")
+    alpha <- post$alpha[i,]
+    alpha <- outer(rep(1, length(X)),alpha, "*")
+    
+    p <- as.vector(inv_logit(alpha + beta))
+    
+    z.hex_ <- hexbin(p, loglik, xbnds = xlim, ybnds = ylim, xbins = 30, IDs = T)
+    z.hex_ <- table(z.hex_@cID)
+    z.hex_id <- as.numeric(names(z.hex_))
+    
+    for(k in 1:length(z.hex_)){
+      data[z.hex_id[k]] <- data[z.hex_id[k]] + z.hex_[k]
+    }
+    
+  }
+  finaldata$count <- data
+  finaldata <- finaldata[finaldata$count!=0,]
+  finaldata$line <- "white"
+  finaldata$count[finaldata$y>log(0.50)] <- log(0)
+  finaldata$line[finaldata$y<=log(0.50)] <- "gray50"
+  
+  p <- ggplot(finaldata, aes(x=x, y=y, fill=count, colour=line)) + 
+    geom_hex(stat="identity",size=0.1) +
+    xlab("normalized amplitude") +
+    ylab("log-likelihood") +
+    coord_cartesian(clip = 'off') +
+    # scale_x_continuous(expand = c(0.01, 0.01)) +
+    # scale_y_continuous(expand = c(0.02, 0.02)) +
+    scale_fill_distiller(palette = "OrRd", direction=1, na.value = "#f0f0f0" ) +
+    # scale_fill_gradient(low="#e7d4e8",high="#1b7837", na.value = "white") +
+    scale_color_manual(values=c("gray80", "gray75")) +
+    # scale_fill_gradient(low="lightblue1",high="darkblue") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue", trans="log10") +
+    theme_bw() +
+    theme(text = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position="none")
+  print(p)
+  
+}
+
+gaussian.HP.hex <- function(model){
+  library(hexbin)
+  post <- extract.samples(model, n = 1000, pars=c("log_lik","gamma", "beta"))
+  maxlog <- max(post$log_lik)
+  minlog <- min(post$log_lik)
+  
+  d <- readRDS("../../../data/processed/jsdm/1d-categorical-PC1PC2min20-data.rds")
+  N <- sum(d$dataset$id==1)
+  L <- length(unique(d$dataset$id))
+  dat <- d$dataset
+  X <- matrix(dat$PC1, N, L)[,1]
+  obs <- matrix(dat$obs, N, L)
+  
+  xlim <- c(0, 1.0)
+  ylim <- c(minlog, maxlog)
+  dat <- expand.grid(seq(from=xlim[1], to=xlim[2], length.out = 1000),
+                     seq(from=ylim[1], to=ylim[2], length.out = 1000))
+  
+  z.hex <- hexbin(dat$Var1, dat$Var2, xbnds = xlim, ybnds = ylim, xbins = 30, IDs = T)
+  data <- rep(0,max(as.numeric(names(table(z.hex@cID)))))
+  finaldata <- data.frame(hexbin::hcell2xy(z.hex),
+                          cell = z.hex@cell,
+                          count = z.hex@count)
+  normalization <- finaldata
+  
+  for(i in 1:100){
+    loglik <- post$log_lik[i,]
+    beta <- post$beta[i,]
+    beta <- outer(X, beta, "-")
+    gamma <- post$gamma[i,]
+    gamma <- outer(rep(1, length(X)),gamma, "*")
+    
+    p <- as.vector(exp(-gamma * (beta**2)))
+    
+    z.hex_ <- hexbin(p, loglik, xbnds = xlim, ybnds = ylim, xbins = 30, IDs = T)
+    z.hex_ <- table(z.hex_@cID)
+    z.hex_id <- as.numeric(names(z.hex_))
+    
+    for(k in 1:length(z.hex_)){
+      data[z.hex_id[k]] <- data[z.hex_id[k]] + z.hex_[k]
+    }
+    
+  }
+
+  finaldata$count <- data
+  finaldata <- finaldata[finaldata$count!=0,]
+  finaldata$line <- "white"
+  finaldata$count[finaldata$y>log(0.50)] <- log(0)
+  finaldata$line[finaldata$y<=log(0.50)] <- "gray50"
+  
+  p <- ggplot(finaldata, aes(x=x, y=y, fill=count, colour=line)) + 
+    geom_hex(stat="identity",size=0.1) +
+    xlab("normalized amplitude") +
+    ylab("log-likelihood") +
+    coord_cartesian(clip = 'off') +
+    # scale_x_continuous(expand = c(0.01, 0.01)) +
+    # scale_y_continuous(expand = c(0.02, 0.02)) +
+    scale_fill_distiller(palette = "OrRd", direction=1, na.value = "#f0f0f0" ) +
+    # scale_fill_gradient(low="#e7d4e8",high="#1b7837", na.value = "white") +
+    scale_color_manual(values=c("gray80", "gray75")) +
+    # scale_fill_gradient(low="lightblue1",high="darkblue") +
+    # scale_fill_gradient(low="lightblue1",high="darkblue", trans="log10") +
+    theme_bw() +
+    theme(text = element_text(size=11),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          legend.position="none")
+  print(p)
+  
 }
 
 sliding.test <- function(){

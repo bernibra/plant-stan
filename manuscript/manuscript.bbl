@@ -1,4 +1,4 @@
-\begin{thebibliography}{30}
+\begin{thebibliography}{54}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
@@ -15,6 +15,11 @@ Austin, M.~P. (1987).
   gradients.
 \newblock \emph{Vegetatio}, 69, 35--45.
 
+\bibitem[{Austin(1990)}]{austinCommunityTheoryCompetition1990}
+Austin, M.~P. (1990).
+\newblock Community theory and competition in vegetation.
+\newblock \emph{Community theory and competition in vegetation.}, 215--238.
+
 \bibitem[{Austin(2002)}]{austinSpatialPredictionSpecies2002}
 Austin, M.~P. (2002).
 \newblock Spatial prediction of species distribution: An interface between
@@ -26,6 +31,33 @@ Bhattarai, K.~R. \& Vetaas, O.~R. (2006).
 \newblock Can {{Rapoport}}'s rule explain tree species richness along the
   {{Himalayan}} elevation gradient, {{Nepal}}?
 \newblock \emph{Diversity and Distributions}, 12, 373--378.
+
+\bibitem[{Butterfield(2015)}]{butterfieldEnvironmentalFilteringIncreases2015}
+Butterfield, B.~J. (2015).
+\newblock Environmental filtering increases in intensity at both ends of
+  climatic gradients, though driven by different factors, across woody
+  vegetation types of the southwest {{USA}}.
+\newblock \emph{Oikos}, 124, 1374--1382.
+
+\bibitem[{Channell \&
+  Lomolino(2000{\natexlab{a}})}]{channellDynamicBiogeographyConservation2000}
+Channell, R. \& Lomolino, M.~V. (2000{\natexlab{a}}).
+\newblock Dynamic biogeography and conservation of endangered species.
+\newblock \emph{Nature}, 403, 84--86.
+
+\bibitem[{Channell \&
+  Lomolino(2000{\natexlab{b}})}]{channellTrajectoriesExtinctionSpatial2000}
+Channell, R. \& Lomolino, M.~V. (2000{\natexlab{b}}).
+\newblock Trajectories to extinction: Spatial dynamics of the contraction of
+  geographical ranges.
+\newblock \emph{Journal of Biogeography}, 27, 169--179.
+
+\bibitem[{Dallas \emph{et~al.}(2017)Dallas, Decker \&
+  Hastings}]{dallasSpeciesAreNot2017}
+Dallas, T., Decker, R.~R. \& Hastings, A. (2017).
+\newblock Species are not most abundant in the centre of their geographic range
+  or climatic niche.
+\newblock \emph{Ecology Letters}, 20, 1526--1533.
 
 \bibitem[{D'Amen \emph{et~al.}(2017)D'Amen, Rahbek, Zimmermann \&
   Guisan}]{damenSpatialPredictionsCommunity2017}
@@ -46,6 +78,14 @@ Frank, S.~A. (2009).
 \newblock The {{Common Patterns}} of {{Nature}}.
 \newblock \emph{Journal of evolutionary biology}, 22, 1563--1585.
 
+\bibitem[{Frick \emph{et~al.}(2010)Frick, Pollock, Hicks, Langwig, Reynolds,
+  Turner, Butchkoski \& Kunz}]{frickEmergingDiseaseCauses2010}
+Frick, W.~F., Pollock, J.~F., Hicks, A.~C., Langwig, K.~E., Reynolds, D.~S.,
+  Turner, G.~G., Butchkoski, C.~M. \& Kunz, T.~H. (2010).
+\newblock An {{Emerging Disease Causes Regional Population Collapse}} of a
+  {{Common North American Bat Species}}.
+\newblock \emph{Science}, 329, 679--682.
+
 \bibitem[{{Godoy-Lorite} \emph{et~al.}(2016){Godoy-Lorite}, Guimer{\`a}, Moore
   \& {Sales-Pardo}}]{godoy-loriteAccurateScalableSocial2016}
 {Godoy-Lorite}, A., Guimer{\`a}, R., Moore, C. \& {Sales-Pardo}, M. (2016).
@@ -59,6 +99,49 @@ Guisan, A. \& Zimmermann, N.~E. (2000).
 \newblock Predictive habitat distribution models in ecology.
 \newblock \emph{Ecological Modelling}, 135, 147--186.
 
+\bibitem[{Haldane \& Ford(1956)}]{haldaneRelationDensityRegulation1956}
+Haldane, J. B.~S. \& Ford, E.~B. (1956).
+\newblock The relation between density regulation and natural selection.
+\newblock \emph{Proceedings of the Royal Society of London. Series B -
+  Biological Sciences}, 145, 306--308.
+
+\bibitem[{Hall \emph{et~al.}(1992)Hall, Stanford \&
+  Hauer}]{hallDistributionAbundanceOrganisms1992}
+Hall, C. A.~S., Stanford, J.~A. \& Hauer, F.~R. (1992).
+\newblock The {{Distribution}} and {{Abundance}} of {{Organisms}} as a
+  {{Consequence}} of {{Energy Balances}} along {{Multiple Environmental
+  Gradients}}.
+\newblock \emph{Oikos}, 65, 377--390.
+
+\bibitem[{Harris(2015)}]{harrisGeneratingRealisticAssemblages2015}
+Harris, D.~J. (2015).
+\newblock Generating realistic assemblages with a joint species distribution
+  model.
+\newblock \emph{Methods in Ecology and Evolution}, 6, 465--473.
+
+\bibitem[{Hastings \emph{et~al.}(1997)Hastings, Harrison \&
+  McCann}]{hastingsUnexpectedSpatialPatterns1997}
+Hastings, A., Harrison, S. \& McCann, K. (1997).
+\newblock Unexpected spatial patterns in an insect outbreak match a predator
+  diffusion model.
+\newblock \emph{Proceedings of the Royal Society of London. Series B:
+  Biological Sciences}, 264, 1837--1840.
+
+\bibitem[{Helmuth \emph{et~al.}(2002)Helmuth, Harley, Halpin, O'Donnell,
+  Hofmann \& Blanchette}]{helmuthClimateChangeLatitudinal2002}
+Helmuth, B., Harley, C. D.~G., Halpin, P.~M., O'Donnell, M., Hofmann, G.~E. \&
+  Blanchette, C.~A. (2002).
+\newblock Climate {{Change}} and {{Latitudinal Patterns}} of {{Intertidal
+  Thermal Stress}}.
+\newblock \emph{Science}, 298, 1015--1017.
+
+\bibitem[{Helmuth \emph{et~al.}(2004)Helmuth, Kingsolver \&
+  Carrington}]{helmuthBIOPHYSICSPHYSIOLOGICALECOLOGY2004}
+Helmuth, B., Kingsolver, J.~G. \& Carrington, E. (2004).
+\newblock {{BIOPHYSICS}}, {{PHYSIOLOGICAL ECOLOGY}}, {{AND CLIMATE CHANGE}}:
+  {{Does Mechanism Matter}}?
+\newblock \emph{Annual Review of Physiology}, 67, 177--201.
+
 \bibitem[{Huisman \emph{et~al.}(1993)Huisman, Olff \&
   Fresco}]{huismanHierarchicalSetModels1993}
 Huisman, J., Olff, H. \& Fresco, L. F.~M. (1993).
@@ -70,12 +153,6 @@ Jamil, T. \& ter Braak, C. J.~F. (2013).
 \newblock Generalized linear mixed models can detect unimodal
   species-environment relationships.
 \newblock \emph{PeerJ}, 1, e95.
-
-\bibitem[{Kaufman(1995)}]{kaufmanDiversityNewWorld1995}
-Kaufman, D.~M. (1995).
-\newblock Diversity of {{New World Mammals}}: {{Universality}} of the
-  {{Latitudinal Gradients}} of {{Species}} and {{Bauplans}}.
-\newblock \emph{Journal of Mammalogy}, 76, 322--334.
 
 \bibitem[{Krebs(1972)}]{krebsEcologyExperimentalAnalysis1972}
 Krebs, C.~J. (1972).
@@ -94,6 +171,24 @@ Landolt, E., B{\"a}umler, B., Ehrhardt, A., Hegg, O., Kl{\"o}tzli, F.,
 \newblock {Haupt}, {Bern}.
 \newblock ISBN 978-3-258-07461-0.
 
+\bibitem[{Lesica \& Allendorf(1995)}]{lesicaWhenArePeripheral1995}
+Lesica, P. \& Allendorf, F.~W. (1995).
+\newblock When {{Are Peripheral Populations Valuable}} for {{Conservation}}?
+\newblock \emph{Conservation Biology}, 9, 753--760.
+
+\bibitem[{Linder \emph{et~al.}(2000)Linder, Villard, Maurer \&
+  Schmidt}]{linderGeographicRangeStructure2000}
+Linder, E.~T., Villard, M.-A., Maurer, B.~A. \& Schmidt, E.~V. (2000).
+\newblock Geographic range structure in {{North American}} landbrids: Variation
+  with migratory strategy, trophic level, and breeding habitat.
+\newblock \emph{Ecography}, 23, 678--686.
+
+\bibitem[{Louthan \emph{et~al.}(2015)Louthan, Doak \&
+  Angert}]{louthanWhereWhenSpecies2015}
+Louthan, A.~M., Doak, D.~F. \& Angert, A.~L. (2015).
+\newblock Where and {{When}} do {{Species Interactions Set Range Limits}}?
+\newblock \emph{Trends in Ecology \& Evolution}, 30, 780--792.
+
 \bibitem[{Malmgren \emph{et~al.}(2008)Malmgren, Stouffer, Motter \&
   Amaral}]{malmgrenPoissonianExplanationHeavy2008}
 Malmgren, R.~D., Stouffer, D.~B., Motter, A.~E. \& Amaral, L. A.~N. (2008).
@@ -105,6 +200,12 @@ Malmgren, R.~D., Stouffer, D.~B., Motter, A.~E. \& Amaral, L. A.~N. (2008).
 McCain, C.~M. \& Knight, K.~B. (2013).
 \newblock Elevational {{Rapoport}}'s rule is not pervasive on mountains.
 \newblock \emph{Global Ecology and Biogeography}, 22, 750--759.
+
+\bibitem[{McElreath(2020)}]{mcelreathStatisticalRethinkingBayesian2020}
+McElreath, R. (2020).
+\newblock \emph{Statistical Rethinking: {{A Bayesian}} Course with Examples in
+  {{R}} and {{Stan}}}.
+\newblock {CRC press}.
 
 \bibitem[{Nadarajah(2005)}]{nadarajahGeneralizedNormalDistribution2005}
 Nadarajah, S. (2005).
@@ -136,6 +237,13 @@ Normand, S., Treier, U.~A., Randin, C., Vittoz, P., Guisan, A. \& Svenning,
   {{European}} plants: Insights from species responses to climatic gradients.
 \newblock \emph{Global Ecology and Biogeography}, 18, 437--449.
 
+\bibitem[{Ovaskainen \emph{et~al.}(2016)Ovaskainen, Roy, Fox \&
+  Anderson}]{ovaskainenUncoveringHiddenSpatial2016}
+Ovaskainen, O., Roy, D.~B., Fox, R. \& Anderson, B.~J. (2016).
+\newblock Uncovering hidden spatial structure in species communities with
+  spatially explicit joint species distribution models.
+\newblock \emph{Methods in Ecology and Evolution}, 7, 428--436.
+
 \bibitem[{Ovaskainen \emph{et~al.}(2017)Ovaskainen, Tikhonov, Norberg,
   Blanchet, Duan, Dunson, Roslin \& Abrego}]{ovaskainenHowMakeMore2017}
 Ovaskainen, O., Tikhonov, G., Norberg, A., Blanchet, F.~G., Duan, L., Dunson,
@@ -151,6 +259,22 @@ Petrovskii, S., Morozov, A., Taylor, A. E. P.~D. \& DeAngelis, E. D.~L. (2009).
   Revisited}}.
 \newblock \emph{The American Naturalist}, 173, 278--289.
 
+\bibitem[{Pironon \emph{et~al.}(2017)Pironon, Papuga, Villellas, Angert,
+  Garc{\'i}a \& Thompson}]{pirononGeographicVariationGenetic2017}
+Pironon, S., Papuga, G., Villellas, J., Angert, A.~L., Garc{\'i}a, M.~B. \&
+  Thompson, J.~D. (2017).
+\newblock Geographic variation in genetic and demographic performance: New
+  insights from an old biogeographical paradigm.
+\newblock \emph{Biological Reviews}, 92, 1877--1909.
+
+\bibitem[{Randin \emph{et~al.}(2009)Randin, Engler, Normand, Zappa, Zimmermann,
+  Pearman, Vittoz, Thuiller \& Guisan}]{randinClimateChangePlant2009}
+Randin, C.~F., Engler, R., Normand, S., Zappa, M., Zimmermann, N.~E., Pearman,
+  P.~B., Vittoz, P., Thuiller, W. \& Guisan, A. (2009).
+\newblock Climate change and plant distribution: Local models predict
+  high-elevation persistence.
+\newblock \emph{Global Change Biology}, 15, 1557--1569.
+
 \bibitem[{Ribas \& Schoereder(2006)}]{ribasRapoportEffectWidespread2006}
 Ribas, C.~R. \& Schoereder, J.~H. (2006).
 \newblock Is the {{Rapoport}} effect widespread? {{Null}} models revisited.
@@ -162,11 +286,31 @@ Rohde, K. (1992).
   for the {{Primary Cause}}.
 \newblock \emph{Oikos}, 65, 514--527.
 
+\bibitem[{Sagarin \& Gaines(2002)}]{sagarinAbundantCentreDistribution2002}
+Sagarin, R.~D. \& Gaines, S.~D. (2002).
+\newblock The `abundant centre' distribution: To what extent is it a
+  biogeographical rule?
+\newblock \emph{Ecology Letters}, 5, 137--147.
+
+\bibitem[{Sagarin \emph{et~al.}(2006)Sagarin, Gaines \&
+  Gaylord}]{sagarinMovingAssumptionsUnderstand2006}
+Sagarin, R.~D., Gaines, S.~D. \& Gaylord, B. (2006).
+\newblock Moving beyond assumptions to understand abundance distributions
+  across the ranges of species.
+\newblock \emph{Trends in Ecology \& Evolution}, 21, 524--530.
+
 \bibitem[{Scherrer \& Guisan(2019)}]{scherrerEcologicalIndicatorValues2019}
 Scherrer, D. \& Guisan, A. (2019).
 \newblock Ecological indicator values reveal missing predictors of species
   distributions.
 \newblock \emph{Scientific Reports}, 9, 1--8.
+
+\bibitem[{Siefert \emph{et~al.}(2015)Siefert, Lesser \&
+  Fridley}]{siefertHowClimateDispersal2015}
+Siefert, A., Lesser, M.~R. \& Fridley, J.~D. (2015).
+\newblock How do climate and dispersal traits limit ranges of tree species
+  along latitudinal and elevational gradients?
+\newblock \emph{Global Ecology and Biogeography}, 24, 581--593.
 
 \bibitem[{{Stan Developent
   Team}(2021)}]{standevelopentteamRStanInterfaceStan2021}
@@ -197,10 +341,32 @@ Sunday, J.~M., Bates, A.~E. \& Dulvy, N.~K. (2011).
   model.
 \newblock \emph{Vegetatio}, 65, 3--11.
 
+\bibitem[{Tikhonov \emph{et~al.}(2020)Tikhonov, Opedal, Abrego, Lehikoinen,
+  de~Jonge, Oksanen \& Ovaskainen}]{tikhonovJointSpeciesDistribution2020}
+Tikhonov, G., Opedal, {\O}.~H., Abrego, N., Lehikoinen, A., de~Jonge, M. M.~J.,
+  Oksanen, J. \& Ovaskainen, O. (2020).
+\newblock Joint species distribution modelling with the r-package {{Hmsc}}.
+\newblock \emph{Methods in Ecology and Evolution}, 11, 442--447.
+
+\bibitem[{Wagner \emph{et~al.}(2011)Wagner, von Wehrden, Wesche, Fedulin,
+  Sidorova \& Hensen}]{wagnerSimilarPerformanceCentral2011}
+Wagner, V., von Wehrden, H., Wesche, K., Fedulin, A., Sidorova, T. \& Hensen,
+  I. (2011).
+\newblock Similar performance in central and range-edge populations of a
+  {{Eurasian}} steppe grass under different climate and soil {{pH}} regimes.
+\newblock \emph{Ecography}, 34, 498--506.
+
 \bibitem[{Wong \& Collins(2020)}]{wongEvidenceThatCoronavirus2020}
 Wong, F. \& Collins, J.~J. (2020).
 \newblock Evidence that coronavirus superspreading is fat-tailed.
 \newblock \emph{Proceedings of the National Academy of Sciences}, 117,
   29416--29418.
+
+\bibitem[{{Ziffer-Berger} \emph{et~al.}(2014){Ziffer-Berger}, Weisberg, Cablk
+  \& Osem}]{ziffer-bergerSpatialPatternsProvide2014}
+{Ziffer-Berger}, J., Weisberg, P.~J., Cablk, M.~E. \& Osem, Y. (2014).
+\newblock Spatial patterns provide support for the stress-gradient hypothesis
+  over a range-wide aridity gradient.
+\newblock \emph{Journal of Arid Environments}, 102, 27--33.
 
 \end{thebibliography}

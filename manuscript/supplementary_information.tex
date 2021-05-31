@@ -120,6 +120,14 @@ While this averaging is trivial for the estimated probabilities $Pr[r_{ij}=r]$, 
 
 The average estimates for the group memberships provide us with a different scale to classify species based on the traits these have. In short, for any species $i$, we can estimate a $K$-dimensional vector $\vec{\theta}_{i}$ that describes the extend to which $i$ belong to each group membership---i.e. the extend to which a species is of one type or another. This classification is useful because it can be used to compare species, defining a way to measure the distance between species based on an arbitrary---and potentially incomplete---set of categorical or ordinal traits $M$. The simplest case is to define the distance as $D_{ij} = |\vec{\theta}_{i}-\vec{\theta}_{j}|$. Alternatively, one could also define $K$ distance matrices based on the different group memberships $D^{\alpha}_{ij} = |\theta_{i\alpha}-\theta_{j\alpha}|$.
 
+\subsubsection*{Alternative variance-covariance structures}
+The model structure defined above allows us to test how different sources of information characterize each of the different parameters. Specifically, we can do this by modifying Eq.~(\ref{eq:covariance-baseline}). For example, imagine that we have multiple matrices $D^k$ characterizing species' differences along different axis of variation---e.g.~two matrices characterizing physiological and environmental traits. One can modify Eq.~(\ref{eq:covariance-baseline}) for a particular parameter---e.g.~$\beta_{i}$---such that
+\begin{equation} 
+\Sigma_{ij} = \eta\,\text{exp}\left(-\sum_k\rho_{k} {D^{k}_{ij}}^2\right) + \delta_{ij} \sigma ,
+\label{eq:covariance-complex}
+\end{equation}
+where now $\rho_{k}$ are separate relevance hyperparameters for each distance matrix in the total variance of $\beta_i$.
+
 \section*{Supplementary Notes}
 \section*{Supplementary Figures}
 
@@ -141,6 +149,15 @@ The average estimates for the group memberships provide us with a different scal
     	  \vspace{0.3cm}
 	   \caption{Relationship between mean and variance of species' distributions. These are the results for the second axis of variation for the climatic data.}
       \label{sfig:sensitivity}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.9\textwidth]{figures/means-Rapopor}
+    	  \vspace{0.1cm}
+	   \caption{Universality of the relationship between mean and variance of species' distributions. Comparison between how different types of species are mapped in Fig.~\ref{fig:correlation}a. Panel (a) describes the correlation coefficient between $\beta_i$ and $\gamma_i$ for each type of species. Panel (b) shows the differences between neophytes and native species in the way these are distributed along the environmental gradient. Panel (c) shows the same differences for species that have decreased, decreased in low elevations, increase and remain stable over the last decades (see Supplementary Table 1 for further details).}
+	   %7.5-4
+      \label{sfig:universality}
 \end{figure}
 
 \clearpage

@@ -2,58 +2,45 @@ This is BibTeX, Version 0.99d (TeX Live 2019)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: manuscript.aux
 The style file: ecology_letters2.bst.bst
-White space in argument---line 31 of file manuscript.aux
- : \citation{rohdeLatitudinalGradientsSpecies1992,more
- :                                                     in Rapoport}
-I'm skipping whatever remains of this command
-White space in argument---line 75 of file manuscript.aux
- : \citation{Loutlain
- :                    2015 TREE}
-I'm skipping whatever remains of this command
-Database file #1: references.bib
-Warning--I didn't find a database entry for "abundant-centre-hypothesis"
-Warning--I didn't find a database entry for "bernat"
-Warning--I didn't find a database entry for "randinClimateChangePlant2009"
-Warning--I didn't find a database entry for "mcelreathStatisticalRethinkingBayesian2020"
-You've used 30 entries,
+Database file #1: references2.bib
+You've used 54 entries,
             2860 wiz_defined-function locations,
-            889 strings with 13169 characters,
-and the built_in function-call counts, 16328 in all, are:
-= -- 1513
-> -- 997
-< -- 20
-+ -- 393
-- -- 351
-* -- 1507
-:= -- 3067
-add.period$ -- 90
-call.type$ -- 30
-change.case$ -- 267
-chr.to.int$ -- 33
-cite$ -- 30
-duplicate$ -- 594
-empty$ -- 937
-format.name$ -- 439
-if$ -- 3010
-int.to.chr$ -- 1
+            1052 strings with 19581 characters,
+and the built_in function-call counts, 29467 in all, are:
+= -- 2757
+> -- 1749
+< -- 28
++ -- 690
+- -- 615
+* -- 2762
+:= -- 5489
+add.period$ -- 162
+call.type$ -- 54
+change.case$ -- 474
+chr.to.int$ -- 56
+cite$ -- 54
+duplicate$ -- 1086
+empty$ -- 1710
+format.name$ -- 779
+if$ -- 5430
+int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 30
-newline$ -- 156
-num.names$ -- 120
-pop$ -- 239
+missing$ -- 55
+newline$ -- 276
+num.names$ -- 216
+pop$ -- 427
 preamble$ -- 1
-purify$ -- 237
+purify$ -- 421
 quote$ -- 0
-skip$ -- 373
+skip$ -- 661
 stack$ -- 0
-substring$ -- 986
-swap$ -- 110
+substring$ -- 1857
+swap$ -- 218
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 264
+type$ -- 477
 warning$ -- 0
-while$ -- 141
+while$ -- 259
 width$ -- 0
-write$ -- 391
-(There were 2 error messages)
+write$ -- 701
