@@ -844,7 +844,7 @@ skew.generror.1d <- function(d = NULL, recompile = T, simulated=T, min.occurrenc
 min.occurrence <- 20
 
 # Basic analyses
-d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
+# d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 # d <- readRDS("../../data/processed/jsdm/skew-generror-simulated-data.rds")
 # d <- readRDS("../../data/processed/jsdm/skew-simulated-data.rds")
 # d <- readRDS("../../data/processed/jsdm/generror-simulated-data.rds")
@@ -868,4 +868,8 @@ d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
 # baseline.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, elevation=F, temperature=T, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 # Line regression
-line.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+# line.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
+
+# Simulated
+d <- readRDS("../../data/processed/jsdm/1d-simulated-S1S2-data.rds")
+baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")

@@ -146,8 +146,10 @@ prepare.data <- function(variables = c("bio5_", "bio6_","bio12_"), min.occurrenc
 # Generate fake data to test the extent to which the model works
 simulated.data <- function(simulated.type="linear.corr"){
         
+        set.seed(3)
+        
         # Define system dimensions
-        N <- 50
+        N <- 25
         sites <- 300
         
         # Environmental predictors for each site
@@ -173,15 +175,16 @@ simulated.data <- function(simulated.type="linear.corr"){
         # Generate correlations
         beta1 <- z1
 
-        vec <- c(1:round(N*0.5), 1:round(N*0.5))
-        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
-        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        # vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        # Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        # Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        Dis_sigma <- (as.matrix(dist(1:N))/N)
         
         Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.1
         sigma_beta1 <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
-        alpha <- exp(rnorm(N, 0,1))
+        alpha <- exp(rnorm(N, -0.5,1))
 
         # Simulate data
         dataset <- expand.grid(site=1:sites, id=1:N)
