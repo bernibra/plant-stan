@@ -1,4 +1,4 @@
-source("./prepare-data.R")
+#source("./prepare-data.R")
 source("./models.R")
 library(rethinking)
 library(rstan)
@@ -11,7 +11,7 @@ rstan_options(auto_write = TRUE)
 # - baseline model
 ####
 
-baseline <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, ofolder="../../results/models/"){
+baseline <- function(d = NULL, recompile = F, simulated=F, min.occurrence=20, ofolder="../../results/models/"){
   # Fixing some of the options
   variables=c("bio5_", "bio6_","bio12_", "gdd5_", "bio1_","bio15_","bio17_", "bio8_", "TabsY_")
   gp_type <- 2
@@ -81,6 +81,7 @@ baseline <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, of
   dat_4.1 <- list(N=N,
                   L=L,
                   K=2,
+                  minp=1e-100,
                   Y=t(obs),
                   X1=X1,
                   X2=X2,
@@ -121,7 +122,7 @@ baseline <- function(d = NULL, recompile = T, simulated=T, min.occurrence=10, of
                      init=init_4.1 , control = list(adapt_delta = 0.95, max_treedepth = 15))
   
   
-  saveRDS(mfit_4.1, file = paste(ofolder, "baseline-model", extension,".rds", sep=""))
+  saveRDS(mfit_4.1, file = paste(ofolder, "2d-baseline-model", extension,".rds", sep=""))
   return(mfit_4.1)
 }
 
@@ -242,6 +243,10 @@ baseline.traits <- function(d = NULL, recompile = T, simulated=T, min.occurrence
   saveRDS(mfit_5.1, file = paste(ofolder, "baseline-model-traits", extension,".rds", sep=""))
   return(mfit_5.1)
 }
+
+d <- readRDS("../../data/processed/jsdm/1d-PC1PC2min20-data.rds")
+
+baseline(d=d, recompile = F, simulated=F, min.occurrence=20, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 # CHANGE FILE NAMES!!!
 # CHANGE FILE NAMES!!!

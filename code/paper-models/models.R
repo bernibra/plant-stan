@@ -22,6 +22,7 @@ data{
     int N;
     int L;
     int K;
+    real minp;
     int Y[L,N];
     row_vector[N] X1;
     row_vector[N] X2;
@@ -78,7 +79,7 @@ model{
     to_vector( zbeta ) ~ std_normal();
 
     for ( i in 1:L ){
-        Y[i] ~ bernoulli(exp(-alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])));
+        Y[i] ~ bernoulli(exp(-alpha[i] - gamma[1,i] * columns_dot_self(X1 - beta[1, i]) - gamma[2,i] * columns_dot_self(X2 - beta[2, i])) + minp);
     }
 }
 "
