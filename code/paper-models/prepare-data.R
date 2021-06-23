@@ -263,10 +263,10 @@ simulated.generr.data <- function(){
 # Generate fake data to test the extent to which the model works
 simulated.skew.generr.data <- function(){
         
-        set.seed(1)
+        set.seed(2)
         # Define system dimensions
-        N <- 20
-        sites <- 300
+        N <- 50
+        sites <- 900
         
         # Environmental predictors for each site
         e1 <- rnorm(sites)
@@ -291,15 +291,17 @@ simulated.skew.generr.data <- function(){
         # Generate correlations
         beta1 <- z1
         
-        vec <- c(1:round(N*0.5), 1:round(N*0.5))
-        Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
-        Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        # vec <- c(1:round(N*0.5), 1:round(N*0.5))
+        # Dis_sigma <- as.matrix(dist(vec))+1-diag(N)
+        # Dis_sigma <- (Dis_sigma/max(Dis_sigma))
+        Dis_sigma <- (as.matrix(dist(1:N))/N)
         
         Sigma <- 1*exp(-1/(0.3*0.3)*(Dis_sigma^2)) + diag(N)*0.2
-        sigma_beta1 <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
+        sigma_beta1 <- exp(mvrnorm(mu = rep(0.5, times = N), Sigma = Sigma))
+        sigma_test <- sigma_beta1
         # Sigma <- 1*exp(-1/(0.2*0.2)*(Dis^2)) + diag(N)*0.1
         # alpha <- exp(mvrnorm(mu = rep(0, times = N), Sigma = Sigma))
-        alpha <- exp(rnorm(N, -0.5,0.7))
+        alpha <- exp(rnorm(N, -0.5,0.5))
         nu <- abs(rnorm(N,0.5, 0.1))+1
         lambda <- inv_logit(rnorm(N, 1.1,0.4))*2-1
         

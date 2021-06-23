@@ -1468,12 +1468,12 @@ shade_curve <- function(MyDF, zstart, zend, fill = "red", alpha = .5, mean.1=0, 
             aes(y=y), fill = fill, color = NA, alpha = alpha)
 }
 
-prior_p <- function(N=2, sd_=1){
+prior_p <- function(N=2, sd_=2){
   set.seed(2)
   xmin=-2
   xmax=2
-  a <- rnorm(1e6, 0,sd_)
-  c <- rnorm(1e6, 0,sd_)
+  a <- rnorm(1e6, rnorm(1e6, 0,1.3),rexp(1e6, 1))
+  c <- rnorm(1e6, rnorm(1e6, 0,1.3),rexp(1e6, 1))
   b <- rnorm(N, 0,sd_)
   x <- seq(from=xmin, to=xmax, length.out = 1000)
   
@@ -1493,7 +1493,7 @@ prior_p <- function(N=2, sd_=1){
           MyDF$y <- MyDF$y/max(MyDF$y)
           
           plist[[l]] <- ggplot(MyDF, aes(x = x, y = y)) + geom_line() +
-            shade_curve(MyDF = MyDF, zstart = lims_c[(j-1)], zend = lims_c[(j)], fill = my_col, alpha = .3, sd.1 = sd_) +
+            shade_curve(MyDF = MyDF, zstart = lims_c[(j-1)], zend = lims_c[(j)], fill = "red", alpha = .3, sd.1 = sd_) +
             theme_bw()+
             annotate("text", x=0,y=0.4, label = expression(log(lambda)), size = 3)+
             theme(text = element_text(size=10),
@@ -1512,7 +1512,7 @@ prior_p <- function(N=2, sd_=1){
         MyDF$y <- MyDF$y/max(MyDF$y)
         
         plist[[l]] <- ggplot(MyDF, aes(x = x, y = y)) + geom_line() +
-          shade_curve(MyDF = MyDF, zstart = lims_a[(i-1)], zend = lims_a[(i)], fill = my_col, alpha = .3, sd.1 = sd_) +
+          shade_curve(MyDF = MyDF, zstart = lims_a[(i-1)], zend = lims_a[(i)], fill = "red", alpha = .3, sd.1 = sd_) +
           theme_bw()+
           annotate("text", x=0,y=0.5, label = expression(log(alpha)), size = 3)+
           coord_flip()+

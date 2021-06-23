@@ -11,6 +11,11 @@ library(cowplot)
 ####
 # Visualizing the results of some of the models
 ####
+shade_curve <- function(MyDF, zstart, zend, fill = "red", alpha = .5, mean.1=0, sd.1=1){
+  geom_area(data = subset(MyDF, x >= mean.1 + zstart*sd.1
+                          & x < mean.1 + zend*sd.1),
+            aes(y=y), fill = fill, color = NA, alpha = alpha)
+}
 
 prior_p <- function(N=2, sd_=1){
   set.seed(2)

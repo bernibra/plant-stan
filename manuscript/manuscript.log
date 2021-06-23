@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.10)  22 JUN 2021 14:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.8.10)  23 JUN 2021 20:29
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -598,6 +598,14 @@ File: figures/kurto-skew.pdf Graphic file (type pdf)
 <use figures/kurto-skew.pdf>
 Package pdftex.def Info: figures/kurto-skew.pdf  used on input line 341.
 (pdftex.def)             Requested size: 394.35236pt x 157.74727pt.
+
+Package natbib Warning: Citation `vignette' on page 13 undefined on input line 
+343.
+
+
+Package natbib Warning: Citation `vignette' on page 13 undefined on input line 
+343.
+
 [13] [14 <./figures/figure1-prime.pdf>]
 <figures/figure3.pdf, id=351, 497.65216pt x 339.83563pt>
 File: figures/figure3.pdf Graphic file (type pdf)
@@ -636,16 +644,20 @@ Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 423.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 423.
 Package rerunfilecheck Info: File `manuscript.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 423.
  ) 
 Here is how much of TeX's memory you used:
  9972 strings out of 492616
  153407 string characters out of 6129481
- 270259 words of memory out of 5000000
+ 271259 words of memory out of 5000000
  13634 multiletter control sequences out of 15000+600000
  13601 words of font info for 51 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 42i,19n,39p,3153b,549s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 42i,19n,42p,3153b,549s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
@@ -662,7 +674,7 @@ ive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive
 19/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2019/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb>
-Output written on manuscript.pdf (26 pages, 625937 bytes).
+Output written on manuscript.pdf (26 pages, 625964 bytes).
 PDF statistics:
  618 PDF objects out of 1000 (max. 8388607)
  518 compressed objects within 6 object streams

@@ -183,23 +183,22 @@ where now $\rho_{k}$ are separate relevance hyperparameters for each distance ma
 
 \clearpage
 
+%\begin{figure}[ht]
+%  \centering
+%    \vspace{0.5cm}
+%    \includegraphics[width=1\textwidth]{figures/prior}
+%    	  \vspace{0.3cm}
+%	   \caption{Study of the priors for the baseline model presented in the main text.}
+%     \label{sfig:sensitivity}
+%\end{figure}
+%\clearpage
+
 \begin{figure}[ht]
   \centering
     \vspace{0.5cm}
-    \includegraphics[width=1\textwidth]{figures/prior}
+    \includegraphics[width=1\textwidth]{figures/simulations-comparison}
     	  \vspace{0.3cm}
-	   \caption{Study of the priors for the baseline model presented in the main text.}
-      \label{sfig:sensitivity}
-\end{figure}
-
-\clearpage
-
-\begin{figure}[ht]
-  \centering
-    \vspace{0.5cm}
-    \includegraphics[width=1\textwidth]{figures/prior}
-    	  \vspace{0.3cm}
-	   \caption{Studying the simulations.}
+	   \caption{Studying the simulations. Transparency is a way to indicate the different sample sizes. Say that for both $\beta$ and $gamma$, the posterior distributions for the different species are correlated so that the variance between species increases as they are further apart.}
       \label{sfig:simulations}
 \end{figure}
 
@@ -233,9 +232,43 @@ where now $\rho_{k}$ are separate relevance hyperparameters for each distance ma
     \includegraphics[width=1\textwidth]{figures/figure1-secondaxis}
     	  \vspace{0.3cm}
 	   \caption{Relationship between mean and variance of species' distributions. These are the results for the second axis of variation for the climatic data.}
-      \label{sfig:sensitivity}
+      \label{sfig:secondaxis}
 \end{figure}
 
+
+\clearpage
+
+
+\begin{figure}[h]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.9\textwidth]{figures/alpha-vs-gamma-beta}
+    	  \vspace{0.3cm}
+	   \caption{Relationship between mean and variance of species' distributions. These are the results for the second axis of variation for the climatic data.}
+      \label{sfig:alpha-vs-gammabeta}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.8\textwidth]{figures/WAIC-plot}
+    	  \vspace{0.3cm}
+	   \caption{Comparison of the different models using WAIC values. Each row describes one of the models described in the main text. (a) WAIC comparison of the different models. The filled points are the in-sample deviance of each model, and the open points are the estimated WAIC values. The dark line segments represent the standard error of each WAIC. The standard error of the difference between each WAIC and the best performing model (top row) is characterized by the gray triangles and line segments. The vertical line references the model with the lowest WAIC value. (b) Akaike weight for each model used to compare predictive accuracy of the different Bayesian models (see \citealt{mcelreathStatisticalRethinkingBayesian2020}). According to this measure, the model with fat-tails and skewed response is the best model. The open points are the mean Akaike weights and the line segments represent the corresponding standard error. The vertical line references the model with the highest Akaike weight. These graphs were generated using some of the functions from the R package \textit{rethinking} \citep{mcelreathStatisticalRethinkingBayesian2020}.}
+      \label{sfig:WAIC}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[h]
+  \centering
+    \vspace{0.5cm}
+    \includegraphics[width=0.8\textwidth]{figures/nu-kurtosis}
+    	  \vspace{0.3cm}
+	   \caption{Variability in the tails.}
+      \label{sfig:nu-kurtosis}
+\end{figure}
 
 \clearpage
 

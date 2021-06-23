@@ -871,5 +871,5 @@ min.occurrence <- 20
 # line.1d(d=d, simulated=F, recompile = F, min.occurrence = min.occurrence, ofolder="/cluster/scratch/bemora/plant-stan/")
 
 # Simulated
-d <- readRDS("../../data/processed/jsdm/1d-simulated-S1S2-data.rds")
-baseline.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")
+d <- readRDS("../../data/processed/jsdm/1d-skew-generror-simulated-S1S2-data.rds")
+skew.generror.1d(d=d, simulated=T, recompile = F, ofolder="/cluster/scratch/bemora/plant-stan/")

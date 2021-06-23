@@ -105,19 +105,16 @@ plot.simulated.compare <- function(){
 
 plot.simulated.baseline <- function(beta=T, gp_type = 2){
   # load data
-  d <- readRDS("../../../data/processed/jsdm/backup-data/1d-simulated2S1S2data.rds")
-  model_r <- readRDS(paste("../../../results/models/", sep=""))
+  d <- readRDS("../../../data/processed/jsdm/1d-simulated-S1S2-data.rds")
+  model_r <- readRDS(paste("../../../results/models/simulated-baseline-1d.rds", sep=""))
   
-  post <- extract.samples(model_r, pars=c("gammav", "lambda"))
-  post$sigma <- 1/(post$gammav**2)
+  post <- extract.samples(model_r, pars=c("gamma", "beta", "alpha"))
+  post$sigma <- post$gamma
   
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2, prob = 0.89)
   betas <- precis(model_r, pars = "beta", depth=3, prob = 0.89)
   sigmas <- precis(model_r, pars = "gamma", depth=3, prob = 0.89)
-  lambdas <- precis(model_r, pars = "lambda", depth=3, prob = 0.89)
-  precis(model_r, pars = "lambda_bar", depth=3)
-  precis(model_r, pars = "sigma_l", depth=3)
   
   sigmas$mean <- sapply(1:dim(post$sigma)[2], function(x) mean(post$sigma[,x]), USE.NAMES = F)
   sigmas$`5.5%` <- sapply(1:dim(post$sigma)[2], function(x) PI(post$sigma[,x], prob = c(0.890))[1], USE.NAMES = F)
@@ -126,37 +123,63 @@ plot.simulated.baseline <- function(beta=T, gp_type = 2){
   # Extract true values
   N <- length(unique(d$dataset$id))
   alpha_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$alpha[1])
-  lambda_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$lambda[1])
   beta1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$beta1[1])
   sigma1_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_beta1[1])
-  
-  sigmaHat_r <- sapply(1:N, function(x) d$dataset[d$dataset$id==x,]$sigma_hat[1])
-  delta <- lambda_r/sqrt(1+lambda_r**2)
-  sigma1_r <- (sigmaHat_r**(-1)) * (1-2*(delta**2)/pi)
-  
   
   # Build data.frames for the plots
   d_alpha <- data.frame(N=1:N, id= c(rep("real", length(alpha_r)), rep("estimated", length(alphas$mean))),value=c(alpha_r,alphas$mean) , lower=c(alpha_r,alphas[,3]), upper=c(alpha_r,alphas[,4]))
   d_beta1 <- data.frame(N=1:N, id= c(rep("real", length(beta1_r)), rep("estimated", length(betas[1:N,]$mean))),value=c(beta1_r,betas[1:N,]$mean) , lower=c(beta1_r,betas[,3]), upper=c(beta1_r,betas[,4]))
   d_sigma1 <- data.frame(N=1:N, id= c(rep("real", length(sigma1_r)), rep("estimated", length(sigmas[1:N,]$mean))),value=c(sigma1_r,sigmas[1:N,]$mean) , lower=c(sigma1_r,sigmas[,3]), upper=c(sigma1_r,sigmas[,4]))
-  d_lambda <- data.frame(N=1:N, id= c(rep("real", length(lambda_r)), rep("estimated", length(lambdas$mean))),value=c(lambda_r,lambdas$mean) ,  lower=c(lambda_r,lambdas[,3]), upper=c(lambda_r,lambdas[,4]))
-  
   
   # Generate plot
-  p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id)) + ggtitle("alpha") + 
-    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.title = element_blank())
-  leg <- get_legend(p1)
-  p1 <-  p1 + theme(legend.position = "none")
-  p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id)) + ggtitle("beta 1") + 
-    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.position = "none")
-  p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id))  + ggtitle("gamma 1") + 
-    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.position = "none")
-  p4 <- ggplot(d_lambda, aes(x=N, y=value, group=id, color=id))  + ggtitle("lambda") + 
-    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() + theme(legend.position = "none")
-  
-  
-  figure <- grid.arrange(p1, p2, p3, p4,
-                         ncol = 2, nrow = 2)
+  N <- sum(d$dataset$id==1)
+  L <- length(unique(d$dataset$id))
+  obs <- matrix(d$dataset$obs, N, L)
+  size <- colSums(obs)
+  size <- ((size-min(size))/(max(size)-min(size)))+1
+
+  d_alpha$size <- c(size, rep(max(size), length(size)))
+  p1 <- ggplot(d_alpha, aes(x=N, y=value, group=id, color=id, alpha=size)) + 
+    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() +
+    scale_color_manual(values = c("real" = "gray20", "estimated"="#fb8072")) +
+    ylab(expression(alpha)) + xlab("species") + theme_bw() + ggtitle("(a)") +
+    scale_alpha(range = c(0.25, 1)) +
+    theme(text = element_text(size=10),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(colour = "black"),
+        legend.position="none",
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+        plot.title = element_text(size=10))
+  d_beta1$size <- c(size, rep(max(size), length(size)))
+  p2 <- ggplot(d_beta1, aes(x=N, y=value, group=id, color=id, alpha=size)) + 
+    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() +
+    scale_color_manual(values = c("real" = "gray20", "estimated"="#fb8072")) +
+    scale_alpha(range = c(0.25, 1)) +
+    ylab(expression(beta)) + xlab("species") + theme_bw() + ggtitle("(b)") +
+    theme(text = element_text(size=10),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(colour = "black"),
+          legend.position="none",
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          plot.title = element_text(size=10))
+  d_sigma1$size <- c(size, rep(max(size), length(size)))
+  p3 <- ggplot(d_sigma1, aes(x=N, y=value, group=id, color=id, alpha=size)) + 
+    geom_pointrange(aes(ymin=lower, ymax=upper)) + theme_linedraw() +
+    scale_color_manual(values = c("real" = "gray20", "estimated"="#fb8072")) +
+    scale_alpha(range = c(0.25, 1)) +
+    ylab(expression(gamma)) + xlab("species") + theme_bw() + ggtitle("(c)") +
+    theme(text = element_text(size=10),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text = element_text(colour = "black"),
+          legend.position="none",
+          panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+          plot.title = element_text(size=10))
+
+  figure <- grid.arrange(p1, p2, p3,
+                         ncol = 3, nrow = 1)
   print(figure)
   return(figure)
 }
@@ -294,12 +317,12 @@ plot.simulated.data.tails.skew <- function(beta=T, gp_type = 2){
 
   # Extract variables from the model
   alphas <- precis(model_r, pars = "alpha", depth=2)
-  betas <- precis(model_r, pars = "beta", depth=3)
-  sigmas <- precis(model_r, pars = "gamma", depth=3)
+  betas <- precis(model_r, pars = "betam", depth=3)
+  sigmas <- precis(model_r, pars = "gammav", depth=3)
   nu <- precis(model_r, pars = "nu", depth=3)
   lambda <- precis(model_r, pars = "lambda", depth=3)
   
-  post <- extract.samples(model_r, n = 1000, pars=c("nu", "gamma", "beta", "alpha", "lambda"))
+  post <- extract.samples(model_r, n = 1000, pars=c("nu", "gammav", "betam", "alpha", "lambda"))
   post <- transform.skew.generror(post)
   # PI(exp(post$nu_bar + 0.5*post$sigma_n**2)+1)
   
