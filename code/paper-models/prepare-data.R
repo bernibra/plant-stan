@@ -552,17 +552,44 @@ species_distribution.data <- function(variables=c("bio5_", "bio6_","bio12_", "gd
                         # Prepare full dataset
                         dataset = cbind(dat$obs.data, pca.clim$x[,c(1:ndim)])
                         
-                        # p1 <- fviz_eig(pca.clim)+
+                        # plist <- list()
+                        # plist[[1]] <- fviz_eig(pca.clim, barcolor = "gray", barfill = "gray")+
                         #         scale_y_continuous(expand = expansion(add = c(0, 0)))+
                         #         theme_bw()+
-                        #         theme(plot.title = element_blank(), text = element_text(size=10))
-                        # p2 <- fviz_pca_var(pca.clim,
+                        #         xlab("dimensions")+ylab("percentage of explained variances")+
+                        #         theme(plot.title = element_blank(), text = element_text(size=11),
+                        #               panel.grid.major = element_blank(),
+                        #               panel.grid.minor = element_blank())
+                        # p <- fviz_pca_var(pca.clim,
                         #              col.var = "contrib", # Color by contributions to the PC
                         #              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
                         #              repel = T,     # Avoid text overlapping
-                        # ) + theme(plot.title = element_blank(), text = element_text(size=10))
+                        # ) +
+                        #         xlab("dim 1 (82.6%)")+ylab("dim 2 (9.5%)")+
+                        #         theme(plot.title = element_blank(), text = element_text(size=11),
+                        #           panel.grid.major = element_blank(),
+                        #           panel.grid.minor = element_blank(), legend.title = element_blank())
+                        # plist[[2]] <- p+theme(legend.position = "none")
                         # 
-                        # p <- grid.arrange(grobs=list(p1, p2), ncol=2, nrow=1, widths=c(0.65,1))
+                        # grobs <- list()
+                        # widths <- list()
+                        # heights <- list()
+                        # 
+                        # for (k in 1:length(plist)){
+                        #         grobs[[k]] <- ggplotGrob(plist[[k]])
+                        #         widths[[k]] <- grobs[[k]]$widths[2:5]
+                        #         heights[[k]] <- grobs[[k]]$heights[2:5]
+                        # }
+                        # maxwidth <- do.call(grid::unit.pmax, widths)
+                        # maxheight <- do.call(grid::unit.pmax, heights)
+                        # for (k in 1:length(grobs)){
+                        #         grobs[[k]]$widths[2:5] <- as.list(maxwidth)
+                        #         grobs[[k]]$heights[2:5] <- as.list(maxheight)
+                        # }
+                        # 
+                        # grobs[[3]] <- get_legend(p)
+                        # 
+                        # p <- grid.arrange(grobs=grobs, ncol=3, nrow=1, widths=c(0.8,1,0.2))
                         
                 }else{
                         if(elevation){

@@ -1,4 +1,4 @@
-\begin{thebibliography}{54}
+\begin{thebibliography}{58}
 \expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
@@ -38,6 +38,15 @@ Butterfield, B.~J. (2015).
   climatic gradients, though driven by different factors, across woody
   vegetation types of the southwest {{USA}}.
 \newblock \emph{Oikos}, 124, 1374--1382.
+
+\bibitem[{Callaway \emph{et~al.}(2002)Callaway, Brooker, Choler, Kikvidze,
+  Lortie, Michalet, Paolini, Pugnaire, Newingham, Aschehoug, Armas, Kikodze \&
+  Cook}]{callawayPositiveInteractionsAlpine2002}
+Callaway, R.~M., Brooker, R.~W., Choler, P., Kikvidze, Z., Lortie, C.~J.,
+  Michalet, R., Paolini, L., Pugnaire, F.~I., Newingham, B., Aschehoug, E.~T.,
+  Armas, C., Kikodze, D. \& Cook, B.~J. (2002).
+\newblock Positive interactions among alpine plants increase with stress.
+\newblock \emph{Nature}, 417, 844--848.
 
 \bibitem[{Channell \&
   Lomolino(2000{\natexlab{a}})}]{channellDynamicBiogeographyConservation2000}
@@ -127,6 +136,13 @@ Hastings, A., Harrison, S. \& McCann, K. (1997).
 \newblock \emph{Proceedings of the Royal Society of London. Series B:
   Biological Sciences}, 264, 1837--1840.
 
+\bibitem[{He \emph{et~al.}(2013)He, Bertness \&
+  Altieri}]{heGlobalShiftsPositive2013}
+He, Q., Bertness, M.~D. \& Altieri, A.~H. (2013).
+\newblock Global shifts towards positive species interactions with increasing
+  environmental stress.
+\newblock \emph{Ecology Letters}, 16, 695--706.
+
 \bibitem[{Helmuth \emph{et~al.}(2002)Helmuth, Harley, Halpin, O'Donnell,
   Hofmann \& Blanchette}]{helmuthClimateChangeLatitudinal2002}
 Helmuth, B., Harley, C. D.~G., Halpin, P.~M., O'Donnell, M., Hofmann, G.~E. \&
@@ -138,8 +154,8 @@ Helmuth, B., Harley, C. D.~G., Halpin, P.~M., O'Donnell, M., Hofmann, G.~E. \&
 \bibitem[{Helmuth \emph{et~al.}(2004)Helmuth, Kingsolver \&
   Carrington}]{helmuthBIOPHYSICSPHYSIOLOGICALECOLOGY2004}
 Helmuth, B., Kingsolver, J.~G. \& Carrington, E. (2004).
-\newblock {{BIOPHYSICS}}, {{PHYSIOLOGICAL ECOLOGY}}, {{AND CLIMATE CHANGE}}:
-  {{Does Mechanism Matter}}?
+\newblock Biophysics, {{Physiological Ecology}}, and {{Climate Change}}: {{Does
+  Mechanism Matter}}?
 \newblock \emph{Annual Review of Physiology}, 67, 177--201.
 
 \bibitem[{Huisman \emph{et~al.}(1993)Huisman, Olff \&
@@ -153,6 +169,12 @@ Jamil, T. \& ter Braak, C. J.~F. (2013).
 \newblock Generalized linear mixed models can detect unimodal
   species-environment relationships.
 \newblock \emph{PeerJ}, 1, e95.
+
+\bibitem[{Kerman \& McDonald(2013)}]{kermanSkewnessKurtosisBounds2013}
+Kerman, S.~C. \& McDonald, J.~B. (2013).
+\newblock Skewness\textendash kurtosis bounds for the skewed generalized {{T}}
+  and related distributions.
+\newblock \emph{Statistics \& Probability Letters}, 83, 2129--2134.
 
 \bibitem[{Krebs(1972)}]{krebsEcologyExperimentalAnalysis1972}
 Krebs, C.~J. (1972).
@@ -368,5 +390,12 @@ Wong, F. \& Collins, J.~J. (2020).
 \newblock Spatial patterns provide support for the stress-gradient hypothesis
   over a range-wide aridity gradient.
 \newblock \emph{Journal of Arid Environments}, 102, 27--33.
+
+\bibitem[{Zurell \emph{et~al.}(2019)Zurell, Engler, Dunn \&
+  M{\o}ller}]{zurellEcologicalNicheModeling2019}
+Zurell, D., Engler, J.~O., Dunn, P.~O. \& M{\o}ller, A.~P. (2019).
+\newblock Ecological niche modeling.
+\newblock In: \emph{Effects of Climate Change on Birds}. {Oxford University
+  Press}, pp. 60--73.
 
 \end{thebibliography}

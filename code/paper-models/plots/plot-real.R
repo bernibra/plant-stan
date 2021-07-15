@@ -8,7 +8,7 @@ library(hrbrthemes)
 library(plotly)
 library(cowplot)
 library(dplyr)
-
+library(tidyverse)
 ####
 # Visualizing the results of some of the models
 ####
@@ -753,7 +753,7 @@ plot.actual.data.means <- function(model=NULL){
 plot.actual.data.means.detailed <- function(model=NULL){
   # Parameters for plots
   extra <- 1
-  colo <- c("#e6ab02", "#1b9e77", "#d95f02", "#7570b3")
+  colo <- c("#1b9e77", "#7570b3", "#e7298a", "#e6ab02", "#d95f02", "#666666", "#a6761d")
   
   # Load the data if not added  
   if(is.null(model)){
@@ -802,9 +802,9 @@ plot.actual.data.means.detailed <- function(model=NULL){
   xlab=""
   breaks <- round(seq(from=xlim[1], to=xlim[2], length.out = 4), 1)
   
-  labs <- c("indigenous", "neophytes", "archaeophytes")
+  labs <- c("indigenous", "recent\nexpanders", "historical\nexpanders")
   labels <- labs[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]
-  color <- c(colo[2],colo[4], "#e7298a")
+  color <- colo[1:3]
   alphas <- c(0.6,0.7,0.7)
   alphas <- alphas[deta$i+(deta$n+deta$jn+deta$isn)*2+(deta$a+deta$ja+deta$isa)*3]
 
@@ -814,12 +814,12 @@ plot.actual.data.means.detailed <- function(model=NULL){
   meanPI <- mean(corPI)
   sdPI <- sd(corPI)
   corPIci <- round(c(meanPI, sdPI), 2)
-  correlations <- rbind(correlations, c("archaeophytes", corPIci))
+  correlations <- rbind(correlations, c("historical\nexpanders", corPIci))
   corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,(deta$n+deta$jn+deta$isn)==1], post$gamma[x,(deta$n+deta$jn+deta$isn)==1]))
   meanPI <- mean(corPI)
   sdPI <- sd(corPI)
   corPIci <- round(c(meanPI, sdPI), 2)
-  correlations <- rbind(correlations, c("neophytes", corPIci))
+  correlations <- rbind(correlations, c("recent\nexpanders", corPIci))
   corPI <- sapply(1:dim(post$beta)[1], function(x) cor(post$beta[x,deta$i==1], post$gamma[x,deta$i==1]))
   meanPI <- mean(corPI)
   sdPI <- sd(corPI)
@@ -839,7 +839,7 @@ plot.actual.data.means.detailed <- function(model=NULL){
   plist[[1]] <- p+theme(legend.position = "none", plot.title = element_blank())
   labs <- c("decreasing", "decreasing low", "increasing", "stable")
   labels <- labs[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
-  color <- colo
+  color <- colo[4:7]
   alphas <- c(0.7,0.7,0.7,0.6)
   alphas <- alphas[Tend$V3+Tend$V4*2+Tend$V5*3+Tend$V6*4]
   xlab=expression(variance %prop% gamma^{-1})
@@ -1155,7 +1155,7 @@ plot.pairs.manuscript <- function(model=NULL, typ=0){
   
   # Load the data if not added  
   if(is.null(model)){
-    model <- readRDS(paste("../../../results/models/skew-generror-min20-1d.rds", sep=""))
+    model <- readRDS(paste("../../../results/models/categorical-skew-generror-min20-1d.rds", sep=""))
   }
   # log10_rev_trans <- trans_new(
   #   "log10_rev",
@@ -2136,4 +2136,85 @@ plot.nu.distribution <- function(){
   }
   p <- grid.arrange(grobs=grobs, ncol=2, nrow=1)
   print(p)
+}
+
+plot.hyperparameters.distributions <- function(){
+  colo <- c("#1b9e77", "#d95f02", "#7570b3")
+  distribution.ggplot <- function(dat, leg_dict, title, inner=F, xlim){
+    p <- ggplot(dat, aes(x=x, color = fct_rev(label), fill = fct_rev(label)))+
+      geom_density(alpha=0.4) +    # geom_vline(aes(xintercept=1), color="black", linetype="dashed", size=0.5) +
+      scale_color_manual(values=c("1"="#E69F00", "2"="black", "3"="gray", "4"=colo[1]), labels=leg_dict) +
+      scale_fill_manual(values=c("1"="#E69F00", "2"="black", "3"="gray", "4"=colo[1]), labels=leg_dict) +
+      theme_bw() +
+      ggtitle(title) + ylab("density") + xlab("value") +
+      scale_x_continuous(limits = xlim)+
+      theme(text = element_text(size=10),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.text = element_text(colour = "black"),
+            legend.title = element_blank(),
+            legend.spacing.x = unit(3, "pt"),
+            legend.margin = margin(0.1, 0.1, 0.1, 0.1, "cm"),
+            # legend.position="none",
+            legend.position=c(0.7,.85),
+            legend.background = element_blank(),
+            panel.border = element_rect(colour = "black", fill=NA, size=0.5),
+            plot.title = element_text(size=10))
+    return(p)  
+  }
+  
+  if(is.null(model)){
+    model <- readRDS("../../../results/models/skew-generror-min20-1d.rds")
+  }
+
+  # post <- extract.samples(model, n = 1000, pars=c("etasq_l", "sigma_l"))
+  post <- extract.samples(model, n = 1000, pars=c("etasq_b", "sigma_b", "rhosq_b","etasq_g", "sigma_g", "rhosq_g"))
+
+  n <-  length(post$etasq_b)
+  
+  dat <- data.frame(
+    x = c(post$etasq_b,post$sigma_b),
+    label = c(rep("1", n),rep("2", n))
+    )
+
+  g <- list()
+  
+  p1 <- distribution.ggplot(dat, c("1"=expression(eta), "2"=expression(sigma)), title=expression(paste("(a) hyperparameters for ", beta[i], sep="")), inner=F, xlim=c(0,5))
+  g[[1]] <- get_legend(p1)
+  p1 <- p1+theme(legend.position = "none")
+  ylim <- layer_scales(p1)$y$range$range
+  xlim <- layer_scales(p1)$x$range$range
+  
+  dat <- data.frame(
+    x = c(post$rhosq_b),
+    label = c(rep("4", n))  
+    )
+  
+  p2 <- distribution.ggplot(dat, c("4"=expression(rho)), title="", inner=T, xlim=c(0,5))
+  g[[2]] <- get_legend(p2)
+  p2 <- p2+theme(legend.position = "none")
+
+  g[[3]] <- p1 + annotation_custom(ggplotGrob(p2), xmin = (xlim[2]-xlim[1])*0.4, xmax = xlim[2], 
+                         ymin = (ylim[2]-ylim[1])*0.2, ymax = ylim[2])
+  
+  dat <- data.frame(
+    x = c(post$etasq_g,post$sigma_g),
+    label = c(rep("1", n),rep("2", n))
+  )
+  
+  p5 <- distribution.ggplot(dat, c("1"=expression(eta), "2"=expression(sigma)), title=expression(paste("(b) hyperparameters for ", gamma[i], sep="")), inner=F, xlim=c(0,2))+theme(legend.position = "none")
+  ylim <- layer_scales(p5)$y$range$range
+  xlim <- layer_scales(p5)$x$range$range
+  
+  dat <- data.frame(
+    x = c(post$rhosq_g),
+    label = c(rep("4", n))  
+  )
+  
+  p6 <- distribution.ggplot(dat, c("4"=expression(rho)), title="", inner=T, xlim=c(0,2))+theme(legend.position = "none")
+  
+  g[[4]] <- p5 + annotation_custom(ggplotGrob(p6), xmin = (xlim[2]-xlim[1])*0.4, xmax = xlim[2], 
+                         ymin = (ylim[2]-ylim[1])*0.2, ymax = ylim[2])
+  
+  grid.arrange(grobs=g, layout_matrix=rbind(c(3,4,1),c(3,4,2)), widths=c(1,1, 0.3))
 }

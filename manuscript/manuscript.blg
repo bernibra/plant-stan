@@ -3,44 +3,44 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: manuscript.aux
 The style file: ecology_letters2.bst.bst
 Database file #1: references2.bib
-You've used 54 entries,
+You've used 58 entries,
             2860 wiz_defined-function locations,
-            1052 strings with 19581 characters,
-and the built_in function-call counts, 29467 in all, are:
-= -- 2757
-> -- 1749
-< -- 28
-+ -- 690
-- -- 615
-* -- 2762
-:= -- 5489
-add.period$ -- 162
-call.type$ -- 54
-change.case$ -- 474
-chr.to.int$ -- 56
-cite$ -- 54
-duplicate$ -- 1086
-empty$ -- 1710
-format.name$ -- 779
-if$ -- 5430
+            1080 strings with 20689 characters,
+and the built_in function-call counts, 32149 in all, are:
+= -- 2998
+> -- 1933
+< -- 30
++ -- 760
+- -- 681
+* -- 3024
+:= -- 5971
+add.period$ -- 175
+call.type$ -- 58
+change.case$ -- 518
+chr.to.int$ -- 60
+cite$ -- 58
+duplicate$ -- 1183
+empty$ -- 1863
+format.name$ -- 859
+if$ -- 5937
 int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 55
-newline$ -- 276
-num.names$ -- 216
-pop$ -- 427
+missing$ -- 59
+newline$ -- 296
+num.names$ -- 232
+pop$ -- 474
 preamble$ -- 1
-purify$ -- 421
+purify$ -- 459
 quote$ -- 0
-skip$ -- 661
+skip$ -- 719
 stack$ -- 0
-substring$ -- 1857
-swap$ -- 218
-text.length$ -- 0
+substring$ -- 2006
+swap$ -- 244
+text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 477
+type$ -- 513
 warning$ -- 0
-while$ -- 259
+while$ -- 280
 width$ -- 0
-write$ -- 701
+write$ -- 754
